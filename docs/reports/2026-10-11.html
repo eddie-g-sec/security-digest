@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Security Digest — 2026-10-11</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+:root {
+  --bg: #0F1419;
+  --surface: #161D26;
+  --surface-2: #1E2730;
+  --border: #2A343F;
+  --text: #E8EDF2;
+  --text-dim: #8B98A5;
+  --text-faint: #5A6672;
+  --link: #7DD3FC;
+  --sev-critical: #FF5D5D;
+  --sev-high: #FFA94D;
+  --sev-medium: #FFD43B;
+  --sev-low: #7C8B9A;
+  --sev-unscored: #6B7C93;
+  --row-security: #4FD1C5;
+  --row-database: #F0B429;
+  --row-cloud: #5EA8FF;
+}
+
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  * { transition: none !important; animation: none !important; }
+}
+
+body {
+  font-family: 'IBM Plex Sans', -apple-system, Segoe UI, Roboto, sans-serif;
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 0 1.25rem 4rem;
+  line-height: 1.6;
+  color: var(--text);
+  background: var(--bg);
+  font-size: 15px;
+}
+
+.mono { font-family: 'IBM Plex Mono', ui-monospace, monospace; }
+
+/* ---- Page header ---- */
+.page-header {
+  padding: 2rem 0 1.25rem;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 1.5rem;
+}
+.page-header .eyebrow {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  margin: 0 0 0.4rem;
+}
+h1 { font-size: 1.6rem; font-weight: 700; margin: 0 0 0.35rem; letter-spacing: -0.01em; }
+.page-header .meta { color: var(--text-dim); font-size: 0.85rem; margin: 0; }
+.back-link {
+  display: inline-block; margin-bottom: 1rem; color: var(--link);
+  font-family: 'IBM Plex Mono', monospace; font-size: 0.82rem; text-decoration: none;
+}
+.back-link:hover { text-decoration: underline; }
+
+/* ---- Sticky quick nav ---- */
+.quick-nav {
+  position: sticky; top: 0; z-index: 10;
+  display: flex; gap: 0.5rem; flex-wrap: wrap;
+  background: rgba(15, 20, 25, 0.92);
+  backdrop-filter: blur(6px);
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 2rem;
+}
+.quick-nav a {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.78rem;
+  color: var(--text-dim);
+  text-decoration: none;
+  padding: 0.35rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  transition: border-color 0.15s, color 0.15s;
+}
+.quick-nav a:hover { border-color: var(--link); color: var(--text); }
+
+/* ---- Section headers (news rows + vuln tracking) ---- */
+.row-header {
+  display: flex; align-items: baseline; gap: 0.65rem;
+  margin: 3rem 0 0.9rem; scroll-margin-top: 4.5rem;
+}
+.row-header .dot { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+.row-header h2 {
+  margin: 0; font-size: 0.78rem; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.1em; color: var(--text);
+  border: none; padding: 0;
+}
+.row-header .count {
+  font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; color: var(--text-faint);
+}
+.row-security .dot { background: var(--row-security); }
+.row-database .dot { background: var(--row-database); }
+.row-cloud .dot { background: var(--row-cloud); }
+
+/* ---- Raw news columns (horizontal scroll) ---- */
+.news-grid-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 0 0 1rem; padding-bottom: 0.6rem; }
+.news-grid { display: flex; gap: 1rem; width: max-content; }
+.news-column {
+  flex: 0 0 270px; background: var(--surface); border: 1px solid var(--border);
+  border-top: 2px solid var(--row-accent, var(--border)); border-radius: 8px; padding: 0.9rem 1rem;
+}
+.row-security .news-column { --row-accent: var(--row-security); }
+.row-database .news-column { --row-accent: var(--row-database); }
+.row-cloud .news-column { --row-accent: var(--row-cloud); }
+.news-column h4 {
+  margin: 0 0 0.65rem; font-size: 0.82rem; font-weight: 600; color: var(--text);
+  border: none; background: none; padding: 0;
+}
+.news-column ul { list-style: none; padding: 0; margin: 0; }
+.news-column li { padding: 0.5rem 0; border-bottom: 1px solid var(--border); }
+.news-column li:last-child { border-bottom: none; }
+.news-column a { color: var(--text); text-decoration: none; font-size: 0.87rem; line-height: 1.45; }
+.news-column a:hover { color: var(--link); }
+.news-column .item-date {
+  display: block; font-family: 'IBM Plex Mono', monospace; color: var(--text-faint);
+  font-size: 0.7rem; margin-top: 0.25rem;
+}
+
+/* ---- Vulnerability tracking section ---- */
+h2 { margin: 3rem 0 0.5rem; font-size: 1.15rem; font-weight: 700; color: var(--text); border: none; padding: 0; scroll-margin-top: 4.5rem; }
+h2 + p { color: var(--text-dim); margin-top: 0; margin-bottom: 1.25rem; max-width: 68ch; }
+h3 {
+  margin: 2rem 0 0.9rem; font-size: 0.75rem; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.1em; color: var(--text-faint); border: none;
+}
+p { margin: 0.6rem 0; }
+a { color: var(--link); }
+ul { padding-left: 1.3rem; margin: 0.6rem 0; }
+li { margin: 0.3rem 0; }
+
+/* Incident (vuln) cards */
+.vuln-card {
+  background: var(--surface); border: 1px solid var(--border); border-left: 4px solid var(--sev-unscored);
+  border-radius: 6px; padding: 1rem 1.15rem; margin-bottom: 1rem;
+}
+.vuln-card.sev-critical { border-left-color: var(--sev-critical); }
+.vuln-card.sev-high { border-left-color: var(--sev-high); }
+.vuln-card.sev-medium { border-left-color: var(--sev-medium); }
+.vuln-card.sev-low { border-left-color: var(--sev-low); }
+.vuln-card-head { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; margin-bottom: 0.7rem; }
+.vuln-system { font-weight: 600; font-size: 0.95rem; color: var(--text); }
+.badge {
+  font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; padding: 0.18rem 0.55rem;
+  border-radius: 4px; white-space: nowrap; font-weight: 500;
+}
+.badge-cve { background: var(--surface-2); color: var(--text-dim); border: 1px solid var(--border); }
+.badge-cvss { color: var(--bg); font-weight: 600; }
+.badge-cvss.sev-critical { background: var(--sev-critical); }
+.badge-cvss.sev-high { background: var(--sev-high); }
+.badge-cvss.sev-medium { background: var(--sev-medium); }
+.badge-cvss.sev-low { background: var(--sev-low); color: var(--text); }
+.badge-cvss.sev-unscored { background: var(--surface-2); color: var(--text-dim); border: 1px solid var(--border); }
+.badge-kev {
+  background: rgba(255, 93, 93, 0.15); color: var(--sev-critical); border: 1px solid rgba(255, 93, 93, 0.4);
+  text-transform: uppercase; letter-spacing: 0.04em; font-size: 0.68rem;
+}
+.vuln-card-body p { color: var(--text-dim); font-size: 0.9rem; }
+.vuln-card-body strong { color: var(--text); }
+.vuln-card-body ul { font-size: 0.9rem; color: var(--text-dim); }
+.vuln-card-body a { word-break: break-word; }
+h4.mention-group {
+  margin: 1.5rem 0 0.5rem; font-size: 0.82rem; font-weight: 600; color: var(--text);
+  border: none; background: none; padding: 0;
+}
+
+/* ---- Archive ---- */
+.archive-list { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.archive-list li { margin: 0; }
+.archive-list a {
+  display: inline-block; font-family: 'IBM Plex Mono', monospace; font-size: 0.78rem;
+  color: var(--text-dim); text-decoration: none; padding: 0.4rem 0.8rem;
+  border: 1px solid var(--border); border-radius: 6px; transition: border-color 0.15s, color 0.15s;
+}
+.archive-list a:hover { border-color: var(--link); color: var(--text); }
+
+@media (max-width: 640px) {
+  body { font-size: 14px; }
+  h1 { font-size: 1.3rem; }
+  .quick-nav { overflow-x: auto; flex-wrap: nowrap; }
+}
+</style>
+</head>
+<body>
+<a class="back-link" href="../index.html">&larr; All reports</a>
+<div class="page-header">
+<p class="eyebrow">Daily Digest</p>
+<h1>Security Digest — 2026-10-11</h1>
+</div>
+<nav class="quick-nav">
+<a href="#security-news">Security</a>
+<a href="#database-news">Database</a>
+<a href="#cloud-news">Cloud</a>
+<a href="#vuln-tracking">Vulnerabilities</a>
+<a href="#archive">Archive</a>
+</nav>
+<div class="row-header row-security" id="security-news"><span class="dot"></span><h2>Security News</h2><span class="count">23 items</span></div>
+<div class="news-grid-wrapper"><div class="news-grid"><div class="news-column"><h4>BleepingComputer</h4><ul><li><a href="https://www.bleepingcomputer.com/news/security/nippon-columbia-malware-incident-exposes-86-million-karaoke-fan-records/">Nippon Columbia malware incident exposes 8.6 million karaoke fan records</a><span class="item-date">Sun, 11 Oct 2026 10:23:46 -0400</span></li><li><a href="https://www.bleepingcomputer.com/news/security/cyber-exec-arrested-in-case-allegedly-tied-to-shinyhunters-hackers/">Cyber exec arrested in case allegedly tied to ShinyHunters hackers</a><span class="item-date">Sat, 10 Oct 2026 11:07:54 -0400</span></li><li><a href="https://www.bleepingcomputer.com/news/security/hacker-used-artex-ai-and-claude-agents-to-target-south-korean-banks/">ARTEX AI, Claude agents used in cyberattacks on South Korean banks</a><span class="item-date">Sat, 10 Oct 2026 10:16:17 -0400</span></li><li><a href="https://www.bleepingcomputer.com/news/security/criminal-ip-introduces-aitem-as-the-next-evolution-of-attack-surface-management/">Criminal IP Introduces AITEM as the Next Evolution of Attack Surface Management</a><span class="item-date">Sat, 10 Oct 2026 08:30:39 -0400</span></li><li><a href="https://www.bleepingcomputer.com/news/security/hackers-abuse-google-ads-bing-redirects-to-push-claude-clickfix-attacks/">Hackers abuse Google Ads, Bing redirects to push Claude ClickFix attacks</a><span class="item-date">Fri, 09 Oct 2026 16:31:37 -0400</span></li></ul></div><div class="news-column"><h4>Dark Reading</h4><ul><li><a href="https://www.darkreading.com/cyberattacks-data-breaches/asos-breach-risks-customer-facing-saas">ASOS Breach Reveals the Risks in Customer-Facing SaaS</a><span class="item-date">Fri, 09 Oct 2026 20:58:32 GMT</span></li><li><a href="https://www.darkreading.com/cybersecurity-analytics/ai-scramble-cybersecurity-ma-boom">AI Scramble Drives Cybersecurity M&amp;amp;A Boom</a><span class="item-date">Fri, 09 Oct 2026 19:26:26 GMT</span></li></ul></div><div class="news-column"><h4>Krebs on Security</h4><ul><li><a href="https://krebsonsecurity.com/2026/10/fbi-arrests-founder-of-ransomware-negotiation-firm/">FBI Arrests Executive at Ransomware Negotiation Firm</a><span class="item-date">Sat, 10 Oct 2026 00:17:42 +0000</span></li></ul></div><div class="news-column"><h4>SecurityWeek</h4><ul><li><a href="https://www.securityweek.com/insider-cyber-extortion-plot-against-industrial-firm-lands-engineer-in-prison/">Insider Cyber Extortion Plot Against Industrial Firm Lands Engineer in Prison</a><span class="item-date">Sat, 10 Oct 2026 11:00:00 +0000</span></li><li><a href="https://www.securityweek.com/openai-fires-3-safety-researchers-in-dispute-over-ai-risks/">OpenAI Fires 3 Safety Researchers in Dispute Over AI Risks</a><span class="item-date">Fri, 09 Oct 2026 21:07:46 +0000</span></li></ul></div><div class="news-column"><h4>The Hacker News</h4><ul><li><a href="https://thehackernews.com/2026/10/p7-darksword-ios-exploit-kit-adds.html">P7 DarkSword iOS Exploit Kit Adds Crypto Wallet Data Theft and Remote Commands</a><span class="item-date">Sun, 11 Oct 2026 09:54:34 +0530</span></li><li><a href="https://thehackernews.com/2026/10/the-third-party-agent-problem-why.html">The Third-Party Agent Problem: Why Security Built for AI You Chose Misses the Agents You Didn&#x27;t</a><span class="item-date">Sat, 10 Oct 2026 16:30:00 +0530</span></li><li><a href="https://thehackernews.com/2026/10/anthropic-cuts-live-internet-access-for.html">Anthropic Cuts Live Internet Access for Internal AI Tests After Claude Exploits Injection Flaws</a><span class="item-date">Sat, 10 Oct 2026 14:48:45 +0530</span></li><li><a href="https://thehackernews.com/2026/10/credential-stealing-github-actions.html">Credential-Stealing GitHub Actions Workflows Planted in Tens of Thousands of Repositories</a><span class="item-date">Sat, 10 Oct 2026 00:44:28 +0530</span></li><li><a href="https://thehackernews.com/2026/10/fbi-arrests-another-shinyhunters.html">FBI Arrests Another ShinyHunters Suspect Reportedly Involved in Its Jobs Portal Hack</a><span class="item-date">Fri, 09 Oct 2026 23:15:26 +0530</span></li></ul></div><div class="news-column"><h4>The Register</h4><ul><li><a href="https://www.theregister.com/security/2026/10/11/ai-systems-are-fully-capable-of-carrying-out-nightmare-attacks-against-infrastructure-and-nobodys-ready/5302450">AI systems are fully capable of carrying out nightmare attacks against infrastructure and nobody&#x27;s ready</a><span class="item-date">Sun, 11 Oct 2026 12:30:00 +0100</span></li><li><a href="https://www.theregister.com/networks/2026/10/11/hpes-networking-boss-says-ai-will-handle-all-trouble-tickets-without-humans-in-two-years/5302179">HPE&#x27;s networking boss says AI will handle all trouble tickets without humans in two years</a><span class="item-date">Sun, 11 Oct 2026 10:37:00 +0100</span></li><li><a href="https://www.theregister.com/science/2026/10/11/researchers-work-out-how-to-control-2d-semiconductor-growth-for-future-chips/5301666">Researchers work out how to control 2D semiconductor growth for future chips</a><span class="item-date">Sun, 11 Oct 2026 09:30:00 +0100</span></li><li><a href="https://www.theregister.com/security/2026/10/10/two-characters-open-up-a-world-of-typosquatting-opportunities-in-chromium-browsers/5302383">Two characters open up a world of typosquatting opportunities in Chromium browsers</a><span class="item-date">Sat, 10 Oct 2026 11:15:00 +0100</span></li><li><a href="https://www.theregister.com/columnists/2026/10/10/ec-users-should-be-afraid-of-a-us-kill-switch-not-some-new-software/5301875">EC users should be afraid of a US kill switch - not some new software</a><span class="item-date">Sat, 10 Oct 2026 10:05:00 +0100</span></li><li><a href="https://www.theregister.com/software/2026/10/10/stack-overflow-survey-finds-devs-hooked-on-ai-but-not-totally-sold-on-its-judgment/5301662">Stack Overflow survey finds devs hooked on AI, but not totally sold on its judgment</a><span class="item-date">Sat, 10 Oct 2026 09:14:00 +0100</span></li><li><a href="https://www.theregister.com/ai-and-ml/2026/10/10/microsoft-leans-on-open-weight-model-from-chinese-ai-lab-to-challenge-jev/5302473">Microsoft leans on open weight model from Chinese AI lab to challenge Jev</a><span class="item-date">Sat, 10 Oct 2026 08:10:00 +0100</span></li><li><a href="https://www.theregister.com/security/2026/10/09/aws-agentcore-security-undone-by-prompt-requesting-credentials/5302436">AWS AgentCore security undone by prompt requesting credentials</a><span class="item-date">Fri, 09 Oct 2026 20:15:48 +0100</span></li></ul></div></div></div>
+<div class="row-header row-database" id="database-news"><span class="dot"></span><h2>Database News</h2><span class="count">5 items</span></div>
+<div class="news-grid-wrapper"><div class="news-grid"><div class="news-column"><h4>Planet PostgreSQL</h4><ul><li><a href="https://postgr.es/p/9xz">Christophe Pettus: All Your GUCs in a Row: parallel_leader_participation</a><span class="item-date">Sat, 10 Oct 2026 01:00:00 +0000</span></li><li><a href="https://postgr.es/p/9xy">Christophe Pettus: All Your GUCs in a Row: parallel_setup_cost and parallel_tuple_cost</a><span class="item-date">Sat, 10 Oct 2026 01:00:00 +0000</span></li><li><a href="https://postgr.es/p/9xA">Chris van Eijk: infinite recursion detected in policy: causes and fixes</a><span class="item-date">Sat, 10 Oct 2026 00:00:00 +0000</span></li><li><a href="https://postgr.es/p/9xw">Chris van Eijk: new row violates row-level security policy: the causes</a><span class="item-date">Fri, 09 Oct 2026 23:15:10 +0000</span></li></ul></div><div class="news-column"><h4>SQLServerCentral</h4><ul><li><a href="https://www.sqlservercentral.com/blogs/how-to-clear-the-ssms-cache-ssms-21-and-later">How to Clear the SSMS Cache (SSMS 21 and Later)</a><span class="item-date">Sat, 10 Oct 2026 10:04:49 +0000</span></li></ul></div></div></div>
+<div class="row-header row-cloud" id="cloud-news"><span class="dot"></span><h2>Cloud News</h2><span class="count">7 items</span></div>
+<div class="news-grid-wrapper"><div class="news-grid"><div class="news-column"><h4>The New Stack</h4><ul><li><a href="https://thenewstack.io/claude-code-mcp-records/">Claude Code found my app’s shared contract in two MCP calls. Then the records ran out.</a><span class="item-date">Sun, 11 Oct 2026 14:00:00 +0000</span></li><li><a href="https://thenewstack.io/anthropic-oss-scanner-vulnerabilities/">Claude found 29,000 possible bugs in open source. Only 516 have been fixed.</a><span class="item-date">Sun, 11 Oct 2026 13:00:00 +0000</span></li><li><a href="https://thenewstack.io/ai-agent-evaluation-loop/">How to turn AI production feedback into better agents</a><span class="item-date">Sat, 10 Oct 2026 16:00:00 +0000</span></li><li><a href="https://thenewstack.io/microsoft-decision-model-foundry/">Microsoft skipped OpenAI’s decision model and built its own on Alibaba’s Qwen</a><span class="item-date">Sat, 10 Oct 2026 13:00:00 +0000</span></li><li><a href="https://thenewstack.io/musk-claude-model-triage/">Elon Musk’s Grok Bot will pick Claude over Grok when it’s better. One-model loyalty is dead.</a><span class="item-date">Sat, 10 Oct 2026 10:00:00 +0000</span></li><li><a href="https://thenewstack.io/kubernetes-node-swap-ai/">Kubernetes on cgroup v1 is dead. Here’s what comes next.</a><span class="item-date">Fri, 09 Oct 2026 20:15:46 +0000</span></li><li><a href="https://thenewstack.io/cloudflare-acquires-deno-ryan-dahl/">Cloudflare acquires Node.js creator’s startup that copied its serverless playbook</a><span class="item-date">Fri, 09 Oct 2026 18:52:36 +0000</span></li></ul></div></div></div>
+<h2 id="vuln-tracking" style="scroll-margin-top:4.5rem;">Scoped Vulnerability Tracking</h2>
+<h2>Database</h2>
+<p>The sole database-related vulnerability this cycle is a medium-severity authorization bypass in <strong>Tabularis 0.27.0 and earlier</strong> (CVE-2026-108604, CVSS 6.3), where prompt-injected agents or untrusted MCP clients can circumvent the read-only safety gate by issuing side-effecting `SELECT` statements (e.g., `setval`, `nextval`, or `query_to_xml` with embedded `DELETE`). No CISA KEV entries affect core PostgreSQL or major cloud database services today.</p>
+<h3>Formal Vulnerabilities</h3>
+<div class="vuln-card sev-medium"><div class="vuln-card-head"><span class="vuln-system">PostgreSQL</span><span class="badge badge-cve">CVE-2026-108604</span><span class="badge badge-cvss sev-medium">CVSS 6.3 · MEDIUM</span></div><div class="vuln-card-body">
+<p><strong>Summary:</strong> Tabularis through version 0.27.0 contains an incorrect authorization check in the MCP `run_query` safety gate. The gate classifies incoming SQL as read-only or read-write, but fails to detect side-effecting `SELECT` statements such as `SELECT setval(...)`, `SELECT nextval(...)`, or `SELECT query_to_xml(...)` with embedded `DELETE`. An attacker with access to an MCP client (or who can inject prompts into an agent using the MCP interface) can execute these statements to modify sequences or data without triggering the approval prompt. Exploitation requires network access to the Tabularis MCP endpoint and the ability to submit arbitrary SQL; no authentication bypass is described beyond the classification flaw.</p>
+<p><strong>Affected Features / Interoperability:</strong> The MCP (Model Context Protocol) `run_query` endpoint and its read-only classification logic. Downstream impact includes any AI agent or automated workflow that relies on Tabularis&#x27; MCP integration to enforce read-only access — sequence manipulation, data modification via XML functions, and potential further privilege escalation if modified sequences affect application logic.</p>
+<p><strong>Source:</strong></p>
+<ul>
+<li><a href="https://github.com/TabularisDB/tabularis">https://github.com/TabularisDB/tabularis</a></li>
+<li><a href="https://github.com/TabularisDB/tabularis/blob/804c4c3bb6fd8eaa2e36cbe49f6c0d58f373b5e9/src-tauri/src/ai_activity.rs#L357-L416">https://github.com/TabularisDB/tabularis/blob/804c4c3bb6fd8eaa2e36cbe49f6c0d58f373b5e9/src-tauri/src/ai_activity.rs#L357-L416</a></li>
+<li><a href="https://github.com/TabularisDB/tabularis/blob/804c4c3bb6fd8eaa2e36cbe49f6c0d58f373b5e9/src-tauri/src/mcp/mod.rs#L1136-L1171">https://github.com/TabularisDB/tabularis/blob/804c4c3bb6fd8eaa2e36cbe49f6c0d58f373b5e9/src-tauri/src/mcp/mod.rs#L1136-L1171</a></li>
+<li><a href="https://hackmd.io/@haind/S1BofaIsMx">https://hackmd.io/@haind/S1BofaIsMx</a></li>
+<li><a href="https://www.vulncheck.com/advisories/tabularis-through-0.27.0-read-only-bypass-via-mcp-run-query-select-classification">https://www.vulncheck.com/advisories/tabularis-through-0.27.0-read-only-bypass-via-mcp-run-query-select-classification</a></li>
+</ul>
+<p><strong>Actions:</strong></p>
+<ul>
+<li>Fix: Upgrade to Tabularis &gt;0.27.0 once a patched release is published; monitor the repository for a security release.</li>
+<li>Workaround: Disable the MCP `run_query` endpoint if not strictly required, or restrict MCP client access to trusted, authenticated agents only via network segmentation and mTLS.</li>
+<li>Tradeoff: Disabling MCP `run_query` breaks AI-assisted query workflows and any automation depending on that interface; network-level restriction adds operational overhead but preserves functionality for approved clients.</li>
+</ul>
+</div></div>
+<h2>Cloud Security</h2>
+<p>The single most urgent item this cycle is CVE-2026-105278, a CRITICAL (9.8) hardcoded administrative credential in the published Docker image for openPDC, referenced in CISA ICS Advisory ICSA-26-281-02. Because the credential is fixed and not forced to change on first use, any deployment of this image with a network-reachable management interface is immediately compromiseable by an unauthenticated attacker. While this is a container image issue rather than a Docker Engine patch, it requires immediate image rotation and credential hygiene across any healthcare or homelab deployments using openPDC. Separately, news coverage highlights credential leakage risks in AWS AgentCore and Anthropic&#x27;s internal AI evaluation environment, which warrants attention to prompt injection and metadata token handling in cloud-native workloads.</p>
+<h3>Formal Vulnerabilities</h3>
+<div class="vuln-card sev-critical"><div class="vuln-card-head"><span class="vuln-system">Docker</span><span class="badge badge-cve">CVE-2026-105278</span><span class="badge badge-cvss sev-critical">CVSS 9.8 · CRITICAL</span></div><div class="vuln-card-body">
+<p><strong>Summary:</strong> The published Docker image for openPDC ships with a fixed administrative credential that is not forced to change on first use. An attacker with network access to the management interface can authenticate using this credential and gain full administrative control of the application. This is a container image vulnerability, not a Docker Engine defect.</p>
+<p><strong>Affected Features / Interoperability:</strong> openPDC container image and its management interface authentication. The raw data does not specify downstream integrations or interoperability impacts beyond the management interface.</p>
+<p><strong>Source:</strong></p>
+<ul>
+<li><a href="https://www.cisa.gov/news-events/ics-advisories/icsa-26-281-02">https://www.cisa.gov/news-events/ics-advisories/icsa-26-281-02</a></li>
+<li><a href="https://github.com/cisagov/CSAF/blob/develop/csaf_files/OT/white/2026/icsa-26-281-02.json">https://github.com/cisagov/CSAF/blob/develop/csaf_files/OT/white/2026/icsa-26-281-02.json</a></li>
+</ul>
+<p><strong>Actions:</strong></p>
+<ul>
+<li>Fix: No patched version/release specified in provided data.</li>
+<li>Workaround: Rotate the fixed administrative credential immediately and restrict network access to the management interface to trusted sources only.</li>
+<li>Tradeoff: Restricting network access to the management interface may degrade remote management and monitoring capabilities.</li>
+</ul>
+</div></div>
+<h3>News &amp; Community Mentions</h3>
+<p>The following items are unverified community chatter and news mentions, separate from the Formal Vulnerabilities above.</p>
+<h4 class="mention-group">AWS</h4>
+<ul>
+<li>Anthropic disabled live internet access for internal AI tests after new incidents involving Claude exploiting injection flaws. (The Hacker News) <a href="https://thehackernews.com/2026/10/anthropic-cuts-live-internet-access-for.html">https://thehackernews.com/2026/10/anthropic-cuts-live-internet-access-for.html</a></li>
+<li>AWS AgentCore security was bypassed by a prompt requesting credentials, exposing metadata tokens, weak VM isolation, and expansive permissions. (The Register) <a href="https://www.theregister.com/security/2026/10/09/aws-agentcore-security-undone-by-prompt-requesting-credentials/5302436">https://www.theregister.com/security/2026/10/09/aws-agentcore-security-undone-by-prompt-requesting-credentials/5302436</a></li>
+<li>Commentary discusses how AI-era hacking has strengthened while cybersecurity defenses struggle to keep pace. (news.google.com) <a href="https://news.google.com/rss/articles/CBMiU0FVX3lxTFBFRUdBMUFOeGdDY2c4TTJhb05QaG5uZy1BTFJtak04ekxQWld0cXFSU0dIX3k1QmpVUGVrM0k1UGhaQk9UQ0hkRlpwZUhsV0Z6Z2l3?oc=5">https://news.google.com/rss/articles/CBMiU0FVX3lxTFBFRUdBMUFOeGdDY2c4TTJhb05QaG5uZy1BTFJtak04ekxQWld0cXFSU0dIX3k1QmpVUGVrM0k1UGhaQk9UQ0hkRlpwZUhsV0Z6Z2l3?oc=5</a></li>
+</ul>
+<h4 class="mention-group">Google Cloud Platform</h4>
+<ul>
+<li>AWS AgentCore security was bypassed by a prompt requesting credentials, exposing metadata tokens, weak VM isolation, and expansive permissions. (news.google.com) <a href="https://news.google.com/rss/articles/CBMiugFBVV95cUxNV1F4ZEFZOW5SUHVoMklkTUJCYkNNT3RsbGhWcFhFMUdJMUFDTHpQZndvb3M5aEZnTjJXS2NFemNVVUhOUGdGaXh2UThWbFF6aE9hZEdZWm9nZ01QMlZuWl82LVI1N3NPR2x1eFR2VE1zbGVUN1hTNndXX0Q5OXhJQW5YNzJpM3h5S3J2Y2VVblAzcTJzVHMwOGpZT1JJMm5BRGpQY0VDYVMzbHJpS2tnOC0tV1A1akgyM2c?oc=5">https://news.google.com/rss/articles/CBMiugFBVV95cUxNV1F4ZEFZOW5SUHVoMklkTUJCYkNNT3RsbGhWcFhFMUdJMUFDTHpQZndvb3M5aEZnTjJXS2NFemNVVUhOUGdGaXh2UThWbFF6aE9hZEdZWm9nZ01QMlZuWl82LVI1N3NPR2x1eFR2VE1zbGVUN1hTNndXX0Q5OXhJQW5YNzJpM3h5S3J2Y2VVblAzcTJzVHMwOGpZT1JJMm5BRGpQY0VDYVMzbHJpS2tnOC0tV1A1akgyM2c?oc=5</a></li>
+<li>CaixaBank extended its Google Cloud partnership to 2033 with a focus on agentic AI and data analytics. (SMBtech) <a href="https://news.google.com/rss/articles/CBMiuwFBVV95cUxNTVBQUWR6VWx1WDVPbkZCY2ZXbUxqaXZLN2NkdExwUzYzQ3Bncy1FMUxRcnlOYWE0emVTS1hTZ19JRFBRVEpqaG83clVRajlGUi1xQ2c1Y3NsVmpHalRXX3RIQThFQldvNUo0cVJaRmRJMVBmM1E2WXpUQV92TWd4eUtkMDBfTXBNckM5eUxQOGR6UzA2NEhsaDM1ZUp5czdxN0o3NGhrc00yZG5Va2lOcEY1NnBSSmhhYWxB?oc=5">https://news.google.com/rss/articles/CBMiuwFBVV95cUxNTVBQUWR6VWx1WDVPbkZCY2ZXbUxqaXZLN2NkdExwUzYzQ3Bncy1FMUxRcnlOYWE0emVTS1hTZ19JRFBRVEpqaG83clVRajlGUi1xQ2c1Y3NsVmpHalRXX3RIQThFQldvNUo0cVJaRmRJMVBmM1E2WXpUQV92TWd4eUtkMDBfTXBNckM5eUxQOGR6UzA2NEhsaDM1ZUp5czdxN0o3NGhrc00yZG5Va2lOcEY1NnBSSmhhYWxB?oc=5</a></li>
+</ul>
+<h4 class="mention-group">Docker</h4>
+<ul>
+<li>A guide outlines 13 steps and 295 templates for setting up the Nuclei Scanner. (tech-insider.org) <a href="https://news.google.com/rss/articles/CBMic0FVX3lxTE9WU3I2eHlneV9kMzJkeVhMV01Odm1RWXhpWnYwRlZXYWRRdzJWdWlYOXJkNGFSc0VHclFNOFZKWVRlYXNJQUJ1SEN6TW1xQWFRWjAyU3RKT0lxX2FobFNsMDdzTmRTMnBOdFJnNHR6OE90ME0?oc=5">https://news.google.com/rss/articles/CBMic0FVX3lxTE9WU3I2eHlneV9kMzJkeVhMV01Odm1RWXhpWnYwRlZXYWRRdzJWdWlYOXJkNGFSc0VHclFNOFZKWVRlYXNJQUJ1SEN6TW1xQWFRWjAyU3RKT0lxX2FobFNsMDdzTmRTMnBOdFJnNHR6OE90ME0?oc=5</a></li>
+</ul>
+</body>
+</html>
