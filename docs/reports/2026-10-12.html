@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Security Digest — 2026-10-12</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+:root {
+  --bg: #0F1419;
+  --surface: #161D26;
+  --surface-2: #1E2730;
+  --border: #2A343F;
+  --text: #E8EDF2;
+  --text-dim: #8B98A5;
+  --text-faint: #5A6672;
+  --link: #7DD3FC;
+  --sev-critical: #FF5D5D;
+  --sev-high: #FFA94D;
+  --sev-medium: #FFD43B;
+  --sev-low: #7C8B9A;
+  --sev-unscored: #6B7C93;
+  --row-security: #4FD1C5;
+  --row-database: #F0B429;
+  --row-cloud: #5EA8FF;
+}
+
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  * { transition: none !important; animation: none !important; }
+}
+
+body {
+  font-family: 'IBM Plex Sans', -apple-system, Segoe UI, Roboto, sans-serif;
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 0 1.25rem 4rem;
+  line-height: 1.6;
+  color: var(--text);
+  background: var(--bg);
+  font-size: 15px;
+}
+
+.mono { font-family: 'IBM Plex Mono', ui-monospace, monospace; }
+
+/* ---- Page header ---- */
+.page-header {
+  padding: 2rem 0 1.25rem;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 1.5rem;
+}
+.page-header .eyebrow {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  margin: 0 0 0.4rem;
+}
+h1 { font-size: 1.6rem; font-weight: 700; margin: 0 0 0.35rem; letter-spacing: -0.01em; }
+.page-header .meta { color: var(--text-dim); font-size: 0.85rem; margin: 0; }
+.back-link {
+  display: inline-block; margin-bottom: 1rem; color: var(--link);
+  font-family: 'IBM Plex Mono', monospace; font-size: 0.82rem; text-decoration: none;
+}
+.back-link:hover { text-decoration: underline; }
+
+/* ---- Sticky quick nav ---- */
+.quick-nav {
+  position: sticky; top: 0; z-index: 10;
+  display: flex; gap: 0.5rem; flex-wrap: wrap;
+  background: rgba(15, 20, 25, 0.92);
+  backdrop-filter: blur(6px);
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 2rem;
+}
+.quick-nav a {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.78rem;
+  color: var(--text-dim);
+  text-decoration: none;
+  padding: 0.35rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  transition: border-color 0.15s, color 0.15s;
+}
+.quick-nav a:hover { border-color: var(--link); color: var(--text); }
+
+/* ---- Section headers (news rows + vuln tracking) ---- */
+.row-header {
+  display: flex; align-items: baseline; gap: 0.65rem;
+  margin: 3rem 0 0.9rem; scroll-margin-top: 4.5rem;
+}
+.row-header .dot { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+.row-header h2 {
+  margin: 0; font-size: 0.78rem; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.1em; color: var(--text);
+  border: none; padding: 0;
+}
+.row-header .count {
+  font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; color: var(--text-faint);
+}
+.row-security .dot { background: var(--row-security); }
+.row-database .dot { background: var(--row-database); }
+.row-cloud .dot { background: var(--row-cloud); }
+
+/* ---- Raw news columns (horizontal scroll) ---- */
+.news-grid-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 0 0 1rem; padding-bottom: 0.6rem; }
+.news-grid { display: flex; gap: 1rem; width: max-content; }
+.news-column {
+  flex: 0 0 270px; background: var(--surface); border: 1px solid var(--border);
+  border-top: 2px solid var(--row-accent, var(--border)); border-radius: 8px; padding: 0.9rem 1rem;
+}
+.row-security .news-column { --row-accent: var(--row-security); }
+.row-database .news-column { --row-accent: var(--row-database); }
+.row-cloud .news-column { --row-accent: var(--row-cloud); }
+.news-column h4 {
+  margin: 0 0 0.65rem; font-size: 0.82rem; font-weight: 600; color: var(--text);
+  border: none; background: none; padding: 0;
+}
+.news-column ul { list-style: none; padding: 0; margin: 0; }
+.news-column li { padding: 0.5rem 0; border-bottom: 1px solid var(--border); }
+.news-column li:last-child { border-bottom: none; }
+.news-column a { color: var(--text); text-decoration: none; font-size: 0.87rem; line-height: 1.45; }
+.news-column a:hover { color: var(--link); }
+.news-column .item-date {
+  display: block; font-family: 'IBM Plex Mono', monospace; color: var(--text-faint);
+  font-size: 0.7rem; margin-top: 0.25rem;
+}
+
+/* ---- Vulnerability tracking section ---- */
+h2 { margin: 3rem 0 0.5rem; font-size: 1.15rem; font-weight: 700; color: var(--text); border: none; padding: 0; scroll-margin-top: 4.5rem; }
+h2 + p { color: var(--text-dim); margin-top: 0; margin-bottom: 1.25rem; max-width: 68ch; }
+h3 {
+  margin: 2rem 0 0.9rem; font-size: 0.75rem; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.1em; color: var(--text-faint); border: none;
+}
+p { margin: 0.6rem 0; }
+a { color: var(--link); }
+ul { padding-left: 1.3rem; margin: 0.6rem 0; }
+li { margin: 0.3rem 0; }
+
+/* Incident (vuln) cards */
+.vuln-card {
+  background: var(--surface); border: 1px solid var(--border); border-left: 4px solid var(--sev-unscored);
+  border-radius: 6px; padding: 1rem 1.15rem; margin-bottom: 1rem;
+}
+.vuln-card.sev-critical { border-left-color: var(--sev-critical); }
+.vuln-card.sev-high { border-left-color: var(--sev-high); }
+.vuln-card.sev-medium { border-left-color: var(--sev-medium); }
+.vuln-card.sev-low { border-left-color: var(--sev-low); }
+.vuln-card-head { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; margin-bottom: 0.7rem; }
+.vuln-system { font-weight: 600; font-size: 0.95rem; color: var(--text); }
+.badge {
+  font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; padding: 0.18rem 0.55rem;
+  border-radius: 4px; white-space: nowrap; font-weight: 500;
+}
+.badge-cve { background: var(--surface-2); color: var(--text-dim); border: 1px solid var(--border); }
+.badge-cvss { color: var(--bg); font-weight: 600; }
+.badge-cvss.sev-critical { background: var(--sev-critical); }
+.badge-cvss.sev-high { background: var(--sev-high); }
+.badge-cvss.sev-medium { background: var(--sev-medium); }
+.badge-cvss.sev-low { background: var(--sev-low); color: var(--text); }
+.badge-cvss.sev-unscored { background: var(--surface-2); color: var(--text-dim); border: 1px solid var(--border); }
+.badge-kev {
+  background: rgba(255, 93, 93, 0.15); color: var(--sev-critical); border: 1px solid rgba(255, 93, 93, 0.4);
+  text-transform: uppercase; letter-spacing: 0.04em; font-size: 0.68rem;
+}
+.vuln-card-body p { color: var(--text-dim); font-size: 0.9rem; }
+.vuln-card-body strong { color: var(--text); }
+.vuln-card-body ul { font-size: 0.9rem; color: var(--text-dim); }
+.vuln-card-body a { word-break: break-word; }
+h4.mention-group {
+  margin: 1.5rem 0 0.5rem; font-size: 0.82rem; font-weight: 600; color: var(--text);
+  border: none; background: none; padding: 0;
+}
+
+/* ---- Archive ---- */
+.archive-list { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.archive-list li { margin: 0; }
+.archive-list a {
+  display: inline-block; font-family: 'IBM Plex Mono', monospace; font-size: 0.78rem;
+  color: var(--text-dim); text-decoration: none; padding: 0.4rem 0.8rem;
+  border: 1px solid var(--border); border-radius: 6px; transition: border-color 0.15s, color 0.15s;
+}
+.archive-list a:hover { border-color: var(--link); color: var(--text); }
+
+@media (max-width: 640px) {
+  body { font-size: 14px; }
+  h1 { font-size: 1.3rem; }
+  .quick-nav { overflow-x: auto; flex-wrap: nowrap; }
+}
+</style>
+</head>
+<body>
+<a class="back-link" href="../index.html">&larr; All reports</a>
+<div class="page-header">
+<p class="eyebrow">Daily Digest</p>
+<h1>Security Digest — 2026-10-12</h1>
+</div>
+<nav class="quick-nav">
+<a href="#security-news">Security</a>
+<a href="#database-news">Database</a>
+<a href="#cloud-news">Cloud</a>
+<a href="#vuln-tracking">Vulnerabilities</a>
+<a href="#archive">Archive</a>
+</nav>
+<div class="row-header row-security" id="security-news"><span class="dot"></span><h2>Security News</h2><span class="count">43 items</span></div>
+<div class="news-grid-wrapper"><div class="news-grid"><div class="news-column"><h4>BleepingComputer</h4><ul><li><a href="https://www.bleepingcomputer.com/news/security/norway-fines-microsoft-ad-firm-96-million-over-grindr-data-sharing/">Norway fines Microsoft ad firm $9.6 million over Grindr data sharing</a><span class="item-date">Mon, 12 Oct 2026 16:13:52 -0400</span></li><li><a href="https://www.bleepingcomputer.com/news/security/yandex-confirms-service-outage-as-users-lose-access-to-cloud-files/">Yandex confirms service outage as users lose access to cloud files</a><span class="item-date">Mon, 12 Oct 2026 15:23:01 -0400</span></li><li><a href="https://www.bleepingcomputer.com/news/security/anthropic-takes-risky-ai-tests-offline-after-models-breach-govt-sites/">Anthropic takes risky AI tests offline after models breach govt sites</a><span class="item-date">Mon, 12 Oct 2026 14:51:59 -0400</span></li><li><a href="https://www.bleepingcomputer.com/news/security/ledger-confirms-hardware-wallet-spy-implant-behind-crypto-thefts/">Ledger confirms spy chip implant behind wallet crypto thefts</a><span class="item-date">Mon, 12 Oct 2026 12:27:23 -0400</span></li><li><a href="https://www.bleepingcomputer.com/news/security/cyberattack-shuts-down-refrigerators-at-french-supermarkets/">Cyberattack shuts down refrigerators at French supermarkets</a><span class="item-date">Mon, 12 Oct 2026 11:23:34 -0400</span></li><li><a href="https://www.bleepingcomputer.com/news/security/inside-avisloader-a-windows-malware-loader-built-to-resist-disruption/">Inside AvisLoader: A Windows Malware Loader Built to Resist Disruption</a><span class="item-date">Mon, 12 Oct 2026 10:00:10 -0400</span></li><li><a href="https://www.bleepingcomputer.com/news/security/retail-giant-ahold-delhaize-takes-systems-offline-after-cyberattack/">Retail giant Ahold Delhaize takes systems offline after cyberattack</a><span class="item-date">Mon, 12 Oct 2026 09:51:07 -0400</span></li><li><a href="https://www.bleepingcomputer.com/news/security/gitlab-warns-of-max-severity-rce-flaw-in-regex-compiler-engine/">GitLab warns of max severity code execution vulnerability</a><span class="item-date">Mon, 12 Oct 2026 09:09:09 -0400</span></li><li><a href="https://www.bleepingcomputer.com/news/microsoft/microsoft-windows-11-23h2-reaches-end-of-support-in-30-days/">Microsoft: Windows 11 23H2 reaches end of support in 30 days</a><span class="item-date">Mon, 12 Oct 2026 07:58:33 -0400</span></li><li><a href="https://www.bleepingcomputer.com/news/security/nippon-columbia-malware-incident-exposes-86-million-karaoke-fan-records/">Nippon Columbia malware incident exposes 8.6 million karaoke fan records</a><span class="item-date">Sun, 11 Oct 2026 10:23:46 -0400</span></li></ul></div><div class="news-column"><h4>Dark Reading</h4><ul><li><a href="https://www.darkreading.com/insider-threats/prominent-ransomware-negotiator-extortion-charges">Prominent Ransomware Negotiator Faces Extortion Charges</a><span class="item-date">Mon, 12 Oct 2026 20:00:53 GMT</span></li><li><a href="https://www.darkreading.com/cybersecurity-operations/cyber-resilience-starts-with-iam">No Identity, No Recovery: Cyber Resilience Starts With IAM</a><span class="item-date">Mon, 12 Oct 2026 18:27:25 GMT</span></li><li><a href="https://www.darkreading.com/cyber-risk/passing-baton-dark-reading-new-editor-in-chief">Passing the Baton: Dark Reading Names New Editor-in-Chief</a><span class="item-date">Mon, 12 Oct 2026 12:30:58 GMT</span></li></ul></div><div class="news-column"><h4>SecurityWeek</h4><ul><li><a href="https://www.securityweek.com/ionq-to-acquire-zero-trust-firm-elisity-for-up-to-1-3-billion/">IonQ to Acquire Zero Trust Firm Elisity for Up to $1.3 Billion</a><span class="item-date">Mon, 12 Oct 2026 14:25:00 +0000</span></li><li><a href="https://www.securityweek.com/bricksforge-wordpress-plugin-vulnerability-exploited-in-the-wild/">Bricksforge WordPress Plugin Vulnerability Exploited in the Wild</a><span class="item-date">Mon, 12 Oct 2026 13:14:37 +0000</span></li><li><a href="https://www.securityweek.com/canonical-websites-disrupted-in-second-ddos-attack-this-year/">Canonical Websites Disrupted in Second DDoS Attack This Year</a><span class="item-date">Mon, 12 Oct 2026 11:58:39 +0000</span></li><li><a href="https://www.securityweek.com/mastermind-of-15000-mule-cybercrime-laundering-network-pleads-guilty-in-us/">Mastermind of 15,000-Mule Cybercrime Laundering Network Pleads Guilty in US</a><span class="item-date">Mon, 12 Oct 2026 11:24:50 +0000</span></li><li><a href="https://www.securityweek.com/irhythm-data-breach-impacts-over-360000-people/">iRhythm Data Breach Impacts at Least 360,000 People</a><span class="item-date">Mon, 12 Oct 2026 11:05:43 +0000</span></li><li><a href="https://www.securityweek.com/ransomware-response-expert-arrested-in-shinyhunters-fbi-hack-probe/">Ransomware Response Expert Arrested in ShinyHunters FBI Hack Probe</a><span class="item-date">Mon, 12 Oct 2026 10:32:05 +0000</span></li><li><a href="https://www.securityweek.com/critical-sonicwall-vulnerability-exploited-days-after-disclosure/">Critical SonicWall Vulnerability Exploited Days After Disclosure</a><span class="item-date">Mon, 12 Oct 2026 08:36:01 +0000</span></li><li><a href="https://www.securityweek.com/lets-encrypt-cuts-default-certificate-validity-to-64-days-ahead-of-45-day-switch/">Let’s Encrypt Cuts Default Certificate Validity to 64 Days Ahead of 45-Day Switch</a><span class="item-date">Mon, 12 Oct 2026 07:53:28 +0000</span></li></ul></div><div class="news-column"><h4>The Hacker News</h4><ul><li><a href="https://thehackernews.com/2026/10/weekly-recap-helpdesk-0-days-rogue.html">⚡ Weekly Recap: Helpdesk 0-Days, Rogue Certs, ShinyHunters Arrest, AI-Fooling Malware and More</a><span class="item-date">Mon, 12 Oct 2026 20:46:26 +0530</span></li><li><a href="https://thehackernews.com/2026/10/bring-your-own-agent-your-employees.html">Bring Your Own Agent: Your Employees&#x27; Assistants Are Already Logged In</a><span class="item-date">Mon, 12 Oct 2026 17:25:00 +0530</span></li><li><a href="https://thehackernews.com/2026/10/ledger-finds-unauthorized-hardware.html">Ledger Finds Unauthorized Hardware Implant in CryptoBilis-Sold Wallet Amid Fund Theft Reports</a><span class="item-date">Mon, 12 Oct 2026 16:51:48 +0530</span></li><li><a href="https://thehackernews.com/2026/10/critical-sonicwall-sma-1000-flaw.html">Critical SonicWall SMA 1000 Flaw Targeted in 135 Exploitation Attempts After Patch</a><span class="item-date">Mon, 12 Oct 2026 16:06:56 +0530</span></li><li><a href="https://thehackernews.com/2026/10/attackers-exploit-cvss-100-bricksforge.html">Attackers Exploit CVSS 10.0 Bricksforge WordPress Flaw Enabling Unauthenticated RCE</a><span class="item-date">Mon, 12 Oct 2026 14:32:14 +0530</span></li><li><a href="https://thehackernews.com/2026/10/cyberxero-uses-claude-code-in-campaign.html">CyberXero Uses Claude Code in Campaign That Stole Over 628,000 Ukrainian Records</a><span class="item-date">Mon, 12 Oct 2026 12:56:12 +0530</span></li><li><a href="https://thehackernews.com/2026/10/p7-darksword-ios-exploit-kit-adds.html">P7 DarkSword iOS Exploit Kit Adds Crypto Wallet Data Theft and Remote Commands</a><span class="item-date">Sun, 11 Oct 2026 09:54:34 +0530</span></li></ul></div><div class="news-column"><h4>The Register</h4><ul><li><a href="https://www.theregister.com/saas/2026/10/12/microsoft-blames-a-configuration-change-for-exchange-admin-center-tumble/5302698">Microsoft blames a configuration change for Exchange Admin Center tumble</a><span class="item-date">Mon, 12 Oct 2026 18:55:53 +0100</span></li><li><a href="https://www.theregister.com/ai-and-ml/2026/10/12/chatbot-refuseniks-edge-out-users-in-the-us-and-theyre-not-for-turning/5302690">Chatbot refuseniks edge out users in the US, and they’re not for turning</a><span class="item-date">Mon, 12 Oct 2026 18:13:33 +0100</span></li><li><a href="https://www.theregister.com/columnists/2026/10/12/no-shame-in-the-domain-name-game-dns-is-doomed-literally/5302670">No shame in the Domain Name game: DNS is doomed, literally</a><span class="item-date">Mon, 12 Oct 2026 17:27:04 +0100</span></li><li><a href="https://www.theregister.com/systems/2026/10/12/amd-unveils-helion-racks-for-ai-agents-at-ocp-summit/5302652">AMD unveils Helion racks for AI agents at OCP summit</a><span class="item-date">Mon, 12 Oct 2026 16:51:36 +0100</span></li><li><a href="https://www.theregister.com/ai-and-ml/2026/10/12/sponsored-which-ai-infrastructure-option-actually-holds-a-boundary/5300433">Which AI infrastructure option actually holds a boundary?</a><span class="item-date">Mon, 12 Oct 2026 16:00:00 +0100</span></li><li><a href="https://www.theregister.com/os-platforms/2026/10/12/windows-11s-easiest-account-bypass-gets-the-microsoft-boot/5302643">Windows 11&#x27;s easiest account bypass gets the Microsoft boot</a><span class="item-date">Mon, 12 Oct 2026 15:56:11 +0100</span></li><li><a href="https://www.theregister.com/security/2026/10/12/ukrainian-drone-strikes-on-yandex-datacenters-knock-cloud-and-payments-offline/5302577">Ukrainian drone strikes on Yandex datacenters knock cloud and payments offline</a><span class="item-date">Mon, 12 Oct 2026 14:45:00 +0100</span></li><li><a href="https://www.theregister.com/saas/2026/10/12/ucla-settles-oracle-erp-dispute-with-31m-in-credits-and-131m-wiped-off-the-bill/5302520">UCLA settles Oracle ERP dispute with $3.1M in credits and $1.31M wiped off the bill</a><span class="item-date">Mon, 12 Oct 2026 13:58:00 +0100</span></li><li><a href="https://www.theregister.com/applications/2026/10/12/microsoft-giveth-and-microsoft-taketh-away-copilot-edition/5302542">Microsoft giveth and Microsoft taketh away: Copilot edition</a><span class="item-date">Mon, 12 Oct 2026 13:41:00 +0100</span></li><li><a href="https://www.theregister.com/personal-tech/2026/10/12/london-cabbies-want-sadiq-khan-to-slam-the-brakes-on-robotaxis/5302595">London cabbies want Sadiq Khan to slam the brakes on robotaxis</a><span class="item-date">Mon, 12 Oct 2026 13:13:00 +0100</span></li><li><a href="https://www.theregister.com/offbeat/2026/10/12/pigeon-powered-internet-packet-goes-under-the-hammer-at-christies/5302526">Pigeon-powered internet packet goes under the hammer at Christie&#x27;s</a><span class="item-date">Mon, 12 Oct 2026 12:30:00 +0100</span></li><li><a href="https://www.theregister.com/security/2026/10/12/imagine-theres-no-shiny-hunters-ai-could-make-human-hacking-crews-obsolete/5302430">Imagine there&#x27;s no Shiny Hunters – AI could make human hacking crews obsolete</a><span class="item-date">Mon, 12 Oct 2026 11:27:00 +0100</span></li><li><a href="https://www.theregister.com/devops/2026/10/12/when-you-just-need-to-build-a-tiny-desktop-app-tinyjs/5302502">When you just need to build a tiny desktop app: TinyJS</a><span class="item-date">Mon, 12 Oct 2026 10:43:00 +0100</span></li><li><a href="https://www.theregister.com/columnists/2026/10/12/celebrating-the-brilliant-pragmatism-of-tcp/ip-the-wiring-of-the-world/5302202">Celebrating the brilliant pragmatism of TCP/IP, the wiring of the world</a><span class="item-date">Mon, 12 Oct 2026 10:02:00 +0100</span></li><li><a href="https://www.theregister.com/os-platforms/2026/10/12/raspberry-pi-desktop-catches-up-with-debian-13-after-4-year-wait/5301693">Raspberry Pi Desktop catches up with Debian 13 after 4-year wait</a><span class="item-date">Mon, 12 Oct 2026 09:15:00 +0100</span></li></ul></div></div></div>
+<div class="row-header row-database" id="database-news"><span class="dot"></span><h2>Database News</h2><span class="count">10 items</span></div>
+<div class="news-grid-wrapper"><div class="news-grid"><div class="news-column"><h4>DBTA (Database Trends &amp; Applications)</h4><ul><li><a href="https://www.dbta.com/Editorial/News-Flashes/Profisee-Anywhere-Enables-Organizations-to-Manage-Data-Directly-in-Microsoft-Fabric-OneLake-176963.aspx">Profisee Anywhere Enables Organizations to Manage Data Directly in Microsoft Fabric OneLake</a><span class="item-date">Mon, 12 Oct 2026 10:00:00 EST</span></li><li><a href="https://www.dbta.com/Editorial/News-Flashes/GitLab-Builds-the-Foundation-for-the-Governed-Software-Factory-with-Enhanced-Capabilities-176964.aspx">GitLab Builds the Foundation for the Governed Software Factory with Enhanced Capabilities</a><span class="item-date">Mon, 12 Oct 2026 10:00:00 EST</span></li></ul></div><div class="news-column"><h4>Planet PostgreSQL</h4><ul><li><a href="https://postgr.es/p/9xO">Christophe Pettus: The Patch Is Coming From Inside the House</a><span class="item-date">Mon, 12 Oct 2026 16:00:00 +0000</span></li><li><a href="https://postgr.es/p/9xN">Devrim GÜNDÜZ: PostgreSQL RPM repository meets AI with pg_statviz</a><span class="item-date">Mon, 12 Oct 2026 06:40:00 +0000</span></li><li><a href="https://postgr.es/p/9xM">Devrim GÜNDÜZ: PostgreSQL RPM repository meets AI with pg_statviz</a><span class="item-date">Mon, 12 Oct 2026 06:40:00 +0000</span></li><li><a href="https://postgr.es/p/9xL">Cornelia Biacsics: Contributions for week 40</a><span class="item-date">Mon, 12 Oct 2026 06:27:57 +0000</span></li><li><a href="https://postgr.es/p/9xJ">Christophe Pettus: All Your GUCs in a Row: plan_cache_mode</a><span class="item-date">Mon, 12 Oct 2026 01:00:00 +0000</span></li><li><a href="https://postgr.es/p/9xC">David Wheeler: PGConf.EU Community Day: A Postgres Ecosystem Foundation?</a><span class="item-date">Sun, 11 Oct 2026 21:21:15 +0000</span></li><li><a href="https://postgr.es/p/9xB">Radim Marek: How TABLESAMPLE picks rows</a><span class="item-date">Sun, 11 Oct 2026 18:45:40 +0000</span></li><li><a href="https://postgr.es/p/9xK">Christophe Pettus: All Your GUCs in a Row: password_encryption</a><span class="item-date">Sun, 11 Oct 2026 01:00:00 +0000</span></li></ul></div></div></div>
+<div class="row-header row-cloud" id="cloud-news"><span class="dot"></span><h2>Cloud News</h2><span class="count">10 items</span></div>
+<div class="news-grid-wrapper"><div class="news-grid"><div class="news-column"><h4>Google Cloud Blog</h4><ul><li><a href="https://cloud.google.com/blog/products/data-analytics/bringing-you-the-data-agent-kit/">Agentic data science with the Data Agent Kit</a><span class="item-date">Mon, 12 Oct 2026 16:00:00 +0000</span></li><li><a href="https://cloud.google.com/blog/products/devops-sre/sre-book-second-edition/">10 Years of the SRE book: Announcing the second edition of &quot;Site Reliability Engineering”</a><span class="item-date">Mon, 12 Oct 2026 16:00:00 +0000</span></li><li><a href="https://cloud.google.com/blog/products/business-intelligence/introducing-looker-data-apps/">Trusted Data Apps for the Agentic Data Cloud, powered by Looker</a><span class="item-date">Mon, 12 Oct 2026 16:00:00 +0000</span></li><li><a href="https://cloud.google.com/blog/products/data-analytics/bigquery-timesfm-3-0-with-multivariate-time-series-forecasting/">Introducing TimesFM 3.0 with multivariate time-series forecasting in BigQuery</a><span class="item-date">Mon, 12 Oct 2026 16:00:00 +0000</span></li></ul></div><div class="news-column"><h4>The New Stack</h4><ul><li><a href="https://thenewstack.io/gpus-on-kubernetes/">GPUs on Kubernetes are bring-your-own-everything, starting with the bill</a><span class="item-date">Mon, 12 Oct 2026 20:48:01 +0000</span></li><li><a href="https://thenewstack.io/google-devsite-rce-bounty/">Google paid $90,000 for this bug, then waited two months to fix it</a><span class="item-date">Mon, 12 Oct 2026 20:47:17 +0000</span></li><li><a href="https://thenewstack.io/coding-agents-platform-teams/">Coding agents made building easy. Platform teams that build from scratch are 3.5x more likely to lack a strategy.</a><span class="item-date">Mon, 12 Oct 2026 19:28:27 +0000</span></li><li><a href="https://thenewstack.io/karpathy-levie-ai-capability-gap/">Andrej Karpathy says only 5,000 people have seen what AI can really do</a><span class="item-date">Mon, 12 Oct 2026 15:54:20 +0000</span></li><li><a href="https://thenewstack.io/claude-code-mcp-records/">Claude Code found my app’s shared contract in two MCP calls. Then the records ran out.</a><span class="item-date">Sun, 11 Oct 2026 14:00:00 +0000</span></li><li><a href="https://thenewstack.io/anthropic-oss-scanner-vulnerabilities/">Claude found 29,000 possible bugs in open source. Only 516 have been fixed.</a><span class="item-date">Sun, 11 Oct 2026 13:00:00 +0000</span></li></ul></div></div></div>
+<h2 id="vuln-tracking" style="scroll-margin-top:4.5rem;">Scoped Vulnerability Tracking</h2>
+<h2>Database</h2>
+<p>The most urgent issue is <strong>CVE‑2025‑34227</strong>, a high‑severity (CVSS 8.8) authenticated command injection in Nagios XI wizards that affect MySQL and MongoDB monitoring. Attackers with valid Nagios credentials can inject shell commands into wizard arguments, leading to arbitrary code execution as the `nagios` user on the underlying host. This vulnerability is actively exploitable and should be patched immediately.</p>
+<h3>Formal Vulnerabilities</h3>
+<div class="vuln-card sev-high"><div class="vuln-card-head"><span class="vuln-system">MySQL</span><span class="badge badge-cve">CVE-2025-34227</span><span class="badge badge-cvss sev-high">CVSS 8.8 · HIGH</span></div><div class="vuln-card-body">
+<p><strong>Summary:</strong> An authenticated command injection exists in Nagios XI versions prior to 2026R1 within the MySQL Query wizard (and other DB wizards). Attackers with valid Nagios credentials can inject shell characters into wizard arguments, leading to arbitrary code execution on the host as the `nagios` user.</p>
+<p><strong>Affected Features / Interoperability:</strong> The MySQL Query wizard, MySQL Server wizard, and associated Nagios XI monitoring components are impacted. This can affect downstream database monitoring, alerting, and potentially compromise the underlying database servers that are monitored.</p>
+<p><strong>Source:</strong></p>
+<ul>
+<li><a href="https://theyhack.me/CVE-2025-34227-Nagios-XI-Wizard-Command-Injection/">https://theyhack.me/CVE-2025-34227-Nagios-XI-Wizard-Command-Injection/</a></li>
+<li><a href="https://www.nagios.com/changelog/">https://www.nagios.com/changelog/</a></li>
+<li><a href="https://www.nagios.com/products/security/">https://www.nagios.com/products/security/</a></li>
+<li><a href="https://www.vulncheck.com/advisories/nagios-xi-config-wizard-auth-command-injection">https://www.vulncheck.com/advisories/nagios-xi-config-wizard-auth-command-injection</a></li>
+</ul>
+<p><strong>Actions:</strong></p>
+<ul>
+<li><strong>Fix:</strong> Upgrade Nagios XI to version 2026R1 or later.</li>
+<li><strong>Workaround:</strong> Restrict access to the Nagios XI web UI to trusted networks and enforce multi‑factor authentication; consider disabling the vulnerable wizards if not needed.</li>
+<li><strong>Tradeoff:</strong> Limiting access may reduce operational convenience; disabling wizards reduces monitoring granularity.</li>
+</ul>
+</div></div>
+<div class="vuln-card sev-high"><div class="vuln-card-head"><span class="vuln-system">MySQL</span><span class="badge badge-cve">CVE-2026-108805</span><span class="badge badge-cvss sev-high">CVSS 7.3 · HIGH</span></div><div class="vuln-card-body">
+<p><strong>Summary:</strong> A SQL injection vulnerability in the EmployeeRecruitmentSystem’s login processing component (source/loginprocessing.php) allows remote attackers to manipulate the email/password arguments passed to `mysql_query`, potentially leading to authentication bypass or data exfiltration.</p>
+<p><strong>Affected Features / Interoperability:</strong> The login handler and underlying MySQL database queries are affected. This can break authentication and allow unauthorized access to recruitment data.</p>
+<p><strong>Source:</strong></p>
+<ul>
+<li><a href="https://github.com/xiaotian2023/CVE/issues/1">https://github.com/xiaotian2023/CVE/issues/1</a></li>
+<li><a href="https://vuldb.com/cve/CVE-2026-108805">https://vuldb.com/cve/CVE-2026-108805</a></li>
+<li><a href="https://vuldb.com/submit/963376">https://vuldb.com/submit/963376</a></li>
+<li><a href="https://vuldb.com/vuln/416582">https://vuldb.com/vuln/416582</a></li>
+<li><a href="https://vuldb.com/vuln/416582/cti">https://vuldb.com/vuln/416582/cti</a></li>
+</ul>
+<p><strong>Actions:</strong></p>
+<ul>
+<li><strong>Fix:</strong> No supported version information is available; obtain a supported release from the vendor.</li>
+<li><strong>Workaround:</strong> Implement input validation and use prepared statements or ORM for database access; restrict remote access to the application.</li>
+<li><strong>Tradeoff:</strong> Legacy system may require significant refactoring; restricting remote access can impact legitimate remote users.</li>
+</ul>
+</div></div>
+<div class="vuln-card sev-high"><div class="vuln-card-head"><span class="vuln-system">MySQL</span><span class="badge badge-cve">CVE-2026-108806</span><span class="badge badge-cvss sev-high">CVSS 7.3 · HIGH</span></div><div class="vuln-card-body">
+<p><strong>Summary:</strong> SQL injection in the EmployeeRecruitmentSystem’s forgot‑password handler (source/authprocessing.php) lets remote attackers modify the `fpemail` argument used in `mysql_query`, potentially enabling account takeover or password reset abuse.</p>
+<p><strong>Affected Features / Interoperability:</strong> The forgot‑password workflow and associated MySQL queries are impacted, affecting user account recovery and data confidentiality.</p>
+<p><strong>Source:</strong></p>
+<ul>
+<li><a href="https://github.com/xiaotian2023/CVE/issues/2">https://github.com/xiaotian2023/CVE/issues/2</a></li>
+<li><a href="https://vuldb.com/cve/CVE-2026-108806">https://vuldb.com/cve/CVE-2026-108806</a></li>
+<li><a href="https://vuldb.com/submit/963380">https://vuldb.com/submit/963380</a></li>
+<li><a href="https://vuldb.com/vuln/416583">https://vuldb.com/vuln/416583</a></li>
+<li><a href="https://vuldb.com/vuln/416583/cti">https://vuldb.com/vuln/416583/cti</a></li>
+</ul>
+<p><strong>Actions:</strong></p>
+<ul>
+<li><strong>Fix:</strong> No supported version information is available; upgrade to a maintained version if possible.</li>
+<li><strong>Workaround:</strong> Sanitize user input, enforce parameterized queries, and limit network exposure of the application.</li>
+<li><strong>Tradeoff:</strong> Code changes may affect existing functionality; network restrictions could impact remote users.</li>
+</ul>
+</div></div>
+<div class="vuln-card sev-high"><div class="vuln-card-head"><span class="vuln-system">MySQL</span><span class="badge badge-cve">CVE-2026-108807</span><span class="badge badge-cvss sev-high">CVSS 7.3 · HIGH</span></div><div class="vuln-card-body">
+<p><strong>Summary:</strong> SQL injection in the EmployeeRecruitmentSystem’s registration handler (source/adminregister.php) allows remote attackers to manipulate arguments passed to `mysql_query`, potentially leading to unauthorized account creation or data manipulation.</p>
+<p><strong>Affected Features / Interoperability:</strong> The registration process and underlying MySQL database interactions are affected, compromising user provisioning and system integrity.</p>
+<p><strong>Source:</strong></p>
+<ul>
+<li><a href="https://github.com/xiaotian2023/CVE/issues/3">https://github.com/xiaotian2023/CVE/issues/3</a></li>
+<li><a href="https://vuldb.com/cve/CVE-2026-108807">https://vuldb.com/cve/CVE-2026-108807</a></li>
+<li><a href="https://vuldb.com/submit/963381">https://vuldb.com/submit/963381</a></li>
+<li><a href="https://vuldb.com/vuln/416584">https://vuldb.com/vuln/416584</a></li>
+<li><a href="https://vuldb.com/vuln/416584/cti">https://vuldb.com/vuln/416584/cti</a></li>
+</ul>
+<p><strong>Actions:</strong></p>
+<ul>
+<li><strong>Fix:</strong> No supported version information is available; migrate to a supported platform.</li>
+<li><strong>Workaround:</strong> Apply input validation, use prepared statements, and restrict remote access.</li>
+<li><strong>Tradeoff:</strong> Code changes may affect existing registration logic; network restrictions could hinder legitimate users.</li>
+</ul>
+</div></div>
+<div class="vuln-card sev-high"><div class="vuln-card-head"><span class="vuln-system">MySQL</span><span class="badge badge-cve">CVE-2026-108921</span><span class="badge badge-cvss sev-high">CVSS 7.3 · HIGH</span></div><div class="vuln-card-body">
+<p><strong>Summary:</strong> A missing authentication flaw in the Learning‑Management‑System’s `remove_announcements.php` endpoint allows remote attackers to manipulate the ID parameter, bypassing required authentication checks.</p>
+<p><strong>Affected Features / Interoperability:</strong> The announcement removal functionality and associated database operations are impacted, potentially enabling unauthorized content deletion.</p>
+<p><strong>Source:</strong></p>
+<ul>
+<li><a href="https://github.com/KusalkaSilva/Learning-Management-System/">https://github.com/KusalkaSilva/Learning-Management-System/</a></li>
+<li><a href="https://github.com/KusalkaSilva/Learning-Management-System/issues/5">https://github.com/KusalkaSilva/Learning-Management-System/issues/5</a></li>
+<li><a href="https://vuldb.com/cve/CVE-2026-108921">https://vuldb.com/cve/CVE-2026-108921</a></li>
+<li><a href="https://vuldb.com/submit/994370">https://vuldb.com/submit/994370</a></li>
+<li><a href="https://vuldb.com/vuln/416734">https://vuldb.com/vuln/416734</a></li>
+</ul>
+<p><strong>Actions:</strong></p>
+<ul>
+<li><strong>Fix:</strong> No specific version information is available; apply the latest rolling release updates from the project.</li>
+<li><strong>Workaround:</strong> Enforce authentication checks on state‑changing endpoints and validate user permissions for the ID parameter.</li>
+<li><strong>Tradeoff:</strong> Additional validation may add latency; stricter auth could affect integration with external systems.</li>
+</ul>
+</div></div>
+<div class="vuln-card sev-high"><div class="vuln-card-head"><span class="vuln-system">MySQL</span><span class="badge badge-cve">CVE-2025-59681</span><span class="badge badge-cvss sev-high">CVSS 7.1 · HIGH</span></div><div class="vuln-card-body">
+<p><strong>Summary:</strong> Django’s QuerySet methods (annotate, alias, aggregate, extra) are vulnerable to SQL injection via column aliases when using user‑controlled dictionary keys on MySQL/MariaDB. Attackers can craft dictionary inputs to execute arbitrary SQL.</p>
+<p><strong>Affected Features / Interoperability:</strong> Django ORM features for dynamic query building are affected, potentially compromising data integrity across any Django‑based application using MySQL/MariaDB.</p>
+<p><strong>Source:</strong></p>
+<ul>
+<li><a href="https://docs.djangoproject.com/en/dev/releases/security/">https://docs.djangoproject.com/en/dev/releases/security/</a></li>
+<li><a href="https://groups.google.com/g/django-announce">https://groups.google.com/g/django-announce</a></li>
+<li><a href="https://www.djangoproject.com/weblog/2025/oct/01/security-releases/">https://www.djangoproject.com/weblog/2025/oct/01/security-releases/</a></li>
+<li><a href="http://www.openwall.com/lists/oss-security/2025/10/01/3">http://www.openwall.com/lists/oss-security/2025/10/01/3</a></li>
+</ul>
+<p><strong>Actions:</strong></p>
+<ul>
+<li><strong>Fix:</strong> Upgrade Django to version 4.2.25, 5.1.13, or 5.2.7 (or later) where the issue is patched.</li>
+<li><strong>Workaround:</strong> Avoid passing user‑controlled keys as column aliases; use static alias names or sanitize dictionary inputs.</li>
+<li><strong>Tradeoff:</strong> Restricting dynamic alias usage may limit flexibility in query construction.</li>
+</ul>
+</div></div>
+<div class="vuln-card sev-medium"><div class="vuln-card-head"><span class="vuln-system">MySQL</span><span class="badge badge-cve">CVE-2026-56704</span><span class="badge badge-cvss sev-medium">CVSS 6.1 · MEDIUM</span></div><div class="vuln-card-body">
+<p><strong>Summary:</strong> Adminer versions prior to 5.4.3 embed unsanitized MySQL server version strings into script tags with CSP nonces, allowing attackers who control a rogue MySQL server to break out of JavaScript context and execute arbitrary code, bypassing Content Security Policy.</p>
+<p><strong>Affected Features / Interoperability:</strong> Adminer’s database management interface and its interaction with MySQL server version reporting are impacted, potentially leading to client‑side code execution.</p>
+<p><strong>Source:</strong></p>
+<ul>
+<li><a href="https://github.com/vrana/adminer/security/advisories/GHSA-h6jr-7pr6-grgj">https://github.com/vrana/adminer/security/advisories/GHSA-h6jr-7pr6-grgj</a></li>
+<li><a href="https://www.vulncheck.com/advisories/adminer-before-cross-site-scripting-via-mysql-version-string">https://www.vulncheck.com/advisories/adminer-before-cross-site-scripting-via-mysql-version-string</a></li>
+</ul>
+<p><strong>Actions:</strong></p>
+<ul>
+<li><strong>Fix:</strong> Upgrade Adminer to version 5.4.3 or later.</li>
+<li><strong>Workaround:</strong> Validate and sanitize version strings before embedding them; consider disabling CSP nonces for dynamic content.</li>
+<li><strong>Tradeoff:</strong> Strict validation may reduce compatibility with older MySQL version strings; disabling CSP weakens overall security posture.</li>
+</ul>
+</div></div>
+<div class="vuln-card sev-high"><div class="vuln-card-head"><span class="vuln-system">MongoDB</span><span class="badge badge-cve">CVE-2025-34227</span><span class="badge badge-cvss sev-high">CVSS 8.8 · HIGH</span></div><div class="vuln-card-body">
+<p><strong>Summary:</strong> An authenticated command injection in Nagios XI versions before 2026R1 affects the MongoDB Database wizard, allowing attackers with Nagios credentials to inject shell commands and execute them as the `nagios` user on the host.</p>
+<p><strong>Affected Features / Interoperability:</strong> The MongoDB wizard and associated monitoring components are impacted, potentially compromising the MongoDB servers being monitored and the Nagios host.</p>
+<p><strong>Source:</strong></p>
+<ul>
+<li><a href="https://theyhack.me/CVE-2025-34227-Nagios-XI-Wizard-Command-Injection/">https://theyhack.me/CVE-2025-34227-Nagios-XI-Wizard-Command-Injection/</a></li>
+<li><a href="https://www.nagios.com/changelog/">https://www.nagios.com/changelog/</a></li>
+<li><a href="https://www.nagios.com/products/security/">https://www.nagios.com/products/security/</a></li>
+<li><a href="https://www.vulncheck.com/advisories/nagios-xi-config-wizard-auth-command-injection">https://www.vulncheck.com/advisories/nagios-xi-config-wizard-auth-command-injection</a></li>
+</ul>
+<p><strong>Actions:</strong></p>
+<ul>
+<li><strong>Fix:</strong> Upgrade Nagios XI to version 2026R1 or later.</li>
+<li><strong>Workaround:</strong> Restrict UI access to trusted networks, enforce MFA, and consider disabling the vulnerable wizard if not required.</li>
+<li><strong>Tradeoff:</strong> Network restrictions may hinder remote operations; disabling the wizard reduces monitoring coverage.</li>
+</ul>
+</div></div>
+<h2>Cloud Security</h2>
+<p>The most urgent item is <strong>CVE-2025-59823 (CVSS 9.9)</strong> in Project Gardener&#x27;s Terraform/Terraformer integration: a code-injection flaw in multiple cloud-provider extensions (AWS, Azure, GCP, OpenStack) that lets a project admin escalate to full control of the seed cluster managing their shoot clusters. No CISA KEV entries appear in this dataset, so this highest-CVSS vulnerability — affecting the control plane of managed Kubernetes clusters — takes top priority. Also critical: Azure API Management cross-tenant signup bypass (CVE-2025-66390, CVSS 9.8), Docker/Termix authentication bypass (CVE-2025-59951, CVSS 9.1), and three Argo CD DoS flaws (CVE-2025-59531/59537/59538, CVSS 7.5 each).</p>
+<h3>Formal Vulnerabilities</h3>
+<div class="vuln-card sev-critical"><div class="vuln-card-head"><span class="vuln-system">Microsoft Azure</span><span class="badge badge-cve">CVE-2025-66390</span><span class="badge badge-cvss sev-critical">CVSS 9.8 · CRITICAL</span></div><div class="vuln-card-body">
+<p><strong>Summary:</strong> When self-service signup (Basic Auth) is enabled in one Azure API Management tenant, an attacker can manipulate the Host header or tenant identifier to register against a different tenant that has signup disabled in the UI. The underlying API endpoint still accepts cross-tenant requests, effectively bypassing the UI-level disable control. Microsoft disputes this as a security boundary crossing, calling it a configuration/state issue.</p>
+<p><strong>Affected Features / Interoperability:</strong> Azure API Management self-service signup endpoint; tenant isolation controls. Downstream impact: unauthorized developer accounts created in tenants that intended to block signup, potentially leading to API consumption abuse or further social-engineering footholds.</p>
+<p><strong>Source:</strong> <a href="https://github.com/bountyyfi/Azure-APIM-Cross-Tenant-Signup-Bypass,">https://github.com/bountyyfi/Azure-APIM-Cross-Tenant-Signup-Bypass,</a> <a href="https://github.com/bountyyfi/Azure-APIM-Cross-Tenant-Signup-Bypass/security/advisories/GHSA-vcwf-73jp-r7mv">https://github.com/bountyyfi/Azure-APIM-Cross-Tenant-Signup-Bypass/security/advisories/GHSA-vcwf-73jp-r7mv</a></p>
+<p><strong>Actions:</strong></p>
+<ul>
+<li>Fix: No official patch version cited; Microsoft considers this a configuration issue. Mitigate by ensuring signup is disabled at the API level (e.g., via policy or network restriction) rather than only in the UI.</li>
+<li>Workaround: Block or monitor cross-tenant Host-header variations at the gateway/WAF layer; disable Basic Auth signup entirely if not required.</li>
+<li>Tradeoff: Disabling Basic Auth signup removes legitimate self-service onboarding; WAF rules may require tuning to avoid false positives.</li>
+</ul>
+</div></div>
+<div class="vuln-card sev-critical"><div class="vuln-card-head"><span class="vuln-system">Kubernetes</span><span class="badge badge-cve">CVE-2025-59823</span><span class="badge badge-cvss sev-critical">CVSS 9.9 · CRITICAL</span></div><div class="vuln-card-body">
+<p><strong>Summary:</strong> Code injection in Gardener Extensions for AWS (pre-1.64.0), Azure (pre-1.55.0), OpenStack (pre-1.49.0), and GCP (pre-1.46.0) providers. A user with admin privileges in a Gardener project can exploit Terraformer-driven infrastructure provisioning to execute code on the seed cluster, gaining full control over the management plane of all shoot clusters.</p>
+<p><strong>Affected Features / Interoperability:</strong> Gardener Extension providers (AWS, Azure, GCP, OpenStack) when Terraformer is used/enabled for infrastructure provisioning. Downstream: complete seed-cluster compromise, affecting all managed shoot clusters, their workloads, and any integrated secrets/identity systems.</p>
+<p><strong>Source:</strong> <a href="https://github.com/gardener/gardener-extension-provider-aws/releases/tag/v1.64.0,">https://github.com/gardener/gardener-extension-provider-aws/releases/tag/v1.64.0,</a> <a href="https://github.com/gardener/gardener-extension-provider-aws/security/advisories/GHSA-227x-7mh8-3cf6,">https://github.com/gardener/gardener-extension-provider-aws/security/advisories/GHSA-227x-7mh8-3cf6,</a> <a href="https://github.com/gardener/gardener-extension-provider-azure/releases/tag/v1.55.0,">https://github.com/gardener/gardener-extension-provider-azure/releases/tag/v1.55.0,</a> <a href="https://github.com/gardener/gardener-extension-provider-gcp/releases/tag/v1.46.0,">https://github.com/gardener/gardener-extension-provider-gcp/releases/tag/v1.46.0,</a> <a href="https://github.com/gardener/gardener-extension-provider-openstack/releases/tag/v1.49.0">https://github.com/gardener/gardener-extension-provider-openstack/releases/tag/v1.49.0</a></p>
+<p><strong>Actions:</strong></p>
+<ul>
+<li>Fix: Upgrade Gardener Extensions: AWS ≥1.64.0, Azure ≥1.55.0, GCP ≥1.46.0, OpenStack ≥1.49.0.</li>
+<li>Workaround: Disable Terraformer for affected providers if immediate upgrade is impossible; restrict project-admin RBAC to least privilege.</li>
+<li>Tradeoff: Disabling Terraformer breaks automated infrastructure provisioning for shoot clusters; manual provisioning becomes necessary.</li>
+</ul>
+</div></div>
+<div class="vuln-card sev-high"><div class="vuln-card-head"><span class="vuln-system">Kubernetes</span><span class="badge badge-cve">CVE-2025-59531</span><span class="badge badge-cvss sev-high">CVSS 7.5 · HIGH</span></div><div class="vuln-card-body">
+<p><strong>Summary:</strong> Argo CD 1.2.0–1.8.7, 2.0.0-rc1–2.14.19, 3.0.0-rc1–3.2.0-rc1, 3.1.7, 3.0.18: unauthenticated DoS via malformed Bitbucket Server webhook payload (non-array `repository.links.clone`). A single request crashes the API server (CrashLoopBackOff); targeting all replicas causes full API outage. Fixed in 2.14.20, 3.2.0-rc2, 3.1.8, 3.0.19.</p>
+<p><strong>Affected Features / Interoperability:</strong> Argo CD `/api/webhook` endpoint (Bitbucket Server integration). Downstream: GitOps pipeline halt, application sync failures, cluster management disruption.</p>
+<p><strong>Source:</strong> <a href="https://github.com/argoproj/argo-cd/commit/5c466a4e39802e059e75c0008ae7b7b8e842538f,">https://github.com/argoproj/argo-cd/commit/5c466a4e39802e059e75c0008ae7b7b8e842538f,</a> <a href="https://github.com/argoproj/argo-cd/security/advisories/GHSA-f9gq-prrc-hrhc">https://github.com/argoproj/argo-cd/security/advisories/GHSA-f9gq-prrc-hrhc</a></p>
+<p><strong>Actions:</strong></p>
+<ul>
+<li>Fix: Upgrade Argo CD to 2.14.20, 3.2.0-rc2, 3.1.8, or 3.0.19.</li>
+<li>Workaround: Set `webhook.bitbucketserver.secret` (enables HMAC validation, which rejects malformed payloads early) or block unauthenticated access to `/api/webhook` at network layer.</li>
+<li>Tradeoff: Requiring a secret changes webhook integration config; network blocking may break legitimate CI/CD webhooks.</li>
+</ul>
+</div></div>
+<div class="vuln-card sev-high"><div class="vuln-card-head"><span class="vuln-system">Kubernetes</span><span class="badge badge-cve">CVE-2025-59537</span><span class="badge badge-cvss sev-high">CVSS 7.5 · HIGH</span></div><div class="vuln-card-body">
+<p><strong>Summary:</strong> Argo CD same versions as above: unauthenticated DoS via Gogs webhook with missing/null `commits[].repo` field. Crashes `argocd-server` process; single request kills replica. Fixed in same versions as CVE-2025-59531.</p>
+<p><strong>Affected Features / Interoperability:</strong> Argo CD `/api/webhook` endpoint (Gogs integration). Same downstream impact as CVE-2025-59531.</p>
+<p><strong>Source:</strong> <a href="https://github.com/argoproj/argo-cd/commit/761fc27068d2d4cd24e1f784eb2a9033b5ee7f43,">https://github.com/argoproj/argo-cd/commit/761fc27068d2d4cd24e1f784eb2a9033b5ee7f43,</a> <a href="https://github.com/argoproj/argo-cd/security/advisories/GHSA-wp4p-9pxh-cgx2">https://github.com/argoproj/argo-cd/security/advisories/GHSA-wp4p-9pxh-cgx2</a></p>
+<p><strong>Actions:</strong></p>
+<ul>
+<li>Fix: Upgrade Argo CD to 2.14.20, 3.2.0-rc2, 3.1.8, or 3.0.19.</li>
+<li>Workaround: Set `webhook.gogs.secret` or block unauthenticated `/api/webhook` access.</li>
+<li>Tradeoff: Same as CVE-2025-59531.</li>
+</ul>
+</div></div>
+<div class="vuln-card sev-high"><div class="vuln-card-head"><span class="vuln-system">Kubernetes</span><span class="badge badge-cve">CVE-2025-59538</span><span class="badge badge-cvss sev-high">CVSS 7.5 · HIGH</span></div><div class="vuln-card-body">
+<p><strong>Summary:</strong> Argo CD 2.9.0-rc1–2.14.19, 3.0.0-rc1–3.2.0-rc1, 3.1.6, 3.0.17: unauthenticated DoS via Azure DevOps webhook with empty `resource.refUpdates` array. Index-out-of-range panic crashes `argocd-server`. Fixed in same versions as above.</p>
+<p><strong>Affected Features / Interoperability:</strong> Argo CD `/api/webhook` endpoint (Azure DevOps integration). Same downstream impact.</p>
+<p><strong>Source:</strong> <a href="https://github.com/argoproj/argo-cd/commit/1a023f1ca7fe4ec942b4b6696804988d5a632baf,">https://github.com/argoproj/argo-cd/commit/1a023f1ca7fe4ec942b4b6696804988d5a632baf,</a> <a href="https://github.com/argoproj/argo-cd/security/advisories/GHSA-gpx4-37g2-c8pv">https://github.com/argoproj/argo-cd/security/advisories/GHSA-gpx4-37g2-c8pv</a></p>
+<p><strong>Actions:</strong></p>
+<ul>
+<li>Fix: Upgrade Argo CD to 2.14.20, 3.2.0-rc2, 3.1.8, or 3.0.19.</li>
+<li>Workaround: Set `webhook.azuredevops.username` and `webhook.azuredevops.password` (enables basic auth, which may reject unauthenticated malformed payloads) or block unauthenticated `/api/webhook`.</li>
+<li>Tradeoff: Same as CVE-2025-59531.</li>
+</ul>
+</div></div>
+<div class="vuln-card sev-medium"><div class="vuln-card-head"><span class="vuln-system">Kubernetes</span><span class="badge badge-cve">CVE-2026-53572</span><span class="badge badge-cvss sev-medium">CVSS 5.9 · MEDIUM</span></div><div class="vuln-card-body">
+<p><strong>Summary:</strong> KEDA &lt;2.20.0: PostgreSQL scaler builds libpq connection strings from tenant-controlled fields (host, port, userName, dbName, sslmode, password) with insufficient escaping (only spaces quoted). Tabs, newlines, quotes, backslashes inject extra key-value tokens, allowing an attacker who can create/modify TriggerAuthentication or ScaledObject to redirect DB connections, leak credentials, or disable TLS.</p>
+<p><strong>Affected Features / Interoperability:</strong> KEDA PostgreSQL scaler (`pkg/scalers/postgresql_scaler.go`). Downstream: credential exposure, TLS bypass, connection hijacking to attacker-controlled DB.</p>
+<p><strong>Source:</strong> <a href="https://github.com/kedacore/keda/commit/703de9dec86cb25b6ecfa4948880a90487344d3f,">https://github.com/kedacore/keda/commit/703de9dec86cb25b6ecfa4948880a90487344d3f,</a> <a href="https://github.com/kedacore/keda/issues/7784,">https://github.com/kedacore/keda/issues/7784,</a> <a href="https://github.com/kedacore/keda/pull/7787,">https://github.com/kedacore/keda/pull/7787,</a> <a href="https://github.com/kedacore/keda/releases/tag/v2.20.0,">https://github.com/kedacore/keda/releases/tag/v2.20.0,</a> <a href="https://github.com/kedacore/keda/security/advisories/GHSA-6w3m-4hhp-775q">https://github.com/kedacore/keda/security/advisories/GHSA-6w3m-4hhp-775q</a></p>
+<p><strong>Actions:</strong></p>
+<ul>
+<li>Fix: Upgrade KEDA to ≥2.20.0.</li>
+<li>Workaround: Restrict RBAC for TriggerAuthentication/ScaledObject creation/modification to trusted principals; validate/sanitize scaler config via admission controller.</li>
+<li>Tradeoff: RBAC restriction slows self-service autoscaling; admission controller adds operational complexity.</li>
+</ul>
+</div></div>
+<div class="vuln-card sev-medium"><div class="vuln-card-head"><span class="vuln-system">Kubernetes</span><span class="badge badge-cve">CVE-2026-53487</span><span class="badge badge-cvss sev-medium">CVSS 4.3 · MEDIUM</span></div><div class="vuln-card-body">
+<p><strong>Summary:</strong> Kite dashboard &lt;0.12.3: authenticated users with any role can request `/api/v1/overview` for unauthorized clusters via `x-cluster-name` header. The overview route runs before RBAC middleware and only checks `len(user.Roles) &gt; 0`, leaking aggregate inventory/capacity data.</p>
+<p><strong>Affected Features / Interoperability:</strong> Kite `/api/v1/overview` endpoint; multi-cluster RBAC enforcement. Downstream: cross-cluster information disclosure (resource counts, capacity metrics).</p>
+<p><strong>Source:</strong> <a href="https://github.com/kite-org/kite/security/advisories/GHSA-gvhc-wv3v-7pf8">https://github.com/kite-org/kite/security/advisories/GHSA-gvhc-wv3v-7pf8</a></p>
+<p><strong>Actions:</strong></p>
+<ul>
+<li>Fix: Upgrade Kite to ≥0.12.3.</li>
+<li>Workaround: Deploy a reverse-proxy filter that strips or validates `x-cluster-name` against user&#x27;s permitted clusters.</li>
+<li>Tradeoff: Proxy filter adds latency and maintenance burden; may break legitimate multi-cluster workflows if misconfigured.</li>
+</ul>
+</div></div>
+<div class="vuln-card sev-critical"><div class="vuln-card-head"><span class="vuln-system">Docker</span><span class="badge badge-cve">CVE-2025-59951</span><span class="badge badge-cvss sev-critical">CVSS 9.1 · CRITICAL</span></div><div class="vuln-card-body">
+<p><strong>Summary:</strong> Termix ≤1.5.0 official Docker image: Nginx reverse proxy causes backend to see proxy IP as client IP, making `isLocalhost` always true. This exposes `/ssh/db/host/internal` (stored SSH hosts, usernames, passwords) without authentication. Affects users of the official image, custom builds from the official Dockerfile, or reverse-proxy setups. Fixed in 1.6.0.</p>
+<p><strong>Affected Features / Interoperability:</strong> Termix SSH host database endpoint (`/ssh/db/host/internal`); Nginx reverse-proxy IP forwarding. Downstream: full SSH credential dump, lateral movement to managed servers.</p>
+<p><strong>Source:</strong> <a href="https://github.com/LukeGus/Termix/pull/221,">https://github.com/LukeGus/Termix/pull/221,</a> <a href="https://github.com/LukeGus/Termix/security/advisories/GHSA-92cw-877q-6r94">https://github.com/LukeGus/Termix/security/advisories/GHSA-92cw-877q-6r94</a></p>
+<p><strong>Actions:</strong></p>
+<ul>
+<li>Fix: Upgrade Termix to ≥1.6.0 (rebuild image if using custom Dockerfile).</li>
+<li>Workaround: Disable the internal endpoint via config or block it at network layer; ensure `X-Forwarded-For`/`X-Real-IP` headers are correctly passed and trusted.</li>
+<li>Tradeoff: Blocking the endpoint may break legitimate internal tooling; header trust config must be precise to avoid spoofing.</li>
+</ul>
+</div></div>
+<div class="vuln-card sev-high"><div class="vuln-card-head"><span class="vuln-system">Docker</span><span class="badge badge-cve">CVE-2026-108980</span><span class="badge badge-cvss sev-high">CVSS 8.8 · HIGH</span></div><div class="vuln-card-body">
+<p><strong>Summary:</strong> Blinko ≤1.8.8: directory traversal in `installPlugin` (unsanitized plugin name with `../` sequences) allows authenticated users to overwrite root-owned startup files. Official Docker image runs as root → RCE as root. Self-registration may be open.</p>
+<p><strong>Affected Features / Interoperability:</strong> Blinko plugin installation (`server/routerTrpc/plugin.ts`); Docker root user. Downstream: container escape to host via overwritten startup scripts, full RCE.</p>
+<p><strong>Source:</strong> <a href="https://github.com/blinkospace/blinko/blob/178e4b3538a21823a50ac2481e653d56cb1ffa86/app/src/pages/signin.tsx#L238-L243,">https://github.com/blinkospace/blinko/blob/178e4b3538a21823a50ac2481e653d56cb1ffa86/app/src/pages/signin.tsx#L238-L243,</a> <a href="https://github.com/blinkospace/blinko/blob/178e4b3538a21823a50ac2481e653d56cb1ffa86/server/routerTrpc/plugin.ts#L273,">https://github.com/blinkospace/blinko/blob/178e4b3538a21823a50ac2481e653d56cb1ffa86/server/routerTrpc/plugin.ts#L273,</a> <a href="https://github.com/kashishtopi/blinko-plugin-path-traversal-rce">https://github.com/kashishtopi/blinko-plugin-path-traversal-rce</a></p>
+<p><strong>Actions:</strong></p>
+<ul>
+<li>Fix: Upgrade Blinko to &gt;1.8.8 (patched version not specified in data; monitor releases).</li>
+<li>Workaround: Run container as non-root user; disable self-registration; restrict plugin install to admins via RBAC if available.</li>
+<li>Tradeoff: Non-root may break file-permission expectations; disabling self-registration limits user onboarding.</li>
+</ul>
+</div></div>
+<div class="vuln-card sev-high"><div class="vuln-card-head"><span class="vuln-system">Docker</span><span class="badge badge-cve">CVE-2026-78122</span><span class="badge badge-cvss sev-high">CVSS 7.4 · HIGH</span></div><div class="vuln-card-body">
+<p><strong>Summary:</strong> docker-socket-proxy (Tecnativa) fails to gate read endpoints in `/containers` namespace when `CONTAINERS` env var is set. Attackers with proxy access can GET `/containers/{id}/archive`, `/export`, `/logs`, `/top` to read arbitrary files and download entire container filesystems as tar.</p>
+<p><strong>Affected Features / Interoperability:</strong> docker-socket-proxy HAProxy config (`haproxy.cfg` lines 49–61); Docker API `/containers` read endpoints. Downstream: container filesystem exfiltration, log/secret leakage.</p>
+<p><strong>Source:</strong> <a href="https://gist.github.com/nedlir/e4f52f88a757f02c67db1fd5dd70d732,">https://gist.github.com/nedlir/e4f52f88a757f02c67db1fd5dd70d732,</a> <a href="https://github.com/Tecnativa/docker-socket-proxy,">https://github.com/Tecnativa/docker-socket-proxy,</a> <a href="https://github.com/Tecnativa/docker-socket-proxy/blob/v0.5.0/haproxy.cfg#L49-L61,">https://github.com/Tecnativa/docker-socket-proxy/blob/v0.5.0/haproxy.cfg#L49-L61,</a> <a href="https://github.com/Tecnativa/docker-socket-proxy/issues/182,">https://github.com/Tecnativa/docker-socket-proxy/issues/182,</a> <a href="https://github.com/Tecnativa/docker-socket-proxy/pull/183">https://github.com/Tecnativa/docker-socket-proxy/pull/183</a></p>
+<p><strong>Actions:</strong></p>
+<ul>
+<li>Fix: Update docker-socket-proxy to version with PR #183 merged (no version tag given; monitor repo).</li>
+<li>Workaround: Unset `CONTAINERS` env var if read access not needed; restrict proxy network access to trusted clients only.</li>
+<li>Tradeoff: Unsetting `CONTAINERS` disables legitimate container introspection (logs, stats) for monitoring tools.</li>
+</ul>
+</div></div>
+<div class="vuln-card sev-medium"><div class="vuln-card-head"><span class="vuln-system">Docker</span><span class="badge badge-cve">CVE-2026-44517</span><span class="badge badge-cvss sev-medium">CVSS 6.3 · MEDIUM</span></div><div class="vuln-card-body">
+<p><strong>Summary:</strong> Buildah 1.38.1–1.43.2 and 1.44.0: `TempDirForURL` does not confine Git subdirectories to build context; `downloadToDirectory` and `stdinToDirectory` can follow Dockerfile symlinks from partially extracted tar. Malicious Git/tar source can include files outside build context or copy them into the image.</p>
+<p><strong>Affected Features / Interoperability:</strong> Buildah build context handling (`define/types.go`); Git/tar source fetching. Downstream: supply-chain contamination, unintended file inclusion in built images.</p>
+<p><strong>Source:</strong> <a href="https://github.com/podman-container-tools/buildah/commit/54459cf8a0feb4b1da766e4a6360451834e1846c,">https://github.com/podman-container-tools/buildah/commit/54459cf8a0feb4b1da766e4a6360451834e1846c,</a> <a href="https://github.com/podman-container-tools/buildah/commit/fc2003bb2efeb3ed7d5c7e1e88d04e78f370a944,">https://github.com/podman-container-tools/buildah/commit/fc2003bb2efeb3ed7d5c7e1e88d04e78f370a944,</a> <a href="https://github.com/podman-container-tools/buildah/releases/tag/v1.43.2,">https://github.com/podman-container-tools/buildah/releases/tag/v1.43.2,</a> <a href="https://github.com/podman-container-tools/buildah/releases/tag/v1.44.0,">https://github.com/podman-container-tools/buildah/releases/tag/v1.44.0,</a> <a href="https://github.com/podman-container-tools/buildah/security/advisories/GHSA-49p4-px3h-rq49">https://github.com/podman-container-tools/buildah/security/advisories/GHSA-49p4-px3h-rq49</a></p>
+<p><strong>Actions:</strong></p>
+<ul>
+<li>Fix: Upgrade Buildah to ≥1.43.2 (1.43.x) or ≥1.44.0 (1.44.x).</li>
+<li>Workaround: Use trusted-only Git/tar sources; avoid building from untrusted repositories; verify build context contents before `buildah bud`.</li>
+<li>Tradeoff: Trusted-source restriction limits CI/CD flexibility; manual verification adds pipeline latency.</li>
+</ul>
+</div></div>
+<div class="vuln-card sev-medium"><div class="vuln-card-head"><span class="vuln-system">Docker</span><span class="badge badge-cve">CVE-2026-109239</span><span class="badge badge-cvss sev-medium">CVSS 5.3 · MEDIUM</span></div><div class="vuln-card-body">
+<p><strong>Summary:</strong> Crawl4AI &lt;0.9.4: blind SSRF in `RobotsParser.can_fetch` via `check_robots_txt` option. Unauthenticated attackers use redirects or DNS rebinding to reach internal/loopback/cloud-metadata addresses, bypassing Docker egress controls.</p>
+<p><strong>Affected Features / Interoperability:</strong> Crawl4AI robots.txt parser; container egress filtering. Downstream: internal service discovery, cloud metadata exposure (IAM credentials, instance identity).</p>
+<p><strong>Source:</strong> <a href="https://github.com/unclecode/crawl4ai/security/advisories/GHSA-f77g-77vp-r96v,">https://github.com/unclecode/crawl4ai/security/advisories/GHSA-f77g-77vp-r96v,</a> <a href="https://www.vulncheck.com/advisories/crawl4ai-before-0.9.4-blind-ssrf-via-robotsparser-can-fetch-robots-txt-fetch">https://www.vulncheck.com/advisories/crawl4ai-before-0.9.4-blind-ssrf-via-robotsparser-can-fetch-robots-txt-fetch</a></p>
+<p><strong>Actions:</strong></p>
+<ul>
+<li>Fix: Upgrade Crawl4AI to ≥0.9.4.</li>
+<li>Workaround: Disable `check_robots_txt`; enforce egress allowlists at host/network level; run Crawl4AI in isolated network namespace without metadata access.</li>
+<li>Tradeoff: Disabling robots.txt checking may violate crawling etiquette; network isolation adds deployment complexity.</li>
+</ul>
+</div></div>
+<div class="vuln-card sev-critical"><div class="vuln-card-head"><span class="vuln-system">Terraform</span><span class="badge badge-cve">CVE-2025-59823</span><span class="badge badge-cvss sev-critical">CVSS 9.9 · CRITICAL</span></div><div class="vuln-card-body">
+<p><strong>Summary:</strong> Same as Kubernetes entry above: Gardener Extension providers (AWS, Azure, GCP, OpenStack) code injection via Terraformer, allowing project admin to take over seed cluster. Listed under Terraform because Terraformer is the Terraform-based provisioning component.</p>
+<p><strong>Affected Features / Interoperability:</strong> Gardener Terraformer integration with cloud-provider extensions. Downstream: seed-cluster compromise, all shoot clusters affected.</p>
+<p><strong>Source:</strong> <a href="https://github.com/gardener/gardener-extension-provider-aws/releases/tag/v1.64.0,">https://github.com/gardener/gardener-extension-provider-aws/releases/tag/v1.64.0,</a> <a href="https://github.com/gardener/gardener-extension-provider-aws/security/advisories/GHSA-227x-7mh8-3cf6,">https://github.com/gardener/gardener-extension-provider-aws/security/advisories/GHSA-227x-7mh8-3cf6,</a> <a href="https://github.com/gardener/gardener-extension-provider-azure/releases/tag/v1.55.0,">https://github.com/gardener/gardener-extension-provider-azure/releases/tag/v1.55.0,</a> <a href="https://github.com/gardener/gardener-extension-provider-gcp/releases/tag/v1.46.0,">https://github.com/gardener/gardener-extension-provider-gcp/releases/tag/v1.46.0,</a> <a href="https://github.com/gardener/gardener-extension-provider-openstack/releases/tag/v1.49.0">https://github.com/gardener/gardener-extension-provider-openstack/releases/tag/v1.49.0</a></p>
+<p><strong>Actions:</strong></p>
+<ul>
+<li>Fix: Upgrade Gardener Extensions: AWS ≥1.64.0, Azure ≥1.55.0, GCP ≥1.46.0, OpenStack ≥1.49.0.</li>
+<li>Workaround: Disable Terraformer for affected providers; restrict project-admin RBAC.</li>
+<li>Tradeoff: Same as Kubernetes entry.</li>
+</ul>
+</div></div>
+<div class="vuln-card sev-high"><div class="vuln-card-head"><span class="vuln-system">Terraform</span><span class="badge badge-cve">CVE-2026-64679</span><span class="badge badge-cvss sev-high">CVSS 8.1 · HIGH</span></div><div class="vuln-card-body">
+<p><strong>Summary:</strong> Atlantis 0.19.8–0.45.0: inconsistent validation of user-controlled workspace values from `atlantis.yaml` or `/api/plan` input. Path traversal escapes per-pull workspace directory, causing `os.RemoveAll`/`os.MkdirAll` on out-of-bounds paths before Terraform rejects the name. Integrity loss or DoS with Atlantis process privileges. Fixed in 0.45.0.</p>
+<p><strong>Affected Features / Interoperability:</strong> Atlantis workspace handling (repo-level `atlantis.yaml`, `/api/plan` endpoint). Downstream: arbitrary filesystem read/write/delete on Atlantis host, CI/CD disruption, potential host compromise.</p>
+<p><strong>Source:</strong> <a href="https://github.com/runatlantis/atlantis/commit/ea4e4ceebf8b387d015fff7ed8a7fcca33279afe,">https://github.com/runatlantis/atlantis/commit/ea4e4ceebf8b387d015fff7ed8a7fcca33279afe,</a> <a href="https://github.com/runatlantis/atlantis/pull/6254,">https://github.com/runatlantis/atlantis/pull/6254,</a> <a href="https://github.com/runatlantis/atlantis/releases/tag/v0.45.0,">https://github.com/runatlantis/atlantis/releases/tag/v0.45.0,</a> <a href="https://github.com/runatlantis/atlantis/security/advisories/GHSA-26w5-6g95-gj28">https://github.com/runatlantis/atlantis/security/advisories/GHSA-26w5-6g95-gj28</a></p>
+<p><strong>Actions:</strong></p>
+<ul>
+<li>Fix: Upgrade Atlantis to ≥0.45.0.</li>
+<li>Workaround: Restrict `atlantis.yaml` write access to trusted repos; run Atlantis in container with read-only rootfs and minimal capabilities; monitor filesystem syscalls.</li>
+<li>Tradeoff: Read-only rootfs may break Terraform providers needing local exec; repo restrictions reduce self-service.</li>
+</ul>
+</div></div>
+<div class="vuln-card sev-unscored"><div class="vuln-card-head"><span class="vuln-system">Terraform</span><span class="badge badge-cve">CVE-2026-45099</span><span class="badge badge-cvss sev-unscored">UNSCORED</span></div><div class="vuln-card-body">
+<p><strong>Summary:</strong> Terragrunt &lt;1.0.4: trusts paths from downloaded module&#x27;s `.terragrunt-module-manifest` during `fileManifest.Clean()`. Malicious/compromised module can place absolute/traversal paths, causing cleanup to delete files outside module cache accessible to Terragrunt process. Deletion-only primitive disrupts CI/CD and local source. Fixed in 1.0.4.</p>
+<p><strong>Affected Features / Interoperability:</strong> Terragrunt module cache cleanup (`internal/util/file.go`); external module fetching. Downstream: arbitrary file deletion on Terragrunt host, pipeline breakage, potential data loss.</p>
+<p><strong>Source:</strong> <a href="https://github.com/gruntwork-io/terragrunt/commit/3d6f10d6bccc851c6506a307a0b8675e0346e65e,">https://github.com/gruntwork-io/terragrunt/commit/3d6f10d6bccc851c6506a307a0b8675e0346e65e,</a> <a href="https://github.com/gruntwork-io/terragrunt/pull/6032,">https://github.com/gruntwork-io/terragrunt/pull/6032,</a> <a href="https://github.com/gruntwork-io/terragrunt/releases/tag/v1.0.4,">https://github.com/gruntwork-io/terragrunt/releases/tag/v1.0.4,</a> <a href="https://github.com/gruntwork-io/terragrunt/security/advisories/GHSA-8394-6f8r-whxg">https://github.com/gruntwork-io/terragrunt/security/advisories/GHSA-8394-6f8r-whxg</a></p>
+<p><strong>Actions:</strong></p>
+<ul>
+<li>Fix: Upgrade Terragrunt to ≥1.0.4.</li>
+<li>Workaround: Pin modules to trusted sources/registries; run Terragrunt in isolated ephemeral environment (clean container per run).</li>
+<li>Tradeoff: Ephemeral environments increase CI/CD runtime and storage; trusted-source pinning reduces module flexibility.</li>
+</ul>
+</div></div>
+<h3>News &amp; Community Mentions</h3>
+<p><em>Unverified chatter — not authoritative vulnerability data.</em></p>
+<p><strong>AWS</strong></p>
+<ul>
+<li>Akamai named Leader in IDC MarketScape for Web Application and API Protection 2026 — vendor assessment positioning. (news.google.com) <a href="https://news.google.com/rss/articles/CBMimgFBVV95cUxPcVZReXBVbmpnZ3g0WXJGUmRzbF9QVFlscWdXcHRYanptQUdjM0FFSWdueTlxaVFaVzlUaGNQZGpsaWxwSW9TbVdXMEZjYlJydEUzT25HdW9zdU41MFgtTG9fZXpOSGluVXlNRElXM1EzZmxJVnBuMTM0bksxek9jZGJmSjZQOHp5d3dLRlZnLURmYUhmQTFBdEdn?oc=5">https://news.google.com/rss/articles/CBMimgFBVV95cUxPcVZReXBVbmpnZ3g0WXJGUmRzbF9QVFlscWdXcHRYanptQUdjM0FFSWdueTlxaVFaVzlUaGNQZGpsaWxwSW9TbVdXMEZjYlJydEUzT25HdW9zdU41MFgtTG9fZXpOSGluVXlNRElXM1EzZmxJVnBuMTM0bksxek9jZGJmSjZQOHp5d3dLRlZnLURmYUhmQTFBdEdn?oc=5</a></li>
+<li>HashiCorp Vault vs AWS Secrets Manager vs Doppler 2026 comparison published. (news.google.com) <a href="https://news.google.com/rss/articles/CBMihwFBVV95cUxQUGNqeHQtLTdIaW15SGtKN09obFdOd0ZIdEFsMUhBazNxWG1MVUdtT2k1ZHNfbURVR01vR0swTFAyNUl1VnExLV9kdC10cFdmd0dleGZyaFZmZ2U5ZTUxRnk5TUY5dFBLSVJGR1RqT09SbU44QmxRQTVkUW5QWnZFU2Z3a1diYjA?oc=5">https://news.google.com/rss/articles/CBMihwFBVV95cUxQUGNqeHQtLTdIaW15SGtKN09obFdOd0ZIdEFsMUhBazNxWG1MVUdtT2k1ZHNfbURVR01vR0swTFAyNUl1VnExLV9kdC10cFdmd0dleGZyaFZmZ2U5ZTUxRnk5TUY5dFBLSVJGR1RqT09SbU44QmxRQTVkUW5QWnZFU2Z3a1diYjA?oc=5</a></li>
+</ul>
+<p><strong>Microsoft Azure</strong></p>
+<ul>
+<li>Microsoft warns IT admins about Windows Update certificate expiration. (Petri IT Knowledgebase via news.google.com) <a href="https://news.google.com/rss/articles/CBMidEFVX3lxTE1BSGVSVmVkeFpNZmYyZ2xNVHRMc3BCUFo1c2ZRR01aVEFHZUVUUGkyd3RRcC1qanRleWZJNlhRR1hMZ3YwakxlWEtsaHFwczF6T0ZmSVZyWmVnMmVtdXd1OXIyaVdpTDg5MlVaMjdPYzF5RDNn?oc=5">https://news.google.com/rss/articles/CBMidEFVX3lxTE1BSGVSVmVkeFpNZmYyZ2xNVHRMc3BCUFo1c2ZRR01aVEFHZUVUUGkyd3RRcC1qanRleWZJNlhRR1hMZ3YwakxlWEtsaHFwczF6T0ZmSVZyWmVnMmVtdXd1OXIyaVdpTDg5MlVaMjdPYzF5RDNn?oc=5</a></li>
+<li>AWS wins edge gaming latency (10-20ms) vs Azure and Google per 2026 analysis. (tech-insider.org via news.google.com) <a href="https://news.google.com/rss/articles/CBMigwFBVV95cUxPd2VJREdiZTZsd2Z1WkJFbkhCekFOcm9iRkVyUS1Xd3c5YXpQZGlPb2IybnZpYlNscVBaUjlSbDQ5cmVuUDM2Wk9SYU1CTHY2R1dqWkV0S3A5dURQWjk0T0R3dkRsblptREFsMjRudGwyNGx4SV9qNS1tWjFJX3VVSmVuSQ?oc=5">https://news.google.com/rss/articles/CBMigwFBVV95cUxPd2VJREdiZTZsd2Z1WkJFbkhCekFOcm9iRkVyUS1Xd3c5YXpQZGlPb2IybnZpYlNscVBaUjlSbDQ5cmVuUDM2Wk9SYU1CTHY2R1dqWkV0S3A5dURQWjk0T0R3dkRsblptREFsMjRudGwyNGx4SV9qNS1tWjFJX3VVSmVuSQ?oc=5</a></li>
+</ul>
+<p><strong>Kubernetes</strong></p>
+<ul>
+<li>GitLab patches critical CVE-2026-97229 RCE flaw. (Cyber Kendra via news.google.com) <a href="https://news.google.com/rss/articles/CBMifEFVX3lxTFA5ZjZtNjR2NWFoYnc2WF94UmhSU0RCa2I4aFRnQldHcVhhemZyQkUwMjJYejZBRW5LMjV1WkZMWENEYzRSVVQ5cmZrRXhpWmk5NThlX2R1a3hvR0tyU0d2bDdGTUdzZTc0bWtZOVh4aWZxZXBQVDVUdTJnckM?oc=5">https://news.google.com/rss/articles/CBMifEFVX3lxTFA5ZjZtNjR2NWFoYnc2WF94UmhSU0RCa2I4aFRnQldHcVhhemZyQkUwMjJYejZBRW5LMjV1WkZMWENEYzRSVVQ5cmZrRXhpWmk5NThlX2R1a3hvR0tyU0d2bDdGTUdzZTc0bWtZOVh4aWZxZXBQVDVUdTJnckM?oc=5</a></li>
+<li>NVIDIA DCGM Exporter bug exposes GPU servers to resource exhaustion attacks. (CyberSecurityNews via news.google.com) <a href="https://news.google.com/rss/articles/CBMicEFVX3lxTE9IM1prTDRuUC02SUhZdzdORDU1SncyREtWc1VxdTYwQ1ZFcHBzYkdmYXdFcHVGdFNYSjFKaGhKSE95Z05pai1DOEtNeDVQdUdXODUzTGlfMnh5cXFCbURLN3dqVHFWZ0hNWGNzWXVCc3jSAXZBVV95cUxPRGRjUk1iaDVfYmdhTzI1U3JLQjlZanVjcDd1RUZZOWE2RTlIR3AtQ1NhUURVYlRUU09mOUI5SExzdjRuZy1qSGpfTS1qak9Kd0RZZFFUamVWTFAwemtQQ0hfUnIwbk1sX0xEel96U0tqTWFwV1hn?oc=5">https://news.google.com/rss/articles/CBMicEFVX3lxTE9IM1prTDRuUC02SUhZdzdORDU1SncyREtWc1VxdTYwQ1ZFcHBzYkdmYXdFcHVGdFNYSjFKaGhKSE95Z05pai1DOEtNeDVQdUdXODUzTGlfMnh5cXFCbURLN3dqVHFWZ0hNWGNzWXVCc3jSAXZBVV95cUxPRGRjUk1iaDVfYmdhTzI1U3JLQjlZanVjcDd1RUZZOWE2RTlIR3AtQ1NhUURVYlRUU09mOUI5SExzdjRuZy1qSGpfTS1qak9Kd0RZZFFUamVWTFAwemtQQ0hfUnIwbk1sX0xEel96U0tqTWFwV1hn?oc=5</a></li>
+<li>Akuity expands Kargo Enterprise with fleet management for faster, safer releases across hundreds of clusters. (The Manila Times via news.google.com) <a href="https://news.google.com/rss/articles/CBMikwJBVV95cUxPbGc1U21uWVpwMGhTblZHNnl6X3cyOE9INnZIak83dVBBdk91SWhTcnNwQUk0cXVzQ194QmV0b0JWa0tTMDYySUxaU052QnNlczNrd2lFWXhTclVfaE1zU2N2dmdKdXAwS0psdWhsODQtaEVFMHV3UHg5SHJBYWEtV2dUUXNZdDBNWE1OelhyOHQzRGFWOEw4S2pvMkxxNFl0SWdXclJ3SzhKcjc2RUg2Sm9xRktDSnZqWkJ0TlQ3bjlVMllKSWVjWE9taDFnalFHM2FaWDVfbDdRR0Rpa1Y1d0VVWHRsYXJYU1BMYWowSnBIeERvLURxVnZEWXFnTXExYVRtTFBHREFUZ1NvS0VKUHBpc9IBkwJBVV95cUxPbGc1U21uWVpwMGhTblZHNnl6X3cyOE9INnZIak83dVBBdk91SWhTcnNwQUk0cXVzQ194QmV0b0JWa0tTMDYySUxaU052QnNlczNrd2lFWXhTclVfaE1zU2N2dmdKdXAwS0psdWhsODQtaEVFMHV3UHg5SHJBYWEtV2dUUXNZdDBNWE1OelhyOHQzRGFWOEw4S2pvMkxxNFl0SWdXclJ3SzhKcjc2RUg2Sm9xRktDSnZqWkJ0TlQ3bjlVMllKSWVjWE9taDFnalFHM2FaWDVfbDdRR0Rpa1Y1d0VVWHRsYXJYU1BMYWowSnBIeERvLURxVnZEWXFnTXExYVRtTFBHREFUZ1NvS0VKUHBpcw?oc=5">https://news.google.com/rss/articles/CBMikwJBVV95cUxPbGc1U21uWVpwMGhTblZHNnl6X3cyOE9INnZIak83dVBBdk91SWhTcnNwQUk0cXVzQ194QmV0b0JWa0tTMDYySUxaU052QnNlczNrd2lFWXhTclVfaE1zU2N2dmdKdXAwS0psdWhsODQtaEVFMHV3UHg5SHJBYWEtV2dUUXNZdDBNWE1OelhyOHQzRGFWOEw4S2pvMkxxNFl0SWdXclJ3SzhKcjc2RUg2Sm9xRktDSnZqWkJ0TlQ3bjlVMllKSWVjWE9taDFnalFHM2FaWDVfbDdRR0Rpa1Y1d0VVWHRsYXJYU1BMYWowSnBIeERvLURxVnZEWXFnTXExYVRtTFBHREFUZ1NvS0VKUHBpc9IBkwJBVV95cUxPbGc1U21uWVpwMGhTblZHNnl6X3cyOE9INnZIak83dVBBdk91SWhTcnNwQUk0cXVzQ194QmV0b0JWa0tTMDYySUxaU052QnNlczNrd2lFWXhTclVfaE1zU2N2dmdKdXAwS0psdWhsODQtaEVFMHV3UHg5SHJBYWEtV2dUUXNZdDBNWE1OelhyOHQzRGFWOEw4S2pvMkxxNFl0SWdXclJ3SzhKcjc2RUg2Sm9xRktDSnZqWkJ0TlQ3bjlVMllKSWVjWE9taDFnalFHM2FaWDVfbDdRR0Rpa1Y1d0VVWHRsYXJYU1BMYWowSnBIeERvLURxVnZEWXFnTXExYVRtTFBHREFUZ1NvS0VKUHBpcw?oc=5</a></li>
+</ul>
+</body>
+</html>
