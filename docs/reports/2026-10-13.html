@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Security Digest — 2026-10-13</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+:root {
+  --bg: #0F1419;
+  --surface: #161D26;
+  --surface-2: #1E2730;
+  --border: #2A343F;
+  --text: #E8EDF2;
+  --text-dim: #8B98A5;
+  --text-faint: #5A6672;
+  --link: #7DD3FC;
+  --sev-critical: #FF5D5D;
+  --sev-high: #FFA94D;
+  --sev-medium: #FFD43B;
+  --sev-low: #7C8B9A;
+  --sev-unscored: #6B7C93;
+  --row-security: #4FD1C5;
+  --row-database: #F0B429;
+  --row-cloud: #5EA8FF;
+}
+
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  * { transition: none !important; animation: none !important; }
+}
+
+body {
+  font-family: 'IBM Plex Sans', -apple-system, Segoe UI, Roboto, sans-serif;
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 0 1.25rem 4rem;
+  line-height: 1.6;
+  color: var(--text);
+  background: var(--bg);
+  font-size: 15px;
+}
+
+.mono { font-family: 'IBM Plex Mono', ui-monospace, monospace; }
+
+/* ---- Page header ---- */
+.page-header {
+  padding: 2rem 0 1.25rem;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 1.5rem;
+}
+.page-header .eyebrow {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  margin: 0 0 0.4rem;
+}
+h1 { font-size: 1.6rem; font-weight: 700; margin: 0 0 0.35rem; letter-spacing: -0.01em; }
+.page-header .meta { color: var(--text-dim); font-size: 0.85rem; margin: 0; }
+.back-link {
+  display: inline-block; margin-bottom: 1rem; color: var(--link);
+  font-family: 'IBM Plex Mono', monospace; font-size: 0.82rem; text-decoration: none;
+}
+.back-link:hover { text-decoration: underline; }
+
+/* ---- Sticky quick nav ---- */
+.quick-nav {
+  position: sticky; top: 0; z-index: 10;
+  display: flex; gap: 0.5rem; flex-wrap: wrap;
+  background: rgba(15, 20, 25, 0.92);
+  backdrop-filter: blur(6px);
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 2rem;
+}
+.quick-nav a {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.78rem;
+  color: var(--text-dim);
+  text-decoration: none;
+  padding: 0.35rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  transition: border-color 0.15s, color 0.15s;
+}
+.quick-nav a:hover { border-color: var(--link); color: var(--text); }
+
+/* ---- Section headers (news rows + vuln tracking) ---- */
+.row-header {
+  display: flex; align-items: baseline; gap: 0.65rem;
+  margin: 3rem 0 0.9rem; scroll-margin-top: 4.5rem;
+}
+.row-header .dot { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+.row-header h2 {
+  margin: 0; font-size: 0.78rem; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.1em; color: var(--text);
+  border: none; padding: 0;
+}
+.row-header .count {
+  font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; color: var(--text-faint);
+}
+.row-security .dot { background: var(--row-security); }
+.row-database .dot { background: var(--row-database); }
+.row-cloud .dot { background: var(--row-cloud); }
+
+/* ---- Raw news columns (horizontal scroll) ---- */
+.news-grid-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 0 0 1rem; padding-bottom: 0.6rem; }
+.news-grid { display: flex; gap: 1rem; width: max-content; }
+.news-column {
+  flex: 0 0 270px; background: var(--surface); border: 1px solid var(--border);
+  border-top: 2px solid var(--row-accent, var(--border)); border-radius: 8px; padding: 0.9rem 1rem;
+}
+.row-security .news-column { --row-accent: var(--row-security); }
+.row-database .news-column { --row-accent: var(--row-database); }
+.row-cloud .news-column { --row-accent: var(--row-cloud); }
+.news-column h4 {
+  margin: 0 0 0.65rem; font-size: 0.82rem; font-weight: 600; color: var(--text);
+  border: none; background: none; padding: 0;
+}
+.news-column ul { list-style: none; padding: 0; margin: 0; }
+.news-column li { padding: 0.5rem 0; border-bottom: 1px solid var(--border); }
+.news-column li:last-child { border-bottom: none; }
+.news-column a { color: var(--text); text-decoration: none; font-size: 0.87rem; line-height: 1.45; }
+.news-column a:hover { color: var(--link); }
+.news-column .item-date {
+  display: block; font-family: 'IBM Plex Mono', monospace; color: var(--text-faint);
+  font-size: 0.7rem; margin-top: 0.25rem;
+}
+
+/* ---- Vulnerability tracking section ---- */
+h2 { margin: 3rem 0 0.5rem; font-size: 1.15rem; font-weight: 700; color: var(--text); border: none; padding: 0; scroll-margin-top: 4.5rem; }
+h2 + p { color: var(--text-dim); margin-top: 0; margin-bottom: 1.25rem; max-width: 68ch; }
+h3 {
+  margin: 2rem 0 0.9rem; font-size: 0.75rem; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.1em; color: var(--text-faint); border: none;
+}
+p { margin: 0.6rem 0; }
+a { color: var(--link); }
+ul { padding-left: 1.3rem; margin: 0.6rem 0; }
+li { margin: 0.3rem 0; }
+
+/* Incident (vuln) cards */
+.vuln-card {
+  background: var(--surface); border: 1px solid var(--border); border-left: 4px solid var(--sev-unscored);
+  border-radius: 6px; padding: 1rem 1.15rem; margin-bottom: 1rem;
+}
+.vuln-card.sev-critical { border-left-color: var(--sev-critical); }
+.vuln-card.sev-high { border-left-color: var(--sev-high); }
+.vuln-card.sev-medium { border-left-color: var(--sev-medium); }
+.vuln-card.sev-low { border-left-color: var(--sev-low); }
+.vuln-card-head { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; margin-bottom: 0.7rem; }
+.vuln-system { font-weight: 600; font-size: 0.95rem; color: var(--text); }
+.badge {
+  font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; padding: 0.18rem 0.55rem;
+  border-radius: 4px; white-space: nowrap; font-weight: 500;
+}
+.badge-cve { background: var(--surface-2); color: var(--text-dim); border: 1px solid var(--border); }
+.badge-cvss { color: var(--bg); font-weight: 600; }
+.badge-cvss.sev-critical { background: var(--sev-critical); }
+.badge-cvss.sev-high { background: var(--sev-high); }
+.badge-cvss.sev-medium { background: var(--sev-medium); }
+.badge-cvss.sev-low { background: var(--sev-low); color: var(--text); }
+.badge-cvss.sev-unscored { background: var(--surface-2); color: var(--text-dim); border: 1px solid var(--border); }
+.badge-kev {
+  background: rgba(255, 93, 93, 0.15); color: var(--sev-critical); border: 1px solid rgba(255, 93, 93, 0.4);
+  text-transform: uppercase; letter-spacing: 0.04em; font-size: 0.68rem;
+}
+.vuln-card-body p { color: var(--text-dim); font-size: 0.9rem; }
+.vuln-card-body strong { color: var(--text); }
+.vuln-card-body ul { font-size: 0.9rem; color: var(--text-dim); }
+.vuln-card-body a { word-break: break-word; }
+h4.mention-group {
+  margin: 1.5rem 0 0.5rem; font-size: 0.82rem; font-weight: 600; color: var(--text);
+  border: none; background: none; padding: 0;
+}
+
+/* ---- Archive ---- */
+.archive-list { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.archive-list li { margin: 0; }
+.archive-list a {
+  display: inline-block; font-family: 'IBM Plex Mono', monospace; font-size: 0.78rem;
+  color: var(--text-dim); text-decoration: none; padding: 0.4rem 0.8rem;
+  border: 1px solid var(--border); border-radius: 6px; transition: border-color 0.15s, color 0.15s;
+}
+.archive-list a:hover { border-color: var(--link); color: var(--text); }
+
+@media (max-width: 640px) {
+  body { font-size: 14px; }
+  h1 { font-size: 1.3rem; }
+  .quick-nav { overflow-x: auto; flex-wrap: nowrap; }
+}
+</style>
+</head>
+<body>
+<a class="back-link" href="../index.html">&larr; All reports</a>
+<div class="page-header">
+<p class="eyebrow">Daily Digest</p>
+<h1>Security Digest — 2026-10-13</h1>
+</div>
+<nav class="quick-nav">
+<a href="#security-news">Security</a>
+<a href="#database-news">Database</a>
+<a href="#cloud-news">Cloud</a>
+<a href="#vuln-tracking">Vulnerabilities</a>
+<a href="#archive">Archive</a>
+</nav>
+<div class="row-header row-security" id="security-news"><span class="dot"></span><h2>Security News</h2><span class="count">59 items</span></div>
+<div class="news-grid-wrapper"><div class="news-grid"><div class="news-column"><h4>BleepingComputer</h4><ul><li><a href="https://www.bleepingcomputer.com/news/security/uk-housing-ombudsman-service-investigates-security-incident/">UK Housing Ombudsman Service investigates &#x27;security incident&#x27;</a><span class="item-date">Tue, 13 Oct 2026 14:19:44 -0400</span></li><li><a href="https://www.bleepingcomputer.com/news/microsoft/windows-11-kb5127648-and-kb5126653-cumulative-updates-released/">Windows 11 KB5127648 &amp; KB5126653 cumulative updates released</a><span class="item-date">Tue, 13 Oct 2026 13:49:38 -0400</span></li><li><a href="https://www.bleepingcomputer.com/news/security/tfg-london-cyberattack-disrupts-systems-at-hobbs-and-whistles-retailers/">TFG London cyberattack disrupts systems at Hobbs and Whistles retailers</a><span class="item-date">Tue, 13 Oct 2026 12:44:18 -0400</span></li><li><a href="https://www.bleepingcomputer.com/news/security/ivanti-warns-of-connect-secure-zero-day-exploited-in-attacks/">Ivanti warns of Connect Secure zero-day exploited in attacks</a><span class="item-date">Tue, 13 Oct 2026 11:45:50 -0400</span></li><li><a href="https://www.bleepingcomputer.com/news/security/docker-hub-flaw-let-attackers-impersonate-users-tamper-with-images/">Docker Hub flaw let attackers impersonate users, tamper with images</a><span class="item-date">Tue, 13 Oct 2026 11:20:20 -0400</span></li><li><a href="https://www.bleepingcomputer.com/news/security/the-mfa-gaps-attackers-are-still-exploiting/">The MFA Gaps Attackers are Still Exploiting</a><span class="item-date">Tue, 13 Oct 2026 10:01:11 -0400</span></li><li><a href="https://www.bleepingcomputer.com/news/security/sap-warns-of-maximum-severity-oauth2-ssrf-security-flaw/">SAP warns of maximum severity OAuth2 SSRF security flaw</a><span class="item-date">Tue, 13 Oct 2026 09:51:02 -0400</span></li><li><a href="https://www.bleepingcomputer.com/news/security/norway-fines-microsoft-ad-firm-96-million-over-grindr-data-sharing/">Norway fines Microsoft ad firm $9.6 million over Grindr data sharing</a><span class="item-date">Mon, 12 Oct 2026 16:13:52 -0400</span></li><li><a href="https://www.bleepingcomputer.com/news/security/yandex-confirms-service-outage-as-users-lose-access-to-cloud-files/">Yandex confirms service outage as users lose access to cloud files</a><span class="item-date">Mon, 12 Oct 2026 15:23:01 -0400</span></li><li><a href="https://www.bleepingcomputer.com/news/security/anthropic-takes-risky-ai-tests-offline-after-models-breach-govt-sites/">Anthropic takes risky AI tests offline after models breach govt sites</a><span class="item-date">Mon, 12 Oct 2026 14:51:59 -0400</span></li><li><a href="https://www.bleepingcomputer.com/news/security/ledger-confirms-hardware-wallet-spy-implant-behind-crypto-thefts/">Ledger confirms spy chip implant behind wallet crypto thefts</a><span class="item-date">Mon, 12 Oct 2026 12:27:23 -0400</span></li><li><a href="https://www.bleepingcomputer.com/news/security/cyberattack-shuts-down-refrigerators-at-french-supermarkets/">Cyberattack shuts down refrigerators at French supermarkets</a><span class="item-date">Mon, 12 Oct 2026 11:23:34 -0400</span></li><li><a href="https://www.bleepingcomputer.com/news/security/inside-avisloader-a-windows-malware-loader-built-to-resist-disruption/">Inside AvisLoader: A Windows Malware Loader Built to Resist Disruption</a><span class="item-date">Mon, 12 Oct 2026 10:00:10 -0400</span></li><li><a href="https://www.bleepingcomputer.com/news/security/retail-giant-ahold-delhaize-takes-systems-offline-after-cyberattack/">Retail giant Ahold Delhaize takes systems offline after cyberattack</a><span class="item-date">Mon, 12 Oct 2026 09:51:07 -0400</span></li><li><a href="https://www.bleepingcomputer.com/news/security/gitlab-warns-of-max-severity-rce-flaw-in-regex-compiler-engine/">GitLab warns of max severity code execution vulnerability</a><span class="item-date">Mon, 12 Oct 2026 09:09:09 -0400</span></li></ul></div><div class="news-column"><h4>Dark Reading</h4><ul><li><a href="https://www.darkreading.com/vulnerabilities-threats/max-severity-ssrf-flaw-sonicwall-sma-devices-under-attack">Maximum-Severity SSRF Flaw in SonicWall SMA Devices Under Attack</a><span class="item-date">Mon, 12 Oct 2026 21:42:42 GMT</span></li><li><a href="https://www.darkreading.com/insider-threats/prominent-ransomware-negotiator-extortion-charges">Prominent Ransomware Negotiator Faces Extortion Charges</a><span class="item-date">Mon, 12 Oct 2026 20:00:53 GMT</span></li><li><a href="https://www.darkreading.com/cybersecurity-operations/cyber-resilience-starts-with-iam">No Identity, No Recovery: Cyber Resilience Starts With IAM</a><span class="item-date">Mon, 12 Oct 2026 18:27:25 GMT</span></li><li><a href="https://www.darkreading.com/cyber-risk/passing-baton-dark-reading-new-editor-in-chief">Passing the Baton: Dark Reading Names New Editor-in-Chief</a><span class="item-date">Mon, 12 Oct 2026 12:30:58 GMT</span></li></ul></div><div class="news-column"><h4>SecurityWeek</h4><ul><li><a href="https://www.securityweek.com/ivanti-zero-day-chain-gave-attackers-root-access-to-fully-patched-vpn/">Ivanti Zero-Day Chain Gave Attackers Root Access to Fully Patched VPN</a><span class="item-date">Tue, 13 Oct 2026 18:43:43 +0000</span></li><li><a href="https://www.securityweek.com/adobe-patches-140-vulnerabilities-across-10-products/">Adobe Patches 140 Vulnerabilities Across 10 Products</a><span class="item-date">Tue, 13 Oct 2026 17:14:42 +0000</span></li><li><a href="https://www.securityweek.com/google-partially-reverses-chrome-bug-bounty-cuts/">Google Partially Reverses Chrome Bug Bounty Cuts</a><span class="item-date">Tue, 13 Oct 2026 17:00:00 +0000</span></li><li><a href="https://www.securityweek.com/meta-says-hackers-took-code-personal-data-of-1500-in-github-breach/">Meta Says Hackers Took Code, Personal Data of 1,500 in GitHub Breach</a><span class="item-date">Tue, 13 Oct 2026 16:01:00 +0000</span></li><li><a href="https://www.securityweek.com/small-ai-models-may-soon-be-able-to-self-replicate-on-iot-devices-anthropic-warns/">Small AI Models Could Soon Self-Replicate on IoT Devices, Anthropic Warns</a><span class="item-date">Tue, 13 Oct 2026 11:58:29 +0000</span></li><li><a href="https://www.securityweek.com/xworm-rat-evolves-into-surveillance-platform/">XWorm RAT Evolves Into Surveillance Platform</a><span class="item-date">Tue, 13 Oct 2026 11:13:10 +0000</span></li><li><a href="https://www.securityweek.com/ai-turns-familiar-cyberattacks-into-a-race-against-time/">AI Turns Familiar Cyberattacks Into a Race Against Time</a><span class="item-date">Tue, 13 Oct 2026 11:00:00 +0000</span></li><li><a href="https://www.securityweek.com/86-million-crypto-heist-linked-to-ledger-signer-hardware-implant/">$86 Million Crypto Heist Linked to Ledger Signer Hardware Implant</a><span class="item-date">Tue, 13 Oct 2026 10:36:05 +0000</span></li><li><a href="https://www.securityweek.com/cyberattack-prompts-ahold-delhaize-to-disconnect-systems/">Cyberattack Prompts Grocery Giant Ahold Delhaize to Disconnect Systems</a><span class="item-date">Tue, 13 Oct 2026 09:37:12 +0000</span></li><li><a href="https://www.securityweek.com/refrigeration-controller-hack-spoils-food-across-european-supermarkets/">Refrigeration Controller Hack Spoils Food Across European Supermarkets</a><span class="item-date">Tue, 13 Oct 2026 08:28:51 +0000</span></li></ul></div><div class="news-column"><h4>The Hacker News</h4><ul><li><a href="https://thehackernews.com/2026/10/anthropic-warns-small-ai-models-could.html">Anthropic Warns Small AI Models Could Soon Form Self-Propagating IoT Botnets</a><span class="item-date">Tue, 13 Oct 2026 23:50:57 +0530</span></li><li><a href="https://thehackernews.com/2026/10/docker-fixes-critical-two-year-old-hub.html">Docker Fixes Critical Two-Year-Old Hub Flaw That Let One User Push Images as Another</a><span class="item-date">Tue, 13 Oct 2026 23:33:18 +0530</span></li><li><a href="https://thehackernews.com/2026/10/attacker-chains-three-ivanti-connect.html">Attacker Chains Three Ivanti Connect Secure Zero-Days for Root Access, Only Two Patched So Far</a><span class="item-date">Tue, 13 Oct 2026 23:03:11 +0530</span></li><li><a href="https://thehackernews.com/2026/10/sap-discloses-critical-cvss-10-flaw-in.html">SAP Discloses Critical CVSS 10 Flaw in Cloud SDK for Python Allowing OAuth2 Credential Theft</a><span class="item-date">Tue, 13 Oct 2026 22:58:50 +0530</span></li><li><a href="https://thehackernews.com/2026/10/github-tightens-npm-publishing-after.html">GitHub Tightens npm Publishing After Flaw Left 1,500+ Packages Vulnerable to Hijacking</a><span class="item-date">Tue, 13 Oct 2026 21:48:18 +0530</span></li><li><a href="https://thehackernews.com/2026/10/xandr-fined-record-86-million-for.html">Xandr Fined a Record €8.6 Million for Relaying Grindr Data Revealing Sexual Orientation</a><span class="item-date">Tue, 13 Oct 2026 18:42:32 +0530</span></li><li><a href="https://thehackernews.com/2026/10/webinar-how-to-stop-ai-driven-privilege.html">[Webinar] How to Stop AI-Driven Privilege Escalation With Runtime Identity Controls</a><span class="item-date">Tue, 13 Oct 2026 17:27:06 +0530</span></li><li><a href="https://thehackernews.com/2026/10/lg-smart-tvs-vulnerable-to-pre-auth.html">LG Smart TVs Vulnerable to Pre-Auth Root Takeover From Local Network</a><span class="item-date">Tue, 13 Oct 2026 16:39:10 +0530</span></li><li><a href="https://thehackernews.com/2026/10/product-walkthrough-bitdefender-ai.html">Product Walkthrough: Bitdefender AI Visibility and Control</a><span class="item-date">Tue, 13 Oct 2026 16:00:00 +0530</span></li><li><a href="https://thehackernews.com/2026/10/attackers-heat-french-supermarket.html">Attackers Heat French Supermarket Fridges Up to 50°C by Hijacking Danfoss Controllers</a><span class="item-date">Tue, 13 Oct 2026 14:18:41 +0530</span></li><li><a href="https://thehackernews.com/2026/10/two-critical-marklogic-flaws-could-give.html">Two Critical MarkLogic Flaws Could Give Delegated Managers Persistent Admin Control</a><span class="item-date">Tue, 13 Oct 2026 14:14:01 +0530</span></li><li><a href="https://thehackernews.com/2026/10/gitlab-patches-cvss-100-flaw-that-could.html">GitLab Patches CVSS 10.0 Flaw That Could Let Unauthenticated Users Run Server Code</a><span class="item-date">Tue, 13 Oct 2026 14:13:37 +0530</span></li><li><a href="https://thehackernews.com/2026/10/low-cost-android-phones-ship-with.html">Low-Cost Android Phones Ship With Preinstalled Malware That Turns Them Into Residential Proxies</a><span class="item-date">Tue, 13 Oct 2026 11:30:11 +0530</span></li><li><a href="https://thehackernews.com/2026/10/weekly-recap-helpdesk-0-days-rogue.html">⚡ Weekly Recap: Helpdesk 0-Days, Rogue Certs, ShinyHunters Arrest, AI-Fooling Malware and More</a><span class="item-date">Mon, 12 Oct 2026 20:46:26 +0530</span></li><li><a href="https://thehackernews.com/2026/10/bring-your-own-agent-your-employees.html">Bring Your Own Agent: Your Employees&#x27; Assistants Are Already Logged In</a><span class="item-date">Mon, 12 Oct 2026 17:25:00 +0530</span></li></ul></div><div class="news-column"><h4>The Register</h4><ul><li><a href="https://www.theregister.com/security/2026/10/13/claude-submitted-fake-murder-tip-to-philly-police-during-summertime-testing/5302842">Claude submitted fake murder tip to Philly police during summertime testing</a><span class="item-date">Tue, 13 Oct 2026 18:18:00 +0100</span></li><li><a href="https://www.theregister.com/ai-and-ml/2026/10/13/anthropic-conjures-another-threat-that-doesnt-exist-yet-to-stoke-fears-of-ai-apocalypse/5302866">Anthropic conjures another threat that doesn&#x27;t exist yet to stoke fears of AI apocalypse</a><span class="item-date">Tue, 13 Oct 2026 17:49:00 +0100</span></li><li><a href="https://www.theregister.com/paas-and-iaas/2026/10/13/cheap-chinese-and-open-source-llms-could-trigger-trillion-dollar-ai-infrastructure-reset/5302774">Cheap Chinese and open source LLMs could trigger trillion-dollar AI infrastructure &#x27;reset&#x27;</a><span class="item-date">Tue, 13 Oct 2026 17:30:00 +0100</span></li><li><a href="https://www.theregister.com/saas/2026/10/13/microsoft-celebrates-end-of-office-2021-ltsc-with-ms-365-outage/5302848">Microsoft celebrates end of Office 2021 LTSC with MS 365 outage</a><span class="item-date">Tue, 13 Oct 2026 15:55:28 +0100</span></li><li><a href="https://www.theregister.com/os-platforms/2026/10/13/netbsd-may-have-found-a-new-role-the-ai-free-foss-os/5302818">NetBSD may have found a new role: The AI-free FOSS OS</a><span class="item-date">Tue, 13 Oct 2026 15:15:00 +0100</span></li><li><a href="https://www.theregister.com/systems/2026/10/13/microsoft-plans-multi-gigawatt-rollout-of-next-gen-azure-maia-ai-accelerator-racks/5302802">Microsoft plans multi-gigawatt rollout of next-gen Azure Maia AI accelerator racks</a><span class="item-date">Tue, 13 Oct 2026 14:30:00 +0100</span></li><li><a href="https://www.theregister.com/ai-and-ml/2026/10/13/ai-bubble-could-burst-and-take-global-economy-with-it-imf-warns/5302781">AI bubble could burst and take global economy with it, IMF warns</a><span class="item-date">Tue, 13 Oct 2026 13:44:00 +0100</span></li><li><a href="https://www.theregister.com/security/2026/10/13/cyberattacks-crank-french-supermarket-refrigeration-systems-up-to-50c/5302784">Cyberattacks crank French supermarket refrigeration systems up to 50°C</a><span class="item-date">Tue, 13 Oct 2026 13:00:00 +0100</span></li><li><a href="https://www.theregister.com/security/2026/10/13/123456-password-linked-to-denmark-data-breach-affecting-88m-people/5302726">&#x27;123456&#x27; password linked to Denmark data breach affecting 8.8M people</a><span class="item-date">Tue, 13 Oct 2026 12:14:00 +0100</span></li><li><a href="https://www.theregister.com/on-prem/2026/10/13/european-datacenter-boom-threatens-higher-energy-bills-unless-governments-intervene/5302583">European datacenter boom threatens higher energy bills unless governments intervene</a><span class="item-date">Tue, 13 Oct 2026 11:30:00 +0100</span></li><li><a href="https://www.theregister.com/cyber-crime/2026/10/13/owner-of-fashion-brands-hobbs-and-whistles-joins-autumn-pwned-collection/5302752">Owner of fashion brands Hobbs and Whistles joins autumn pwned collection</a><span class="item-date">Tue, 13 Oct 2026 10:45:00 +0100</span></li><li><a href="https://www.theregister.com/public-sector/2026/10/13/uk-cabinet-office-takes-78m-hit-to-kill-off-recruitment-system/5302635">UK Cabinet Office takes £7.8M hit to kill off recruitment system</a><span class="item-date">Tue, 13 Oct 2026 10:00:00 +0100</span></li><li><a href="https://www.theregister.com/networks/2026/10/13/intel-optimizes-ipv6-networking-into-nothingness-say-users/5302622">Intel optimizes IPv6 networking into nothingness, say users</a><span class="item-date">Tue, 13 Oct 2026 09:15:00 +0100</span></li><li><a href="https://www.theregister.com/public-sector/2026/10/13/home-office-asylum-ai-flunks-one-in-five-accuracy-checks/5302649">Home Office asylum AI flunks one in five accuracy checks</a><span class="item-date">Tue, 13 Oct 2026 08:31:00 +0100</span></li><li><a href="https://www.theregister.com/virtualization/2026/10/13/vmware-is-pushing-so-many-patches-it-thinks-users-need-new-tools-to-manage-the-flood-1/5302172">VMware is pushing so many patches, it thinks users need new tools to manage the flood</a><span class="item-date">Tue, 13 Oct 2026 08:01:00 +0100</span></li></ul></div></div></div>
+<div class="row-header row-database" id="database-news"><span class="dot"></span><h2>Database News</h2><span class="count">21 items</span></div>
+<div class="news-grid-wrapper"><div class="news-grid"><div class="news-column"><h4>DBTA (Database Trends &amp; Applications)</h4><ul><li><a href="https://www.dbta.com/Editorial/News-Flashes/Hitachi-Vantara-Granted-Common-Criteria-Certification-for-VSP-One-Block-Enhancing-Data-Resilience-for-Regulated-Enterprises-176975.aspx">Hitachi Vantara Granted Common Criteria Certification for VSP One Block, Enhancing Data Resilience for Regulated Enterprises</a><span class="item-date">Tue, 13 Oct 2026 11:45:00 EST</span></li><li><a href="https://www.dbta.com/Editorial/News-Flashes/CTERA-Forward-Deployed-Engineering-Accelerates-AI-Access-of-Data-for-Enterprise-Deployments-176977.aspx">CTERA Forward Deployed Engineering Accelerates AI Access of Data for Enterprise Deployments</a><span class="item-date">Tue, 13 Oct 2026 11:45:00 EST</span></li><li><a href="https://www.dbta.com/Editorial/News-Flashes/Profisee-Anywhere-Enables-Organizations-to-Manage-Data-Directly-in-Microsoft-Fabric-OneLake-176963.aspx">Profisee Anywhere Enables Organizations to Manage Data Directly in Microsoft Fabric OneLake</a><span class="item-date">Mon, 12 Oct 2026 10:00:00 EST</span></li><li><a href="https://www.dbta.com/Editorial/News-Flashes/GitLab-Builds-the-Foundation-for-the-Governed-Software-Factory-with-Enhanced-Capabilities-176964.aspx">GitLab Builds the Foundation for the Governed Software Factory with Enhanced Capabilities</a><span class="item-date">Mon, 12 Oct 2026 10:00:00 EST</span></li></ul></div><div class="news-column"><h4>Planet PostgreSQL</h4><ul><li><a href="https://postgr.es/p/9xW">Dimitri Fontaine: Zero-downtime Postgres upgrades with logical replication</a><span class="item-date">Tue, 13 Oct 2026 12:14:03 +0000</span></li><li><a href="https://postgr.es/p/9xY">Ming Ying: Making COUNTs and the Rest of Search Really Fast (Part II)</a><span class="item-date">Tue, 13 Oct 2026 12:00:00 +0000</span></li><li><a href="https://postgr.es/p/9xT">Floor Drees: Conference Preview: EDB at PGConf.Asia 2026</a><span class="item-date">Tue, 13 Oct 2026 08:36:07 +0000</span></li><li><a href="https://postgr.es/p/9xX">Abhisek Goswami: CUDA and PostgreSQL: Twins from two Worlds</a><span class="item-date">Tue, 13 Oct 2026 03:00:07 +0000</span></li><li><a href="https://postgr.es/p/9xS">Christophe Pettus: All Your GUCs in a Row: port</a><span class="item-date">Tue, 13 Oct 2026 01:00:00 +0000</span></li><li><a href="https://postgr.es/p/9xV">Hollis Varden: What deleting rows does to a PostgreSQL table</a><span class="item-date">Tue, 13 Oct 2026 00:00:00 +0000</span></li><li><a href="https://postgr.es/p/9xU">Hollis Varden: Four PostgreSQL arguments that came out even</a><span class="item-date">Tue, 13 Oct 2026 00:00:00 +0000</span></li><li><a href="https://postgr.es/p/9xR">Alexander Ioffe: Why is my Whale Query 1000x Slower in Prod? Databases hate skew, each hates it differently</a><span class="item-date">Tue, 13 Oct 2026 00:00:00 +0000</span></li><li><a href="https://postgr.es/p/9xQ">Chris van Eijk: PostgreSQL row-level security for SaaS: what we measured</a><span class="item-date">Mon, 12 Oct 2026 23:15:10 +0000</span></li><li><a href="https://postgr.es/p/9xP">Chris van Eijk: Go, pgx and PostgreSQL row-level security, measured</a><span class="item-date">Mon, 12 Oct 2026 23:15:10 +0000</span></li><li><a href="https://postgr.es/p/9xO">Christophe Pettus: The Patch Is Coming From Inside the House</a><span class="item-date">Mon, 12 Oct 2026 16:00:00 +0000</span></li><li><a href="https://postgr.es/p/9xN">Devrim GÜNDÜZ: PostgreSQL RPM repository meets AI with pg_statviz</a><span class="item-date">Mon, 12 Oct 2026 06:40:00 +0000</span></li><li><a href="https://postgr.es/p/9xM">Devrim GÜNDÜZ: PostgreSQL RPM repository meets AI with pg_statviz</a><span class="item-date">Mon, 12 Oct 2026 06:40:00 +0000</span></li><li><a href="https://postgr.es/p/9xL">Cornelia Biacsics: Contributions for week 40</a><span class="item-date">Mon, 12 Oct 2026 06:27:57 +0000</span></li><li><a href="https://postgr.es/p/9xJ">Christophe Pettus: All Your GUCs in a Row: plan_cache_mode</a><span class="item-date">Mon, 12 Oct 2026 01:00:00 +0000</span></li></ul></div><div class="news-column"><h4>SQLServerCentral</h4><ul><li><a href="https://www.sqlservercentral.com/blogs/t-sql-tuesday-203-risk-and-reward">T-SQL Tuesday #203: Risk and Reward</a><span class="item-date">Tue, 13 Oct 2026 13:00:00 +0000</span></li><li><a href="https://www.sqlservercentral.com/blogs/dataminds-connect-2026-slides-scripts">dataMinds Connect 2026 – Slides &amp; Scripts</a><span class="item-date">Mon, 12 Oct 2026 08:18:40 +0000</span></li></ul></div></div></div>
+<div class="row-header row-cloud" id="cloud-news"><span class="dot"></span><h2>Cloud News</h2><span class="count">21 items</span></div>
+<div class="news-grid-wrapper"><div class="news-grid"><div class="news-column"><h4>AWS News Blog</h4><ul><li><a href="https://aws.amazon.com/blogs/aws/aws-weekly-roundup-prime-day-2026-by-the-numbers-claude-haiku-5-5-amazon-nova-2-5-sonic-and-more-october-13-2026/">AWS Weekly Roundup: Prime Day 2026 by the numbers, Claude Haiku 5.5, Amazon Nova 2.5 Sonic, and more (October 13, 2026)</a><span class="item-date">Tue, 13 Oct 2026 15:59:06 +0000</span></li><li><a href="https://aws.amazon.com/blogs/aws/announcing-aws-lambda-web-functions-for-fast-consistent-web-app-performance-anywhere/">Announcing AWS Lambda Web Functions</a><span class="item-date">Mon, 12 Oct 2026 22:34:47 +0000</span></li></ul></div><div class="news-column"><h4>Google Cloud Blog</h4><ul><li><a href="https://cloud.google.com/blog/products/data-analytics/cross-cloud-conversational-analytics-with-borderless-lakehouse/">Cross-cloud conversational analytics made simple with open standards</a><span class="item-date">Tue, 13 Oct 2026 16:00:00 +0000</span></li><li><a href="https://cloud.google.com/blog/products/ai-machine-learning/gemini-4-argon-available-on-google-cloud/">Gemini 4 Argon available on Google Cloud, built to help solve your business’ hardest problems</a><span class="item-date">Tue, 13 Oct 2026 16:00:00 +0000</span></li><li><a href="https://cloud.google.com/blog/topics/developers-practitioners/one-agent-development-kit-five-languages/">One Agent Development Kit, five languages</a><span class="item-date">Tue, 13 Oct 2026 12:22:00 +0000</span></li><li><a href="https://cloud.google.com/blog/products/data-analytics/bringing-you-the-data-agent-kit/">Agentic data science with the Data Agent Kit</a><span class="item-date">Mon, 12 Oct 2026 16:00:00 +0000</span></li><li><a href="https://cloud.google.com/blog/products/devops-sre/sre-book-second-edition/">10 Years of the SRE book: Announcing the second edition of &quot;Site Reliability Engineering”</a><span class="item-date">Mon, 12 Oct 2026 16:00:00 +0000</span></li><li><a href="https://cloud.google.com/blog/products/business-intelligence/introducing-looker-data-apps/">Trusted Data Apps for the Agentic Data Cloud, powered by Looker</a><span class="item-date">Mon, 12 Oct 2026 16:00:00 +0000</span></li><li><a href="https://cloud.google.com/blog/products/data-analytics/bigquery-timesfm-3-0-with-multivariate-time-series-forecasting/">Introducing TimesFM 3.0 with multivariate time-series forecasting in BigQuery</a><span class="item-date">Mon, 12 Oct 2026 16:00:00 +0000</span></li></ul></div><div class="news-column"><h4>Microsoft Azure Blog</h4><ul><li><a href="https://azure.microsoft.com/en-us/blog/deep-dive-into-azure-maia-300-architecture/">Deep dive into Azure Maia 300 architecture</a><span class="item-date">Mon, 12 Oct 2026 13:00:00 +0000</span></li></ul></div><div class="news-column"><h4>The New Stack</h4><ul><li><a href="https://thenewstack.io/self-replicating-ai-worms/">Anthropic’s red team ran AI on 15 cheap TV boxes. Then the math got unsettling.</a><span class="item-date">Tue, 13 Oct 2026 16:40:24 +0000</span></li><li><a href="https://thenewstack.io/gemini-4-argon-live/">Gemini 4 Argon debuts with a unified 1M input/output token limit</a><span class="item-date">Tue, 13 Oct 2026 16:00:00 +0000</span></li><li><a href="https://thenewstack.io/ai-agent-credentials-identity-provider/">The agent did the work. The audit log couldn’t say who asked.</a><span class="item-date">Tue, 13 Oct 2026 15:00:48 +0000</span></li><li><a href="https://thenewstack.io/workday-headless-mcp-agents/">Workday goes headless, opening its HR and finance data to outside AI agents</a><span class="item-date">Tue, 13 Oct 2026 13:00:00 +0000</span></li><li><a href="https://thenewstack.io/workday-is-using-typesafes-jev-to-build-user-interfaces-on-the-fly/">Workday is using TypeSafe’s Jev to build user interfaces on the fly</a><span class="item-date">Tue, 13 Oct 2026 13:00:00 +0000</span></li><li><a href="https://thenewstack.io/x-subscription-cursor-pricing/">The X Subscription bundles Cursor with Grok and X Premium. But Claude now costs extra.</a><span class="item-date">Tue, 13 Oct 2026 12:25:19 +0000</span></li><li><a href="https://thenewstack.io/opencode-2-shared-service/">“A major overhaul”: OpenCode 2.0 puts its terminal, desktop, and web apps on one shared service</a><span class="item-date">Mon, 12 Oct 2026 21:11:33 +0000</span></li><li><a href="https://thenewstack.io/gpus-on-kubernetes/">GPUs on Kubernetes are bring-your-own-everything, starting with the bill</a><span class="item-date">Mon, 12 Oct 2026 20:48:01 +0000</span></li><li><a href="https://thenewstack.io/google-devsite-rce-bounty/">Google paid $90,000 for this bug, then waited two months to fix it</a><span class="item-date">Mon, 12 Oct 2026 20:47:17 +0000</span></li><li><a href="https://thenewstack.io/coding-agents-platform-teams/">Coding agents made building easy. Platform teams that build from scratch are 3.5x more likely to lack a strategy.</a><span class="item-date">Mon, 12 Oct 2026 19:28:27 +0000</span></li><li><a href="https://thenewstack.io/karpathy-levie-ai-capability-gap/">Andrej Karpathy says only 5,000 people have seen what AI can really do</a><span class="item-date">Mon, 12 Oct 2026 15:54:20 +0000</span></li></ul></div></div></div>
+<h2 id="vuln-tracking" style="scroll-margin-top:4.5rem;">Scoped Vulnerability Tracking</h2>
+<h2>Database</h2>
+<p>One-paragraph executive summary, highlighting the single most urgent item (a CISA KEV-confirmed entry always outranks a merely high-CVSS entry, since it&#x27;s confirmed exploitation vs. theoretical severity).</p>
+<p>Among the database assets, the most urgent issue is CVE‑2025‑56157, a critical (CVSS 9.8) vulnerability in Dify’s Docker‑based PostgreSQL deployment that exposes default credentials when the database port is exposed, enabling any network attacker to gain full database access.</p>
+<h3>Formal Vulnerabilities</h3>
+<div class="vuln-card sev-critical"><div class="vuln-card-head"><span class="vuln-system">MySQL</span><span class="badge badge-cve">CVE-2025-50455</span><span class="badge badge-cvss sev-critical">CVSS 9.1 · CRITICAL</span></div><div class="vuln-card-body">
+<p><strong>Summary:</strong> SQL injection via the order_by parameter of the /customers/search endpoint in EasyAppointments ≤ 1.5.1. Unauthenticated attackers can supply a malicious order_by value, causing time‑based queries, schema enumeration, and potentially remote code execution by writing a PHP shell with INTO OUTFILE when MySQL permits file writing.</p>
+<p><strong>Affected Features / Interoperability:</strong> The web application’s search endpoint and its dynamic ORDER BY clause; exploitation can break application integrity, lead to data leakage, and compromise the underlying server.</p>
+<p><strong>Source:</strong> <a href="https://github.com/threatlance-org/security-advisories/blob/main/CVE-2025-50455/advisory.md,">https://github.com/threatlance-org/security-advisories/blob/main/CVE-2025-50455/advisory.md,</a> <a href="https://github.com/threatlance-org/security-advisories/blob/main/CVE-2025-50455/poc.py,">https://github.com/threatlance-org/security-advisories/blob/main/CVE-2025-50455/poc.py,</a> <a href="https://www.linkedin.com/posts/michael-chesang_cve-securityadvisory-appsec-activity-7360754900827365376-Z-IY,">https://www.linkedin.com/posts/michael-chesang_cve-securityadvisory-appsec-activity-7360754900827365376-Z-IY,</a> <a href="https://github.com/threatlance-org/security-advisories/blob/main/CVE-2025-50455/advisory.md">https://github.com/threatlance-org/security-advisories/blob/main/CVE-2025-50455/advisory.md</a></p>
+<p><strong>Actions:</strong></p>
+<ul>
+<li>Fix: Upgrade EasyAppointments to a version that sanitizes the order_by parameter (no specific version listed; consider the latest release if available).</li>
+<li>Workaround: Implement strict input validation on the order_by field, restrict allowed column names, and disable file‑write capabilities in MySQL (e.g., set `secure_file_priv` to a safe directory) to prevent PHP shell creation.</li>
+<li>Tradeoff: The workaround may limit legitimate ordering options and could affect existing functionality that relies on dynamic ORDER BY.</li>
+</ul>
+</div></div>
+<div class="vuln-card sev-high"><div class="vuln-card-head"><span class="vuln-system">MySQL</span><span class="badge badge-cve">CVE-2026-107815</span><span class="badge badge-cvss sev-high">CVSS 8.5 · HIGH</span></div><div class="vuln-card-body">
+<p><strong>Summary:</strong> A boundary check flaw in MariaDB’s CONNECT engine’s DOS table type permits a one‑byte null write beyond a stack buffer when an authenticated user triggers a malformed DOS table, leading to crash or remote code execution.</p>
+<p><strong>Affected Features / Interoperability:</strong> The CONNECT storage engine’s DOS table handling; impact may disrupt replication, client connections, and overall database availability.</p>
+<p><strong>Source:</strong> <a href="https://github.com/MariaDB/server/commit/b369925f6855d3e1f0ebcf453492724b99fda6f8,">https://github.com/MariaDB/server/commit/b369925f6855d3e1f0ebcf453492724b99fda6f8,</a> <a href="https://github.com/MariaDB/server/releases/tag/mariadb-10.11.19,">https://github.com/MariaDB/server/releases/tag/mariadb-10.11.19,</a> <a href="https://github.com/MariaDB/server/releases/tag/mariadb-10.6.28,">https://github.com/MariaDB/server/releases/tag/mariadb-10.6.28,</a> <a href="https://github.com/MariaDB/server/releases/tag/mariadb-11.4.13,">https://github.com/MariaDB/server/releases/tag/mariadb-11.4.13,</a> <a href="https://github.com/MariaDB/server/releases/tag/mariadb-11.8.9">https://github.com/MariaDB/server/releases/tag/mariadb-11.8.9</a></p>
+<p><strong>Actions:</strong></p>
+<ul>
+<li>Fix: Upgrade MariaDB to version 10.6.28, 10.11.19, 11.4.13, 11.8.9, 12.3.3, or 13.0.2.</li>
+<li>Workaround: Disable the CONNECT engine if not needed, or rebuild the server with the patch applied.</li>
+<li>Tradeoff: Disabling CONNECT may remove support for certain storage features; rebuilding requires custom compilation and testing.</li>
+</ul>
+</div></div>
+<div class="vuln-card sev-high"><div class="vuln-card-head"><span class="vuln-system">MySQL</span><span class="badge badge-cve">CVE-2026-107818</span><span class="badge badge-cvss sev-high">CVSS 8.4 · HIGH</span></div><div class="vuln-card-body">
+<p><strong>Summary:</strong> The mariadb.service unit writes a file at /run/mysqld/wsrep-new-cluster during restart. A database user with FILE privilege and a permissive secure-file-priv can create that file with attacker‑controlled environment values, leading to code execution when the service restarts.</p>
+<p><strong>Affected Features / Interoperability:</strong> The systemd service unit for MariaDB; exploitation can affect replication and any services that rely on the wsrep cluster restart.</p>
+<p><strong>Source:</strong> <a href="https://github.com/MariaDB/server/commit/e3d62d4e78fd4941cef3f5053e6a50d0b32d740e,">https://github.com/MariaDB/server/commit/e3d62d4e78fd4941cef3f5053e6a50d0b32d740e,</a> <a href="https://github.com/MariaDB/server/releases/tag/mariadb-10.11.19,">https://github.com/MariaDB/server/releases/tag/mariadb-10.11.19,</a> <a href="https://github.com/MariaDB/server/releases/tag/mariadb-10.6.28,">https://github.com/MariaDB/server/releases/tag/mariadb-10.6.28,</a> <a href="https://github.com/MariaDB/server/releases/tag/mariadb-11.4.13,">https://github.com/MariaDB/server/releases/tag/mariadb-11.4.13,</a> <a href="https://github.com/MariaDB/server/releases/tag/mariadb-11.8.9">https://github.com/MariaDB/server/releases/tag/mariadb-11.8.9</a></p>
+<p><strong>Actions:</strong></p>
+<ul>
+<li>Fix: Upgrade to MariaDB versions 10.6.28, 10.11.19, 11.4.13, 11.8.9, 12.3.3, or 13.0.2.</li>
+<li>Workaround: Restrict FILE privilege, ensure secure-file-priv does not allow writes to /run/mysqld, or remove write permission on that directory.</li>
+<li>Tradeoff: Limiting FILE privilege may impede legitimate backup or dump operations; removing write access could break maintenance scripts.</li>
+</ul>
+</div></div>
+<div class="vuln-card sev-high"><div class="vuln-card-head"><span class="vuln-system">MySQL</span><span class="badge badge-cve">CVE-2026-109573</span><span class="badge badge-cvss sev-high">CVSS 8.1 · HIGH</span></div><div class="vuln-card-body">
+<p><strong>Summary:</strong> In phpMyFAQ before 4.1.9, the PdoMysql::escape() function fails to properly handle Unicode right single quotation marks when NO_BACKSLASH_ESCAPES mode is enabled, allowing unauthenticated attackers to inject SQL via the search parameter of the autocomplete API.</p>
+<p><strong>Affected Features / Interoperability:</strong> The search autocomplete endpoint of phpMyFAQ; exploitation can lead to credential disclosure, record modification, or table deletion.</p>
+<p><strong>Source:</strong> <a href="https://github.com/thorsten/phpMyFAQ/security/advisories/GHSA-98p2-cg7p-h385,">https://github.com/thorsten/phpMyFAQ/security/advisories/GHSA-98p2-cg7p-h385,</a> <a href="https://www.vulncheck.com/advisories/phpmyfaq-before-4.1.9-sql-injection-via-api-autocomplete-search-endpoint,">https://www.vulncheck.com/advisories/phpmyfaq-before-4.1.9-sql-injection-via-api-autocomplete-search-endpoint,</a> <a href="https://github.com/thorsten/phpMyFAQ/security/advisories/GHSA-98p2-cg7p-h385">https://github.com/thorsten/phpMyFAQ/security/advisories/GHSA-98p2-cg7p-h385</a></p>
+<p><strong>Actions:</strong></p>
+<ul>
+<li>Fix: Upgrade phpMyFAQ to version 4.1.9 or later.</li>
+<li>Workaround: Disable NO_BACKSLASH_ESCAPES mode or sanitize user‑supplied search terms before they reach the API.</li>
+<li>Tradeoff: Disabling NO_BACKSLASH_ESCAPES may affect other query behaviors; sanitization adds processing overhead.</li>
+</ul>
+</div></div>
+<div class="vuln-card sev-high"><div class="vuln-card-head"><span class="vuln-system">MySQL</span><span class="badge badge-cve">CVE-2026-107821</span><span class="badge badge-cvss sev-high">CVSS 8.0 · HIGH</span></div><div class="vuln-card-body">
+<p><strong>Summary:</strong> Insufficient validation of counts, offsets, lengths, and field boundaries in MariaDB’s FRM metadata while opening binary FRM files can cause out‑of‑bounds reads or writes, leading to server crash or potential code execution.</p>
+<p><strong>Affected Features / Interoperability:</strong> Binary FRM file handling; impact may disrupt database operation and cause downtime for all connected clients.</p>
+<p><strong>Source:</strong> <a href="https://github.com/MariaDB/server/commit/3b1c2e58abab5571bec4ff52773ddc75b1738da9,">https://github.com/MariaDB/server/commit/3b1c2e58abab5571bec4ff52773ddc75b1738da9,</a> <a href="https://github.com/MariaDB/server/releases/tag/mariadb-10.11.19,">https://github.com/MariaDB/server/releases/tag/mariadb-10.11.19,</a> <a href="https://github.com/MariaDB/server/releases/tag/mariadb-10.6.28,">https://github.com/MariaDB/server/releases/tag/mariadb-10.6.28,</a> <a href="https://github.com/MariaDB/server/releases/tag/mariadb-11.4.13,">https://github.com/MariaDB/server/releases/tag/mariadb-11.4.13,</a> <a href="https://github.com/MariaDB/server/releases/tag/mariadb-11.8.9">https://github.com/MariaDB/server/releases/tag/mariadb-11.8.9</a></p>
+<p><strong>Actions:</strong></p>
+<ul>
+<li>Fix: Upgrade MariaDB to version 10.6.28, 10.11.19, 11.4.13, 11.8.9, 12.3.3, or 13.0.2.</li>
+<li>Workaround: Restrict write access to the data directory, enforce filesystem permissions, and monitor for unexpected FRM file creation.</li>
+<li>Tradeoff: Tightening filesystem permissions may hinder legitimate file operations or backup processes.</li>
+</ul>
+</div></div>
+<div class="vuln-card sev-high"><div class="vuln-card-head"><span class="vuln-system">MySQL</span><span class="badge badge-cve">CVE-2026-108805</span><span class="badge badge-cvss sev-high">CVSS 7.3 · HIGH</span></div><div class="vuln-card-body">
+<p><strong>Summary:</strong> SQL injection in the login processing module of krupalshah EmployeeRecruitmentSystem (up to commit 922ff6d208278282e7c8e36d70d9ae356adec9fe) via the mysql_query call in source/loginprocessing.php, allowing remote attackers to manipulate the email/password argument.</p>
+<p><strong>Affected Features / Interoperability:</strong> User authentication/login flow; compromise can lead to credential theft, data manipulation, or full system takeover.</p>
+<p><strong>Source:</strong> <a href="https://github.com/xiaotian2023/CVE/issues/1,">https://github.com/xiaotian2023/CVE/issues/1,</a> <a href="https://vuldb.com/cve/CVE-2026-108805,">https://vuldb.com/cve/CVE-2026-108805,</a> <a href="https://vuldb.com/submit/963376,">https://vuldb.com/submit/963376,</a> <a href="https://vuldb.com/vuln/416582,">https://vuldb.com/vuln/416582,</a> <a href="https://vuldb.com/vuln/416582/cti">https://vuldb.com/vuln/416582/cti</a></p>
+<p><strong>Actions:</strong></p>
+<ul>
+<li>Fix: No official patch or version information is provided; consider migrating to a supported, actively maintained recruitment system.</li>
+<li>Workaround: Apply input validation and use prepared statements in the application code; enforce strong password policies and limit network exposure of the login endpoint.</li>
+<li>Tradeoff: Input validation may reduce flexibility of user input handling but does not eliminate the underlying vulnerability if the application continues to use raw mysql_query.</li>
+</ul>
+</div></div>
+<div class="vuln-card sev-high"><div class="vuln-card-head"><span class="vuln-system">MySQL</span><span class="badge badge-cve">CVE-2026-108806</span><span class="badge badge-cvss sev-high">CVSS 7.3 · HIGH</span></div><div class="vuln-card-body">
+<p><strong>Summary:</strong> SQL injection in the forgot‑password handler of krupalshah EmployeeRecruitmentSystem via the mysql_query call in source/authprocessing.php, where the fpemail argument can be manipulated remotely.</p>
+<p><strong>Affected Features / Interoperability:</strong> Password recovery functionality; exploitation can allow unauthorized data access or modification.</p>
+<p><strong>Source:</strong> <a href="https://github.com/xiaotian2023/CVE/issues/2,">https://github.com/xiaotian2023/CVE/issues/2,</a> <a href="https://vuldb.com/cve/CVE-2026-108806,">https://vuldb.com/cve/CVE-2026-108806,</a> <a href="https://vuldb.com/submit/963380,">https://vuldb.com/submit/963380,</a> <a href="https://vuldb.com/vuln/416583,">https://vuldb.com/vuln/416583,</a> <a href="https://vuldb.com/vuln/416583/cti">https://vuldb.com/vuln/416583/cti</a></p>
+<p><strong>Actions:</strong></p>
+<ul>
+<li>Fix: No version details are available; upgrade to a maintained fork or replace the system.</li>
+<li>Workaround: Validate and sanitize the fpemail parameter, use prepared statements, and restrict access to the forgot‑password endpoint.</li>
+<li>Tradeoff: Input validation may limit legitimate email formats but is necessary to prevent injection.</li>
+</ul>
+</div></div>
+<div class="vuln-card sev-high"><div class="vuln-card-head"><span class="vuln-system">MySQL</span><span class="badge badge-cve">CVE-2026-108807</span><span class="badge badge-cvss sev-high">CVSS 7.3 · HIGH</span></div><div class="vuln-card-body">
+<p><strong>Summary:</strong> SQL injection in the registration handler of krupalshah EmployeeRecruitmentSystem via the mysql_query call in source/adminregister.php, enabling remote manipulation of the argument.</p>
+<p><strong>Affected Features / Interoperability:</strong> User registration process; compromise can lead to unauthorized account creation or data tampering.</p>
+<p><strong>Source:</strong> <a href="https://github.com/xiaotian2023/CVE/issues/3,">https://github.com/xiaotian2023/CVE/issues/3,</a> <a href="https://vuldb.com/cve/CVE-2026-108807,">https://vuldb.com/cve/CVE-2026-108807,</a> <a href="https://vuldb.com/submit/963381,">https://vuldb.com/submit/963381,</a> <a href="https://vuldb.com/vuln/416584,">https://vuldb.com/vuln/416584,</a> <a href="https://vuldb.com/vuln/416584/cti">https://vuldb.com/vuln/416584/cti</a></p>
+<p><strong>Actions:</strong></p>
+<ul>
+<li>Fix: No version information is available; consider replacing the system with a patched alternative.</li>
+<li>Workaround: Enforce strict input validation, use prepared statements, and limit exposure of the registration endpoint.</li>
+<li>Tradeoff: Validation may reject some legitimate inputs but is essential to block injection.</li>
+</ul>
+</div></div>
+<div class="vuln-card sev-high"><div class="vuln-card-head"><span class="vuln-system">MySQL</span><span class="badge badge-cve">CVE-2026-108921</span><span class="badge badge-cvss sev-high">CVSS 7.3 · HIGH</span></div><div class="vuln-card-body">
+<p><strong>Summary:</strong> Missing authentication on the ID parameter of the remove_announcements.php endpoint in KusalkaSilva Learning‑Management‑System allows any remote attacker to modify or delete announcements.</p>
+<p><strong>Affected Features / Interoperability:</strong> Announcement management feature; impact includes data tampering and loss of integrity for educational content.</p>
+<p><strong>Source:</strong> <a href="https://github.com/KusalkaSilva/Learning-Management-System/,">https://github.com/KusalkaSilva/Learning-Management-System/,</a> <a href="https://github.com/KusalkaSilva/Learning-Management-System/issues/5,">https://github.com/KusalkaSilva/Learning-Management-System/issues/5,</a> <a href="https://vuldb.com/cve/CVE-2026-108921,">https://vuldb.com/cve/CVE-2026-108921,</a> <a href="https://vuldb.com/submit/994370,">https://vuldb.com/submit/994370,</a> <a href="https://vuldb.com/vuln/416734">https://vuldb.com/vuln/416734</a></p>
+<p><strong>Actions:</strong></p>
+<ul>
+<li>Fix: Upgrade to a version that implements proper authentication checks (version not specified).</li>
+<li>Workaround: Implement server‑side authentication for the endpoint, validate the ID parameter, and restrict access to authorized users only.</li>
+<li>Tradeoff: Adding authentication may require changes to existing workflows but protects data integrity.</li>
+</ul>
+</div></div>
+<div class="vuln-card sev-high"><div class="vuln-card-head"><span class="vuln-system">MySQL</span><span class="badge badge-cve">CVE-2026-108970</span><span class="badge badge-cvss sev-high">CVSS 7.3 · HIGH</span></div><div class="vuln-card-body">
+<p><strong>Summary:</strong> SQL injection in the registration form of itsmeravitejak Online‑Examination‑System via the MySQLDB::addNewUser argument “branch” in include/database.php, allowing remote attackers to inject malicious SQL.</p>
+<p><strong>Affected Features / Interoperability:</strong> User registration and database interaction; exploitation can lead to unauthorized data insertion, modification, or deletion.</p>
+<p><strong>Source:</strong> <a href="https://github.com/itsmeravitejak/Online-Examination-System/,">https://github.com/itsmeravitejak/Online-Examination-System/,</a> <a href="https://github.com/itsmeravitejak/Online-Examination-System/issues/3,">https://github.com/itsmeravitejak/Online-Examination-System/issues/3,</a> <a href="https://vuldb.com/cve/CVE-2026-108970,">https://vuldb.com/cve/CVE-2026-108970,</a> <a href="https://vuldb.com/submit/999472,">https://vuldb.com/submit/999472,</a> <a href="https://vuldb.com/vuln/416788">https://vuldb.com/vuln/416788</a></p>
+<p><strong>Actions:</strong></p>
+<ul>
+<li>Fix: Upgrade to a version that sanitizes the “branch” argument (version not specified).</li>
+<li>Workaround: Apply input validation and use prepared statements for database operations; restrict database privileges for the application user.</li>
+<li>Tradeoff: Input validation may affect legitimate registration flows but is required to prevent injection.</li>
+</ul>
+</div></div>
+<div class="vuln-card sev-critical"><div class="vuln-card-head"><span class="vuln-system">PostgreSQL</span><span class="badge badge-cve">CVE-2025-56157</span><span class="badge badge-cvss sev-critical">CVSS 9.8 · CRITICAL</span></div><div class="vuln-card-body">
+<p><strong>Summary:</strong> Default PostgreSQL credentials are shipped in Dify Docker compose files up to version 1.5.1; if the container exposes port 5432, any network user can log in with the published username and password, gaining full database access.</p>
+<p><strong>Affected Features / Interoperability:</strong> Direct database access via PostgreSQL; compromise can lead to data breach, unauthorized modifications, and further attacks on connected services.</p>
+<p><strong>Source:</strong> <a href="https://gist.github.com/Cristliu/216ddbadaf3258498c93d408683ecabd,">https://gist.github.com/Cristliu/216ddbadaf3258498c93d408683ecabd,</a> <a href="https://gist.github.com/Cristliu/298f51cbc72c45d91632cd0d65aa8161,">https://gist.github.com/Cristliu/298f51cbc72c45d91632cd0d65aa8161,</a> <a href="https://github.com/langgenius/dify,">https://github.com/langgenius/dify,</a> <a href="https://github.com/langgenius/dify/issues/15285,">https://github.com/langgenius/dify/issues/15285,</a> <a href="https://github.com/langgenius/dify/pull/15286">https://github.com/langgenius/dify/pull/15286</a></p>
+<p><strong>Actions:</strong></p>
+<ul>
+<li>Fix: Upgrade Dify to version 1.0.1 or later, or reconfigure Docker compose to avoid exposing port 5432.</li>
+<li>Workaround: Change the default credentials to strong, unique values and restrict network access to the PostgreSQL port via firewall rules.</li>
+<li>Tradeoff: Changing credentials may require updating application configuration; firewall restrictions could impede legitimate remote access.</li>
+</ul>
+</div></div>
+<div class="vuln-card sev-high"><div class="vuln-card-head"><span class="vuln-system">PostgreSQL</span><span class="badge badge-cve">CVE-2025-14180</span><span class="badge badge-cvss sev-high">CVSS 7.5 · HIGH</span></div><div class="vuln-card-body">
+<p><strong>Summary:</strong> In PHP PDO PostgreSQL driver versions before the patched releases, an invalid character sequence in a prepared statement can cause the quoting function to return NULL, leading to a null‑pointer dereference and potential server crash.</p>
+<p><strong>Affected Features / Interoperability:</strong> PHP applications using PDO with PostgreSQL; the issue affects availability of the database server when such statements are sent.</p>
+<p><strong>Source:</strong> <a href="https://github.com/php/php-src/security/advisories/GHSA-8xr5-qppj-gvwj">https://github.com/php/php-src/security/advisories/GHSA-8xr5-qppj-gvwj</a></p>
+<p><strong>Actions:</strong></p>
+<ul>
+<li>Fix: Upgrade PHP to version 8.1.34+, 8.2.30+, 8.3.29+, 8.4.16+, or 8.5.1+ to apply the driver fix.</li>
+<li>Workaround: Disable the PDO::ATTR_EMULATE_PREPARES option or avoid sending invalid character sequences in prepared statements.</li>
+<li>Tradeoff: Disabling emulation may alter statement behavior; avoiding invalid characters may limit certain query patterns.</li>
+</ul>
+</div></div>
+<div class="vuln-card sev-medium"><div class="vuln-card-head"><span class="vuln-system">PostgreSQL</span><span class="badge badge-cve">CVE-2026-109954</span><span class="badge badge-cvss sev-medium">CVSS 6.5 · MEDIUM</span></div><div class="vuln-card-body">
+<p><strong>Summary:</strong> Parse Server versions before 8.6.96 (and 9.0.0 before 9.10.2‑alpha.5) share transactional batch state across concurrent requests, causing other clients’ acknowledged writes to be rolled back and PostgreSQL transactions to remain open, leading to write failures.</p>
+<p><strong>Affected Features / Interoperability:</strong> Transactional batch requests in Parse Server; impacts PostgreSQL and MongoDB replica sets and sharded clusters, causing denial of service for write operations.</p>
+<p><strong>Source:</strong> <a href="https://github.com/parse-community/parse-server/security/advisories/GHSA-jhh9-hrgh-c9gv,">https://github.com/parse-community/parse-server/security/advisories/GHSA-jhh9-hrgh-c9gv,</a> <a href="https://www.vulncheck.com/advisories/parse-server-9.0.0-before-9.10.2-alpha.5-transactional-batch-request-write-interference">https://www.vulncheck.com/advisories/parse-server-9.0.0-before-9.10.2-alpha.5-transactional-batch-request-write-interference</a></p>
+<p><strong>Actions:</strong></p>
+<ul>
+<li>Fix: Upgrade Parse Server to version 8.6.96 or later (or 9.10.2‑alpha.5+).</li>
+<li>Workaround: Throttle batch request rates and implement client‑side retry logic for write operations.</li>
+<li>Tradeoff: Throttling may increase latency for clients but prevents write rollbacks.</li>
+</ul>
+</div></div>
+<div class="vuln-card sev-medium"><div class="vuln-card-head"><span class="vuln-system">PostgreSQL</span><span class="badge badge-cve">CVE-2026-108604</span><span class="badge badge-cvss sev-medium">CVSS 6.3 · MEDIUM</span></div><div class="vuln-card-body">
+<p><strong>Summary:</strong> Tabularis through version 0.27.0 contains an authorization bypass in the MCP run_query safety gate, allowing trusted MCP clients or prompt‑injected agents to execute side‑effecting SELECT statements (e.g., setval, nextval, query_to_xml) and modify data without approval.</p>
+<p><strong>Affected Features / Interoperability:</strong> MCP (Meta‑Control‑Protocol) query execution; can affect data integrity and replication if used to change sequence values or execute DML via XML queries.</p>
+<p><strong>Source:</strong> <a href="https://github.com/TabularisDB/tabularis,">https://github.com/TabularisDB/tabularis,</a> <a href="https://github.com/TabularisDB/tabularis/blob/804c4c3bb6fd8eaa2e36cbe49f6c0d58f373b5e9/src-tauri/src/ai_activity.rs#L357-L416,">https://github.com/TabularisDB/tabularis/blob/804c4c3bb6fd8eaa2e36cbe49f6c0d58f373b5e9/src-tauri/src/ai_activity.rs#L357-L416,</a> <a href="https://github.com/TabularisDB/tabularis/blob/804c4c3bb6fd8eaa2e36cbe49f6c0d58f373b5e9/src-tauri/src/mcp/mod.rs#L1136-L1171,">https://github.com/TabularisDB/tabularis/blob/804c4c3bb6fd8eaa2e36cbe49f6c0d58f373b5e9/src-tauri/src/mcp/mod.rs#L1136-L1171,</a> <a href="https://hackmd.io/@haind/S1BofaIsMx,">https://hackmd.io/@haind/S1BofaIsMx,</a> <a href="https://www.vulncheck.com/advisories/tabularis-through-0.27.0-read-only-bypass-via-mcp-run-query-select-classification">https://www.vulncheck.com/advisories/tabularis-through-0.27.0-read-only-bypass-via-mcp-run-query-select-classification</a></p>
+<p><strong>Actions:</strong></p>
+<ul>
+<li>Fix: Upgrade Tabularis to a version that patches the run_query safety gate (exact version not specified).</li>
+<li>Workaround: Enforce stricter validation of run_query commands, disable unsafe statements, and limit MCP client privileges.</li>
+<li>Tradeoff: Restricting commands may reduce legitimate use cases that rely on those SELECT‑based operations.</li>
+</ul>
+</div></div>
+<div class="vuln-card sev-high"><div class="vuln-card-head"><span class="vuln-system">MongoDB</span><span class="badge badge-cve">CVE-2026-109426</span><span class="badge badge-cvss sev-high">CVSS 7.5 · HIGH</span></div><div class="vuln-card-body">
+<p><strong>Summary:</strong> Telegram‑Stremio stores operator session strings in MongoDB using a reversible, keyless encoding; attackers with DB access can decode the string and obtain a fully authenticated Telegram session, bypassing two‑step verification.</p>
+<p><strong>Affected Features / Interoperability:</strong> Session storage mechanism; compromise enables full account takeover and unauthorized messaging, affecting user privacy and service integrity.</p>
+<p><strong>Source:</strong> <a href="https://gist.github.com/mansurmavlankulov/489554cad7b38e07b9651c217f00fffb,">https://gist.github.com/mansurmavlankulov/489554cad7b38e07b9651c217f00fffb,</a> <a href="https://www.vulncheck.com/advisories/telegram-stremio-insecure-session-storage-via-encode-string">https://www.vulncheck.com/advisories/telegram-stremio-insecure-session-storage-via-encode-string</a></p>
+<p><strong>Actions:</strong></p>
+<ul>
+<li>Fix: Replace the reversible encoding with strong encryption and rotate session tokens; update the application to use proper credential storage.</li>
+<li>Workaround: Limit MongoDB access to only trusted services, rotate session tokens regularly, and monitor for unauthorized access to the database.</li>
+<li>Tradeoff: Enhanced security may require operational changes to token management and increased monitoring overhead.</li>
+</ul>
+</div></div>
+<div class="vuln-card sev-medium"><div class="vuln-card-head"><span class="vuln-system">MongoDB</span><span class="badge badge-cve">CVE-2026-104004</span><span class="badge badge-cvss sev-medium">CVSS 6.5 · MEDIUM</span></div><div class="vuln-card-body">
+<p><strong>Summary:</strong> MongoDB Server’s collection validation feature may mishandle certain validator expressions, causing the server process to crash when a document is later inserted, affecting authenticated write users.</p>
+<p><strong>Affected Features / Interoperability:</strong> Collection validation logic; potential server crash can disrupt all database operations for users relying on that collection.</p>
+<p><strong>Source:</strong> <a href="https://jira.mongodb.org/browse/SERVER-131412">https://jira.mongodb.org/browse/SERVER-131412</a></p>
+<p><strong>Actions:</strong></p>
+<ul>
+<li>Fix: Upgrade MongoDB Server to a version that resolves the validation expression handling issue (version not specified).</li>
+<li>Workaround: Avoid using problematic validation expressions in collection definitions; test inserts in a staging environment before production deployment.</li>
+<li>Tradeoff: Limiting validation expressions may reduce data integrity safeguards but prevents crashes.</li>
+</ul>
+</div></div>
+<div class="vuln-card sev-medium"><div class="vuln-card-head"><span class="vuln-system">MongoDB</span><span class="badge badge-cve">CVE-2026-104005</span><span class="badge badge-cvss sev-medium">CVSS 6.5 · MEDIUM</span></div><div class="vuln-card-body">
+<p><strong>Summary:</strong> In mongos (the sharded cluster router), an authenticated readWrite user can craft an aggregation pipeline that triggers an internal aggregation stage lacking proper authorization, leading to a crash and denial of service for all clients routed through that mongos instance.</p>
+<p><strong>Affected Features / Interoperability:</strong> Sharded cluster routing; a crash in mongos can interrupt query processing for all connected clients, causing service outage.</p>
+<p><strong>Source:</strong> <a href="https://jira.mongodb.org/browse/SERVER-131411">https://jira.mongodb.org/browse/SERVER-131411</a></p>
+<p><strong>Actions:</strong></p>
+<ul>
+<li>Fix: Upgrade mongos to a patched version (exact version not specified).</li>
+<li>Workaround: Restrict aggregation pipeline usage to authorized users, disable unsafe internal stages, and monitor mongos logs for abnormal restarts.</li>
+<li>Tradeoff: Limiting pipeline capabilities may reduce flexibility for legitimate administrative tasks.</li>
+</ul>
+</div></div>
+<div class="vuln-card sev-medium"><div class="vuln-card-head"><span class="vuln-system">MongoDB</span><span class="badge badge-cve">CVE-2026-109954</span><span class="badge badge-cvss sev-medium">CVSS 6.5 · MEDIUM</span></div><div class="vuln-card-body">
+<p><strong>Summary:</strong> Same as PostgreSQL entry: Parse Server transactional batch state sharing causes write interference and indefinite open transactions on PostgreSQL or MongoDB clusters, resulting in write failures.</p>
+<p><strong>Affected Features / Interoperability:</strong> Transactional batch requests in Parse Server; impacts PostgreSQL and MongoDB replica sets and sharded clusters, causing write failures and potential denial of service.</p>
+<p><strong>Source:</strong> <a href="https://github.com/parse-community/parse-server/security/advisories/GHSA-jhh9-hrgh-c9gv,">https://github.com/parse-community/parse-server/security/advisories/GHSA-jhh9-hrgh-c9gv,</a> <a href="https://www.vulncheck.com/advisories/parse-server-9.0.0-before-9.10.2-alpha.5-transactional-batch-request-write-interference">https://www.vulncheck.com/advisories/parse-server-9.0.0-before-9.10.2-alpha.5-transactional-batch-request-write-interference</a></p>
+<p><strong>Actions:</strong></p>
+<ul>
+<li>Fix: Upgrade Parse Server to version 8.6.96 or later (or 9.10.2‑alpha.5+).</li>
+<li>Workaround: Limit concurrent batch requests and implement client‑side retry logic for write operations.</li>
+<li>Tradeoff: Throttling may increase latency but prevents write rollbacks.</li>
+</ul>
+</div></div>
+<div class="vuln-card sev-medium"><div class="vuln-card-head"><span class="vuln-system">MongoDB</span><span class="badge badge-cve">CVE-2026-96297</span><span class="badge badge-cvss sev-medium">CVSS 6.5 · MEDIUM</span></div><div class="vuln-card-body">
+<p><strong>Summary:</strong> Use of freed memory in MongoDB’s aggregation feature with a batch size of 0 can cause the server to read from memory after it has been released, leading to corrupted query results or unexpected process termination.</p>
+<p><strong>Affected Features / Interoperability:</strong> Aggregation queries with batch size 0; potential data corruption or service crash affecting all clients that issue such queries.</p>
+<p><strong>Source:</strong> <a href="https://jira.mongodb.org/browse/SERVER-132946">https://jira.mongodb.org/browse/SERVER-132946</a></p>
+<p><strong>Actions:</strong></p>
+<ul>
+<li>Fix: Upgrade MongoDB Server to a version that resolves the memory handling bug (version not specified).</li>
+<li>Workaround: Avoid using batch size 0 in aggregation commands; enforce a minimum batch size via application logic.</li>
+<li>Tradeoff: Restricting batch size may limit query performance or functionality but prevents memory‑related crashes.</li>
+</ul>
+</div></div>
+<div class="vuln-card sev-medium"><div class="vuln-card-head"><span class="vuln-system">MongoDB</span><span class="badge badge-cve">CVE-2026-96299</span><span class="badge badge-cvss sev-medium">CVSS 6.5 · MEDIUM</span></div><div class="vuln-card-body">
+<p><strong>Summary:</strong> Same as CVE‑2026‑104005: an authenticated readWrite user can craft a malicious aggregation pipeline in mongos that lacks proper authorization, causing the mongos process to crash and deny service to all clients.</p>
+<p><strong>Affected Features / Interoperability:</strong> Sharded cluster routing (mongos); crash leads to service outage for all routed clients.</p>
+<p><strong>Source:</strong> <a href="https://jira.mongodb.org/browse/SERVER-130431">https://jira.mongodb.org/browse/SERVER-130431</a></p>
+<p><strong>Actions:</strong></p>
+<ul>
+<li>Fix: Upgrade mongos to a patched release (version not specified).</li>
+<li>Workaround: Enforce stricter access controls on aggregation pipelines, disable unsafe internal stages, and monitor for mongos restarts.</li>
+<li>Tradeoff: Limiting pipeline capabilities may reduce administrative flexibility but prevents denial of service.</li>
+</ul>
+</div></div>
+<div class="vuln-card sev-medium"><div class="vuln-card-head"><span class="vuln-system">MongoDB</span><span class="badge badge-cve">CVE-2026-103965</span><span class="badge badge-cvss sev-medium">CVSS 5.4 · MEDIUM</span></div><div class="vuln-card-body">
+<p><strong>Summary:</strong> An issue in MongoDB’s aggregation framework can cause constant values to be handled incorrectly during internal query rewriting, resulting in authenticated read‑only users receiving unintended field values in aggregation output.</p>
+<p><strong>Affected Features / Interoperability:</strong> Aggregation framework output; may lead to data integrity issues where clients receive unexpected information.</p>
+<p><strong>Source:</strong> <a href="https://jira.mongodb.org/browse/SERVER-134618">https://jira.mongodb.org/browse/SERVER-134618</a></p>
+<p><strong>Actions:</strong></p>
+<ul>
+<li>Fix: Upgrade MongoDB Server to a version that corrects the constant handling (version not specified).</li>
+<li>Workaround: Avoid aggregation pipelines that trigger the problematic rewriting path; validate output before using results.</li>
+<li>Tradeoff: Avoiding certain aggregation patterns may limit analytical capabilities but ensures correct data retrieval.</li>
+</ul>
+</div></div>
+<h3>News &amp; Community Mentions</h3>
+<p><strong>Oracle Database</strong></p>
+<ul>
+<li>Unverified chatter: Can enterprises trust AI to build apps using Oracle APEX? (news.google.com) <a href="https://news.google.com/rss/articles/CBMivAFBVV95cUxNQ2RqMVotcUVMRE1BY0hBVkZxMEk3Mjg5NXA0T1FZVVlUZVFfdTBKZXpqN0dkU1hCQlh1em84dnV2cDZmWVdLLWt3QWx5UlRaUFhwWUt3UXJtODdLSi1CS21fdWZtdUlMRVhLMlpjazJicmRIOUNrVUFQV05wUmRNMmw0SmRLNXJFV3JRM0xXa1ZGUy1lOVd3UUNMeHpfcGZ6eWpBZG9qQkRralJHdmI5YlpvTS1MRg?oc=5">https://news.google.com/rss/articles/CBMivAFBVV95cUxNQ2RqMVotcUVMRE1BY0hBVkZxMEk3Mjg5NXA0T1FZVVlUZVFfdTBKZXpqN0dkU1hCQlh1em84dnV2cDZmWVdLLWt3QWx5UlRaUFhwWUt3UXJtODdLSi1CS21fdWZtdUlMRVhLMlpjazJicmRIOUNrVUFQV05wUmRNMmw0SmRLNXJFV3JRM0xXa1ZGUy1lOVd3UUNMeHpfcGZ6eWpBZG9qQkRralJHdmI5YlpvTS1MRg?oc=5</a></li>
+</ul>
+<p>User Safety: safe</p>
+</body>
+</html>
