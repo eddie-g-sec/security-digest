@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Security Digest — 2026-10-14</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+:root {
+  --bg: #0F1419;
+  --surface: #161D26;
+  --surface-2: #1E2730;
+  --border: #2A343F;
+  --text: #E8EDF2;
+  --text-dim: #8B98A5;
+  --text-faint: #5A6672;
+  --link: #7DD3FC;
+  --sev-critical: #FF5D5D;
+  --sev-high: #FFA94D;
+  --sev-medium: #FFD43B;
+  --sev-low: #7C8B9A;
+  --sev-unscored: #6B7C93;
+  --row-security: #4FD1C5;
+  --row-database: #F0B429;
+  --row-cloud: #5EA8FF;
+}
+
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  * { transition: none !important; animation: none !important; }
+}
+
+body {
+  font-family: 'IBM Plex Sans', -apple-system, Segoe UI, Roboto, sans-serif;
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 0 1.25rem 4rem;
+  line-height: 1.6;
+  color: var(--text);
+  background: var(--bg);
+  font-size: 15px;
+}
+
+.mono { font-family: 'IBM Plex Mono', ui-monospace, monospace; }
+
+/* ---- Page header ---- */
+.page-header {
+  padding: 2rem 0 1.25rem;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 1.5rem;
+}
+.page-header .eyebrow {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  margin: 0 0 0.4rem;
+}
+h1 { font-size: 1.6rem; font-weight: 700; margin: 0 0 0.35rem; letter-spacing: -0.01em; }
+.page-header .meta { color: var(--text-dim); font-size: 0.85rem; margin: 0; }
+.back-link {
+  display: inline-block; margin-bottom: 1rem; color: var(--link);
+  font-family: 'IBM Plex Mono', monospace; font-size: 0.82rem; text-decoration: none;
+}
+.back-link:hover { text-decoration: underline; }
+
+/* ---- Sticky quick nav ---- */
+.quick-nav {
+  position: sticky; top: 0; z-index: 10;
+  display: flex; gap: 0.5rem; flex-wrap: wrap;
+  background: rgba(15, 20, 25, 0.92);
+  backdrop-filter: blur(6px);
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 2rem;
+}
+.quick-nav a {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.78rem;
+  color: var(--text-dim);
+  text-decoration: none;
+  padding: 0.35rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  transition: border-color 0.15s, color 0.15s;
+}
+.quick-nav a:hover { border-color: var(--link); color: var(--text); }
+
+/* ---- Section headers (news rows + vuln tracking) ---- */
+.row-header {
+  display: flex; align-items: baseline; gap: 0.65rem;
+  margin: 3rem 0 0.9rem; scroll-margin-top: 4.5rem;
+}
+.row-header .dot { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+.row-header h2 {
+  margin: 0; font-size: 0.78rem; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.1em; color: var(--text);
+  border: none; padding: 0;
+}
+.row-header .count {
+  font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; color: var(--text-faint);
+}
+.row-security .dot { background: var(--row-security); }
+.row-database .dot { background: var(--row-database); }
+.row-cloud .dot { background: var(--row-cloud); }
+
+/* ---- Raw news columns (horizontal scroll) ---- */
+.news-grid-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 0 0 1rem; padding-bottom: 0.6rem; }
+.news-grid { display: flex; gap: 1rem; width: max-content; }
+.news-column {
+  flex: 0 0 270px; background: var(--surface); border: 1px solid var(--border);
+  border-top: 2px solid var(--row-accent, var(--border)); border-radius: 8px; padding: 0.9rem 1rem;
+}
+.row-security .news-column { --row-accent: var(--row-security); }
+.row-database .news-column { --row-accent: var(--row-database); }
+.row-cloud .news-column { --row-accent: var(--row-cloud); }
+.news-column h4 {
+  margin: 0 0 0.65rem; font-size: 0.82rem; font-weight: 600; color: var(--text);
+  border: none; background: none; padding: 0;
+}
+.news-column ul { list-style: none; padding: 0; margin: 0; }
+.news-column li { padding: 0.5rem 0; border-bottom: 1px solid var(--border); }
+.news-column li:last-child { border-bottom: none; }
+.news-column a { color: var(--text); text-decoration: none; font-size: 0.87rem; line-height: 1.45; }
+.news-column a:hover { color: var(--link); }
+.news-column .item-date {
+  display: block; font-family: 'IBM Plex Mono', monospace; color: var(--text-faint);
+  font-size: 0.7rem; margin-top: 0.25rem;
+}
+
+/* ---- Vulnerability tracking section ---- */
+h2 { margin: 3rem 0 0.5rem; font-size: 1.15rem; font-weight: 700; color: var(--text); border: none; padding: 0; scroll-margin-top: 4.5rem; }
+h2 + p { color: var(--text-dim); margin-top: 0; margin-bottom: 1.25rem; max-width: 68ch; }
+h3 {
+  margin: 2rem 0 0.9rem; font-size: 0.75rem; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.1em; color: var(--text-faint); border: none;
+}
+p { margin: 0.6rem 0; }
+a { color: var(--link); }
+ul { padding-left: 1.3rem; margin: 0.6rem 0; }
+li { margin: 0.3rem 0; }
+
+/* Incident (vuln) cards */
+.vuln-card {
+  background: var(--surface); border: 1px solid var(--border); border-left: 4px solid var(--sev-unscored);
+  border-radius: 6px; padding: 1rem 1.15rem; margin-bottom: 1rem;
+}
+.vuln-card.sev-critical { border-left-color: var(--sev-critical); }
+.vuln-card.sev-high { border-left-color: var(--sev-high); }
+.vuln-card.sev-medium { border-left-color: var(--sev-medium); }
+.vuln-card.sev-low { border-left-color: var(--sev-low); }
+.vuln-card-head { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; margin-bottom: 0.7rem; }
+.vuln-system { font-weight: 600; font-size: 0.95rem; color: var(--text); }
+.badge {
+  font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; padding: 0.18rem 0.55rem;
+  border-radius: 4px; white-space: nowrap; font-weight: 500;
+}
+.badge-cve { background: var(--surface-2); color: var(--text-dim); border: 1px solid var(--border); }
+.badge-cvss { color: var(--bg); font-weight: 600; }
+.badge-cvss.sev-critical { background: var(--sev-critical); }
+.badge-cvss.sev-high { background: var(--sev-high); }
+.badge-cvss.sev-medium { background: var(--sev-medium); }
+.badge-cvss.sev-low { background: var(--sev-low); color: var(--text); }
+.badge-cvss.sev-unscored { background: var(--surface-2); color: var(--text-dim); border: 1px solid var(--border); }
+.badge-kev {
+  background: rgba(255, 93, 93, 0.15); color: var(--sev-critical); border: 1px solid rgba(255, 93, 93, 0.4);
+  text-transform: uppercase; letter-spacing: 0.04em; font-size: 0.68rem;
+}
+.vuln-card-body p { color: var(--text-dim); font-size: 0.9rem; }
+.vuln-card-body strong { color: var(--text); }
+.vuln-card-body ul { font-size: 0.9rem; color: var(--text-dim); }
+.vuln-card-body a { word-break: break-word; }
+h4.mention-group {
+  margin: 1.5rem 0 0.5rem; font-size: 0.82rem; font-weight: 600; color: var(--text);
+  border: none; background: none; padding: 0;
+}
+
+/* ---- Archive ---- */
+.archive-list { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.archive-list li { margin: 0; }
+.archive-list a {
+  display: inline-block; font-family: 'IBM Plex Mono', monospace; font-size: 0.78rem;
+  color: var(--text-dim); text-decoration: none; padding: 0.4rem 0.8rem;
+  border: 1px solid var(--border); border-radius: 6px; transition: border-color 0.15s, color 0.15s;
+}
+.archive-list a:hover { border-color: var(--link); color: var(--text); }
+
+@media (max-width: 640px) {
+  body { font-size: 14px; }
+  h1 { font-size: 1.3rem; }
+  .quick-nav { overflow-x: auto; flex-wrap: nowrap; }
+}
+</style>
+</head>
+<body>
+<a class="back-link" href="../index.html">&larr; All reports</a>
+<div class="page-header">
+<p class="eyebrow">Daily Digest</p>
+<h1>Security Digest — 2026-10-14</h1>
+</div>
+<nav class="quick-nav">
+<a href="#security-news">Security</a>
+<a href="#database-news">Database</a>
+<a href="#cloud-news">Cloud</a>
+<a href="#vuln-tracking">Vulnerabilities</a>
+<a href="#archive">Archive</a>
+</nav>
+<div class="row-header row-security" id="security-news"><span class="dot"></span><h2>Security News</h2><span class="count">65 items</span></div>
+<div class="news-grid-wrapper"><div class="news-grid"><div class="news-column"><h4>BleepingComputer</h4><ul><li><a href="https://www.bleepingcomputer.com/news/microsoft/microsoft-fixes-vpn-issues-caused-by-september-windows-updates/">Microsoft fixes VPN issues caused by September Windows updates</a><span class="item-date">Wed, 14 Oct 2026 10:27:01 -0400</span></li><li><a href="https://www.bleepingcomputer.com/news/security/the-blind-spots-of-agentic-pentesting-and-how-to-close-them/">The Blind Spots of Agentic Pentesting and How to Close Them</a><span class="item-date">Wed, 14 Oct 2026 10:00:10 -0400</span></li><li><a href="https://www.bleepingcomputer.com/news/security/global-takedown-hits-network-behind-1-billion-phishing-messages/">Global takedown hits network behind 1 billion phishing messages</a><span class="item-date">Wed, 14 Oct 2026 09:12:52 -0400</span></li><li><a href="https://www.bleepingcomputer.com/news/security/cisa-warns-admins-to-immediately-fix-ivanti-flaw-exploited-as-zero-day/">CISA warns admins to immediately fix Ivanti flaw exploited as zero-day</a><span class="item-date">Wed, 14 Oct 2026 08:58:07 -0400</span></li><li><a href="https://www.bleepingcomputer.com/news/security/hirudo-android-malware-replaces-banking-apps-to-evade-security-checks/">Hirudo Android malware replaces banking apps to evade security checks</a><span class="item-date">Wed, 14 Oct 2026 07:41:20 -0400</span></li><li><a href="https://www.bleepingcomputer.com/news/security/microsoft-recent-windows-updates-may-trigger-remote-desktop-failures/">Microsoft: Recent Windows updates may trigger Remote Desktop failures</a><span class="item-date">Wed, 14 Oct 2026 06:48:09 -0400</span></li><li><a href="https://www.bleepingcomputer.com/news/artificial-intelligence/openai-engineer-arrested-for-allegedly-planting-spy-device-in-office/">OpenAI engineer arrested for allegedly planting spy device in office</a><span class="item-date">Tue, 13 Oct 2026 18:33:02 -0400</span></li><li><a href="https://www.bleepingcomputer.com/news/security/ghostscript-flaw-lets-hackers-hijack-servers-via-pdf-uploads/">Ghostscript flaw lets hackers hijack servers via PDF uploads</a><span class="item-date">Tue, 13 Oct 2026 17:33:26 -0400</span></li><li><a href="https://www.bleepingcomputer.com/news/security/anthropic-warns-self-replicating-ai-could-spread-to-your-smart-devices/">Anthropic warns self-replicating AI could spread to your smart devices</a><span class="item-date">Tue, 13 Oct 2026 17:16:34 -0400</span></li><li><a href="https://www.bleepingcomputer.com/news/microsoft/microsoft-october-2026-patch-tuesday-fixes-1-411-flaws-3-zero-days/">Microsoft October 2026 Patch Tuesday fixes 1,411 flaws, 3 zero-days</a><span class="item-date">Tue, 13 Oct 2026 15:56:09 -0400</span></li><li><a href="https://www.bleepingcomputer.com/news/microsoft/microsoft-releases-windows-10-kb5126657-extended-security-update/">Microsoft releases Windows 10 KB5126657 extended security update</a><span class="item-date">Tue, 13 Oct 2026 15:47:30 -0400</span></li><li><a href="https://www.bleepingcomputer.com/news/microsoft/microsoft-windows-11-24h2-home-and-pro-reached-end-of-support/">Microsoft: Windows 11 24H2 Home and Pro reached end of support</a><span class="item-date">Tue, 13 Oct 2026 15:04:38 -0400</span></li><li><a href="https://www.bleepingcomputer.com/news/security/uk-housing-ombudsman-service-investigates-security-incident/">UK Housing Ombudsman Service investigates &#x27;security incident&#x27;</a><span class="item-date">Tue, 13 Oct 2026 14:19:44 -0400</span></li><li><a href="https://www.bleepingcomputer.com/news/microsoft/windows-11-kb5127648-and-kb5126653-cumulative-updates-released/">Windows 11 KB5127648 &amp; KB5126653 cumulative updates released</a><span class="item-date">Tue, 13 Oct 2026 13:49:38 -0400</span></li><li><a href="https://www.bleepingcomputer.com/news/security/tfg-london-cyberattack-disrupts-systems-at-hobbs-and-whistles-retailers/">TFG London cyberattack disrupts systems at Hobbs and Whistles retailers</a><span class="item-date">Tue, 13 Oct 2026 12:44:18 -0400</span></li></ul></div><div class="news-column"><h4>Dark Reading</h4><ul><li><a href="https://www.darkreading.com/cyberattacks-data-breaches/russian-influence-operation-targeting-latin-america">Russian Influence Operation Widely Targeting Latin America</a><span class="item-date">Wed, 14 Oct 2026 13:00:00 GMT</span></li><li><a href="https://www.darkreading.com/cybersecurity-analytics/ransomware-gangs-physical-threats-family-stalking">Ransomware Gangs Embrace Physical Threats, Family Stalking?</a><span class="item-date">Wed, 14 Oct 2026 05:00:00 GMT</span></li><li><a href="https://www.darkreading.com/vulnerabilities-threats/zero-days-microsoft-october-patch-tuesday">Zero-Days Lurk in Microsoft&#x27;s Overgrown October Patch Tuesday</a><span class="item-date">Tue, 13 Oct 2026 22:29:57 GMT</span></li><li><a href="https://www.darkreading.com/cyberattacks-data-breaches/north-korea-phishes-ukrainians-war-intel">North Korea Phishes Ukrainians for War Intel</a><span class="item-date">Tue, 13 Oct 2026 21:24:45 GMT</span></li><li><a href="https://www.darkreading.com/perimeter/anthropic-ingredients-future-ai-worms">Anthropic Finds Ingredients for Future AI Worms</a><span class="item-date">Tue, 13 Oct 2026 20:35:23 GMT</span></li><li><a href="https://www.darkreading.com/vulnerabilities-threats/max-severity-ssrf-flaw-sonicwall-sma-devices-under-attack">Maximum-Severity SSRF Flaw in SonicWall SMA Devices Under Attack</a><span class="item-date">Mon, 12 Oct 2026 21:42:42 GMT</span></li><li><a href="https://www.darkreading.com/insider-threats/prominent-ransomware-negotiator-extortion-charges">Prominent Ransomware Negotiator Faces Extortion Charges</a><span class="item-date">Mon, 12 Oct 2026 20:00:53 GMT</span></li><li><a href="https://www.darkreading.com/cybersecurity-operations/cyber-resilience-starts-with-iam">No Identity, No Recovery: Cyber Resilience Starts With IAM</a><span class="item-date">Mon, 12 Oct 2026 18:27:25 GMT</span></li></ul></div><div class="news-column"><h4>Krebs on Security</h4><ul><li><a href="https://krebsonsecurity.com/2026/10/u-k-sanctions-cryptomus-for-ru-money-laundering/">U.K. Sanctions Cryptomus for RU Money Laundering</a><span class="item-date">Wed, 14 Oct 2026 14:22:49 +0000</span></li><li><a href="https://krebsonsecurity.com/2026/10/microsoft-patches-more-than-1400-security-flaws/">Microsoft Patches More Than 1,400 Security Flaws</a><span class="item-date">Tue, 13 Oct 2026 23:24:53 +0000</span></li></ul></div><div class="news-column"><h4>SecurityWeek</h4><ul><li><a href="https://www.securityweek.com/ics-patch-tuesday-siemens-issues-17-advisories-rockwell-fixes-armorblock-takeover-flaw/">ICS Patch Tuesday: Siemens Issues 17 Advisories, Rockwell Fixes ArmorBlock Takeover Flaw</a><span class="item-date">Wed, 14 Oct 2026 15:15:15 +0000</span></li><li><a href="https://www.securityweek.com/harmonic-security-raises-50-million-for-workforce-ai-protection/">Harmonic Security Raises $50 Million for Workforce AI Protection</a><span class="item-date">Wed, 14 Oct 2026 14:09:51 +0000</span></li><li><a href="https://www.securityweek.com/virtual-event-today-zero-trust-strategies-summit-2/">Virtual Event Today: Zero Trust Strategies Summit</a><span class="item-date">Wed, 14 Oct 2026 13:56:36 +0000</span></li><li><a href="https://www.securityweek.com/microsoft-disrupts-chinese-language-phishing-market-behind-1b-messages/">Microsoft Disrupts Chinese-Language Phishing Market Behind 1B+ Messages</a><span class="item-date">Wed, 14 Oct 2026 13:00:00 +0000</span></li><li><a href="https://www.securityweek.com/us-arrests-two-in-crackdown-on-north-korean-it-worker-laptop-farms/">US Arrests Two in Crackdown on North Korean IT Worker Laptop Farms</a><span class="item-date">Wed, 14 Oct 2026 10:55:21 +0000</span></li><li><a href="https://www.securityweek.com/chrome-firefox-updates-patch-114-flaws-as-mozilla-unveils-firefox-enterprise/">Chrome, Firefox Updates Patch 114 Flaws as Mozilla Unveils Firefox Enterprise</a><span class="item-date">Wed, 14 Oct 2026 07:38:51 +0000</span></li><li><a href="https://www.securityweek.com/citrix-fortinet-ivanti-patch-29-vulnerabilities-across-their-products/">Citrix, Fortinet, Ivanti Patch 29 Vulnerabilities Across Their Products</a><span class="item-date">Wed, 14 Oct 2026 07:26:35 +0000</span></li><li><a href="https://www.securityweek.com/microsoft-patches-record-1413-vulnerabilities-including-exploited-windows-zero-day/">Microsoft Patches Record 1,413 Vulnerabilities, Including Exploited Windows Zero-Day</a><span class="item-date">Wed, 14 Oct 2026 07:16:12 +0000</span></li><li><a href="https://www.securityweek.com/sap-patches-critical-netweaver-s-4hana-vulnerabilities/">SAP Patches Critical NetWeaver, S/4HANA Vulnerabilities</a><span class="item-date">Wed, 14 Oct 2026 06:12:10 +0000</span></li><li><a href="https://www.securityweek.com/employee-arrested-after-listening-device-found-in-openai-conference-room-fbi-and-the-company-say/">Employee Arrested After Listening Device Found in OpenAI Conference Room, FBI and the Company Say</a><span class="item-date">Tue, 13 Oct 2026 23:07:00 +0000</span></li></ul></div><div class="news-column"><h4>The Hacker News</h4><ul><li><a href="https://thehackernews.com/2026/10/cisa-urges-immediate-ivanti-connect.html">CISA Urges Immediate Ivanti Connect Secure Updates as Honeypots Log 105 Exploit Attempts</a><span class="item-date">Wed, 14 Oct 2026 18:00:42 +0530</span></li><li><a href="https://thehackernews.com/2026/10/curl-patches-http2-upload-flaw-after.html">curl Patches HTTP/2 Upload Flaw After PoC Demonstrates Client-Side Code Execution</a><span class="item-date">Wed, 14 Oct 2026 17:43:36 +0530</span></li><li><a href="https://thehackernews.com/2026/10/how-to-run-deepfake-readiness-drill.html">How to Run a Deepfake Readiness Drill Before a Cloned Voice Calls Your Team</a><span class="item-date">Wed, 14 Oct 2026 17:20:00 +0530</span></li><li><a href="https://thehackernews.com/2026/10/researchers-used-public-openai-model-to.html">Researchers Used a Public OpenAI Model to Build a $250,000 Chrome Full-Chain Exploit in Six Days</a><span class="item-date">Wed, 14 Oct 2026 16:49:02 +0530</span></li><li><a href="https://thehackernews.com/2026/10/hirudo-android-trojan-uses-patched.html">Hirudo Android Trojan Uses Patched Banking Apps to Bypass Their Built-In Security Checks</a><span class="item-date">Wed, 14 Oct 2026 16:38:22 +0530</span></li><li><a href="https://thehackernews.com/2026/10/an-ai-agent-found-critical-otp-bypass.html">An AI Agent Found a Critical OTP Bypass in Production. The Attack Was the Easy Part.</a><span class="item-date">Wed, 14 Oct 2026 16:30:00 +0530</span></li><li><a href="https://thehackernews.com/2026/10/ai-found-linux-kernel-flaw-gives-local.html">AI-Found Linux Kernel Flaw Gives Local Users Root, and Can Break a Guest Out to the Host</a><span class="item-date">Wed, 14 Oct 2026 13:16:57 +0530</span></li><li><a href="https://thehackernews.com/2026/10/four-byte-write-and-timing-bug-let.html">Four-Byte Write and Timing Bug Let Researchers Run Code in Windows SmartScreen Enclave</a><span class="item-date">Wed, 14 Oct 2026 11:22:28 +0530</span></li><li><a href="https://thehackernews.com/2026/10/microsoft-patches-record-1413-flaws.html">Microsoft Patches Record 1,413 Flaws, Including Exploited Windows Shell Bug</a><span class="item-date">Wed, 14 Oct 2026 10:04:43 +0530</span></li><li><a href="https://thehackernews.com/2026/10/openai-employee-arrested-for-allegedly.html">OpenAI Employee Arrested for Allegedly Planting Hidden Recorder in Executive Conference Room</a><span class="item-date">Wed, 14 Oct 2026 07:29:25 +0530</span></li><li><a href="https://thehackernews.com/2026/10/anthropic-warns-small-ai-models-could.html">Anthropic Warns Small AI Models Could Soon Form Self-Propagating IoT Botnets</a><span class="item-date">Tue, 13 Oct 2026 23:50:57 +0530</span></li><li><a href="https://thehackernews.com/2026/10/docker-fixes-critical-two-year-old-hub.html">Docker Fixes Critical Two-Year-Old Hub Flaw That Let One User Push Images as Another</a><span class="item-date">Tue, 13 Oct 2026 23:33:18 +0530</span></li><li><a href="https://thehackernews.com/2026/10/attacker-chains-three-ivanti-connect.html">Attacker Chains Three Ivanti Connect Secure Zero-Days for Root Access, Only Two Patched So Far</a><span class="item-date">Tue, 13 Oct 2026 23:03:11 +0530</span></li><li><a href="https://thehackernews.com/2026/10/sap-discloses-critical-cvss-10-flaw-in.html">SAP Discloses Critical CVSS 10 Flaw in Cloud SDK for Python Allowing OAuth2 Credential Theft</a><span class="item-date">Tue, 13 Oct 2026 22:58:50 +0530</span></li><li><a href="https://thehackernews.com/2026/10/github-tightens-npm-publishing-after.html">GitHub Tightens npm Publishing After Flaw Left 1,500+ Packages Vulnerable to Hijacking</a><span class="item-date">Tue, 13 Oct 2026 21:48:18 +0530</span></li></ul></div><div class="news-column"><h4>The Register</h4><ul><li><a href="https://www.theregister.com/offbeat/2026/10/14/leap-seconds-face-judgment-day-as-time-lords-prepare-to-vote/5303082">Leap seconds face judgment day as time lords prepare to vote</a><span class="item-date">Wed, 14 Oct 2026 17:30:00 +0100</span></li><li><a href="https://www.theregister.com/ai-and-ml/2026/10/14/researchers-cig-nal-their-faith-in-ai-by-taking-up-smoking/5303118">Researchers cig-nal their faith in AI by taking up smoking</a><span class="item-date">Wed, 14 Oct 2026 17:18:59 +0100</span></li><li><a href="https://www.theregister.com/offbeat/2026/10/14/fire-up-that-iphone-1-emulation-and-party-like-its-2007/5303067">Fire up that iPhone 1 emulation and party like it&#x27;s 2007</a><span class="item-date">Wed, 14 Oct 2026 16:45:00 +0100</span></li><li><a href="https://www.theregister.com/systems/2026/10/14/new-motherboards-old-ram-plenty-of-life-left-in-yesterdays-pcs/5303018">New motherboards, old RAM, plenty of life left in yesterday&#x27;s PCs</a><span class="item-date">Wed, 14 Oct 2026 16:00:00 +0100</span></li><li><a href="https://www.theregister.com/os-platforms/2026/10/14/tiny11-puts-windows-11-on-a-diet-without-the-powershell-workout/5303034">Tiny11 puts Windows 11 on a diet without the PowerShell workout</a><span class="item-date">Wed, 14 Oct 2026 15:15:00 +0100</span></li><li><a href="https://www.theregister.com/networks/2026/10/14/cisco-nvidia-team-up-to-build-fatter-faster-pluggable/5302970">Cisco, Nvidia team up to build fatter, faster pluggable</a><span class="item-date">Wed, 14 Oct 2026 14:30:00 +0100</span></li><li><a href="https://www.theregister.com/paas-and-iaas/2026/10/14/us-tech-giants-warn-europe-that-ditching-us-tech-giants-could-cost-115b/5303031">US tech giants warn Europe that ditching US tech giants could cost €115B</a><span class="item-date">Wed, 14 Oct 2026 13:45:00 +0100</span></li><li><a href="https://www.theregister.com/devops/2026/10/14/python-315-goes-global-with-utf-8-support/5302966">Python 3.15 goes global with UTF-8 support</a><span class="item-date">Wed, 14 Oct 2026 13:00:00 +0100</span></li><li><a href="https://www.theregister.com/offbeat/2026/10/14/welcome-to-the-lovely-landlocked-land-of-luxembork-where-the-fares-are-free-and-the-terminals-are-techno/5301418">Welcome to the lovely landlocked land of Luxembork, where the fares are free, and the terminals are techno</a><span class="item-date">Wed, 14 Oct 2026 12:15:00 +0100</span></li><li><a href="https://www.theregister.com/channel/2026/10/14/kpmg-tech-and-data-boss-tells-staff-facing-the-boot-hes-getting-promoted/5302761">KPMG tech and data boss tells staff facing the boot he&#x27;s getting promoted</a><span class="item-date">Wed, 14 Oct 2026 11:30:00 +0100</span></li><li><a href="https://www.theregister.com/security/2026/10/14/openai-engineer-charged-after-boardroom-bug-found-wrapped-in-toilet-paper/5303000">OpenAI engineer charged after boardroom bug found wrapped in toilet paper</a><span class="item-date">Wed, 14 Oct 2026 10:55:00 +0100</span></li><li><a href="https://www.theregister.com/on-prem/2026/10/14/the-ai-math-isnt-mathing-as-infrastructure-spending-forecast-to-outstrip-expected-revenue/5302856">The AI math isn&#x27;t mathing as infrastructure spending forecast to outstrip expected revenue</a><span class="item-date">Wed, 14 Oct 2026 10:00:00 +0100</span></li><li><a href="https://www.theregister.com/public-sector/2026/10/14/uk-government-chases-ai-while-aging-it-leaves-it-exposed-pac-chair-warns/5302674">UK government chases AI while aging IT leaves it exposed, PAC chair warns</a><span class="item-date">Wed, 14 Oct 2026 09:15:00 +0100</span></li><li><a href="https://www.theregister.com/columnists/2026/10/14/it-wont-kill-you-or-humanity-to-get-off-the-ai-upgrade-treadmill/5301778">It won&#x27;t kill you, or humanity, to get off the AI upgrade treadmill</a><span class="item-date">Wed, 14 Oct 2026 08:30:00 +0100</span></li><li><a href="https://www.theregister.com/cyber-crime/2026/10/14/ransomware-gets-personal-we-know-where-you-are-kind-of-stuff/5302939">Ransomware gets personal: &#x27;We-know-where-you-are kind of stuff&#x27;</a><span class="item-date">Wed, 14 Oct 2026 06:00:00 +0100</span></li></ul></div></div></div>
+<div class="row-header row-database" id="database-news"><span class="dot"></span><h2>Database News</h2><span class="count">19 items</span></div>
+<div class="news-grid-wrapper"><div class="news-grid"><div class="news-column"><h4>DBTA (Database Trends &amp; Applications)</h4><ul><li><a href="https://www.dbta.com/BigDataQuarterly/Articles/10-New-Technologies-in-a-Big-Data-World-176997.aspx">10 New Technologies in a Big Data World</a><span class="item-date">Wed, 14 Oct 2026 09:05:00 EST</span></li><li><a href="https://www.dbta.com/Editorial/News-Flashes/Hitachi-Vantara-Granted-Common-Criteria-Certification-for-VSP-One-Block-Enhancing-Data-Resilience-for-Regulated-Enterprises-176975.aspx">Hitachi Vantara Granted Common Criteria Certification for VSP One Block, Enhancing Data Resilience for Regulated Enterprises</a><span class="item-date">Tue, 13 Oct 2026 11:45:00 EST</span></li><li><a href="https://www.dbta.com/Editorial/News-Flashes/CTERA-Forward-Deployed-Engineering-Accelerates-AI-Access-of-Data-for-Enterprise-Deployments-176977.aspx">CTERA Forward Deployed Engineering Accelerates AI Access of Data for Enterprise Deployments</a><span class="item-date">Tue, 13 Oct 2026 11:45:00 EST</span></li></ul></div><div class="news-column"><h4>Planet PostgreSQL</h4><ul><li><a href="https://postgr.es/p/9y0">Christophe Pettus: All Your GUCs in a Row: post_auth_delay and pre_auth_delay</a><span class="item-date">Wed, 14 Oct 2026 01:00:00 +0000</span></li><li><a href="https://postgr.es/p/9y1">Pavel Luzanov: PostgreSQL 19: part 5.1 (QPT) or CommitFest 2026-03</a><span class="item-date">Wed, 14 Oct 2026 00:00:00 +0000</span></li><li><a href="https://postgr.es/p/9x_">Mayur B.: PGConf.EU 2026: Into the PostgreSQL Multiverse</a><span class="item-date">Tue, 13 Oct 2026 20:08:07 +0000</span></li><li><a href="https://postgr.es/p/9xW">Dimitri Fontaine: Zero-downtime Postgres upgrades with logical replication</a><span class="item-date">Tue, 13 Oct 2026 12:14:03 +0000</span></li><li><a href="https://postgr.es/p/9xY">Ming Ying: Making COUNTs and the Rest of Search Really Fast (Part II)</a><span class="item-date">Tue, 13 Oct 2026 12:00:00 +0000</span></li><li><a href="https://postgr.es/p/9xT">Floor Drees: Conference Preview: EDB at PGConf.Asia 2026</a><span class="item-date">Tue, 13 Oct 2026 08:36:07 +0000</span></li><li><a href="https://postgr.es/p/9xX">Abhisek Goswami: CUDA and PostgreSQL: Twins from two Worlds</a><span class="item-date">Tue, 13 Oct 2026 03:00:07 +0000</span></li><li><a href="https://postgr.es/p/9xS">Christophe Pettus: All Your GUCs in a Row: port</a><span class="item-date">Tue, 13 Oct 2026 01:00:00 +0000</span></li><li><a href="https://postgr.es/p/9x-">Chris van Eijk: permission denied for table in PostgreSQL: which grant?</a><span class="item-date">Tue, 13 Oct 2026 00:00:00 +0000</span></li><li><a href="https://postgr.es/p/9xZ">Chris van Eijk: current_setting and set_config in PostgreSQL, measured</a><span class="item-date">Tue, 13 Oct 2026 00:00:00 +0000</span></li><li><a href="https://postgr.es/p/9xV">Hollis Varden: What deleting rows does to a PostgreSQL table</a><span class="item-date">Tue, 13 Oct 2026 00:00:00 +0000</span></li><li><a href="https://postgr.es/p/9xU">Hollis Varden: Four PostgreSQL arguments that came out even</a><span class="item-date">Tue, 13 Oct 2026 00:00:00 +0000</span></li><li><a href="https://postgr.es/p/9xR">Alexander Ioffe: Why is my Whale Query 1000x Slower in Prod? Databases hate skew, each hates it differently</a><span class="item-date">Tue, 13 Oct 2026 00:00:00 +0000</span></li><li><a href="https://postgr.es/p/9xQ">Chris van Eijk: PostgreSQL row-level security for SaaS: what we measured</a><span class="item-date">Mon, 12 Oct 2026 23:15:10 +0000</span></li><li><a href="https://postgr.es/p/9xP">Chris van Eijk: Go, pgx and PostgreSQL row-level security, measured</a><span class="item-date">Mon, 12 Oct 2026 23:15:10 +0000</span></li></ul></div><div class="news-column"><h4>SQLServerCentral</h4><ul><li><a href="https://www.sqlservercentral.com/blogs/t-sql-tuesday-203-risk-and-reward">T-SQL Tuesday #203: Risk and Reward</a><span class="item-date">Tue, 13 Oct 2026 13:00:00 +0000</span></li></ul></div></div></div>
+<div class="row-header row-cloud" id="cloud-news"><span class="dot"></span><h2>Cloud News</h2><span class="count">21 items</span></div>
+<div class="news-grid-wrapper"><div class="news-grid"><div class="news-column"><h4>AWS News Blog</h4><ul><li><a href="https://aws.amazon.com/blogs/aws/aws-weekly-roundup-prime-day-2026-by-the-numbers-claude-haiku-5-5-amazon-nova-2-5-sonic-and-more-october-13-2026/">AWS Weekly Roundup: Prime Day 2026 by the numbers, Claude Haiku 5.5, Amazon Nova 2.5 Sonic, and more (October 13, 2026)</a><span class="item-date">Tue, 13 Oct 2026 15:59:06 +0000</span></li><li><a href="https://aws.amazon.com/blogs/aws/announcing-aws-lambda-web-functions-for-fast-consistent-web-app-performance-anywhere/">Announcing AWS Lambda Web Functions</a><span class="item-date">Mon, 12 Oct 2026 22:34:47 +0000</span></li></ul></div><div class="news-column"><h4>Google Cloud Blog</h4><ul><li><a href="https://cloud.google.com/blog/products/data-analytics/using-bigquerys-generative-ai-cost-management-features/">Predictable AI spend in BigQuery: Introducing cost management for generative AI functions</a><span class="item-date">Wed, 14 Oct 2026 16:00:00 +0000</span></li><li><a href="https://cloud.google.com/blog/products/identity-security/cloud-ciso-perspectives-new-gemini-notebook-can-help-cisos-policymakers-prepare-for-pqc/">Cloud CISO Perspectives: New Gemini Notebook can help CISOs and policymakers prepare for PQC</a><span class="item-date">Wed, 14 Oct 2026 16:00:00 +0000</span></li><li><a href="https://cloud.google.com/blog/products/data-analytics/cross-cloud-conversational-analytics-with-borderless-lakehouse/">Cross-cloud conversational analytics made simple with open standards</a><span class="item-date">Tue, 13 Oct 2026 16:00:00 +0000</span></li><li><a href="https://cloud.google.com/blog/products/ai-machine-learning/gemini-4-argon-available-on-google-cloud/">Gemini 4 Argon available on Google Cloud, built to help solve your business’ hardest problems</a><span class="item-date">Tue, 13 Oct 2026 16:00:00 +0000</span></li><li><a href="https://cloud.google.com/blog/topics/developers-practitioners/one-agent-development-kit-five-languages/">One Agent Development Kit, five languages</a><span class="item-date">Tue, 13 Oct 2026 12:22:00 +0000</span></li></ul></div><div class="news-column"><h4>The New Stack</h4><ul><li><a href="https://thenewstack.io/ai-prototypes-database-replatforming/">Your database decision could come back to haunt you</a><span class="item-date">Wed, 14 Oct 2026 15:00:00 +0000</span></li><li><a href="https://thenewstack.io/agentic-ai-production-readiness/">Why 88% of AI pilots never make it to production</a><span class="item-date">Wed, 14 Oct 2026 14:38:57 +0000</span></li><li><a href="https://thenewstack.io/subquadratic-snap-jev-decision-model/">“Take work away from frontier LLMs”: Subquadratic’s decision model claims 12x Jev’s context window</a><span class="item-date">Wed, 14 Oct 2026 13:35:15 +0000</span></li><li><a href="https://thenewstack.io/chainguard-mythos-security-harness/">66% of billion-dollar companies leave critical bugs unpatched — the part the AI bug-hunting hype leaves out</a><span class="item-date">Wed, 14 Oct 2026 05:00:00 +0000</span></li><li><a href="https://thenewstack.io/self-replicating-ai-worms/">Anthropic’s red team ran AI on 15 cheap TV boxes. Then the math got unsettling.</a><span class="item-date">Tue, 13 Oct 2026 16:40:24 +0000</span></li><li><a href="https://thenewstack.io/gemini-4-argon-live/">Gemini 4 Argon debuts with a unified 1M input/output token limit</a><span class="item-date">Tue, 13 Oct 2026 16:00:00 +0000</span></li><li><a href="https://thenewstack.io/ai-agent-credentials-identity-provider/">The agent did the work. The audit log couldn’t say who asked.</a><span class="item-date">Tue, 13 Oct 2026 15:00:48 +0000</span></li><li><a href="https://thenewstack.io/workday-headless-mcp-agents/">Workday goes headless, opening its HR and finance data to outside AI agents</a><span class="item-date">Tue, 13 Oct 2026 13:00:00 +0000</span></li><li><a href="https://thenewstack.io/workday-is-using-typesafes-jev-to-build-user-interfaces-on-the-fly/">Workday is using TypeSafe’s Jev to build user interfaces on the fly</a><span class="item-date">Tue, 13 Oct 2026 13:00:00 +0000</span></li><li><a href="https://thenewstack.io/x-subscription-cursor-pricing/">The X Subscription bundles Cursor with Grok and X Premium. But Claude now costs extra.</a><span class="item-date">Tue, 13 Oct 2026 12:25:19 +0000</span></li><li><a href="https://thenewstack.io/opencode-2-shared-service/">“A major overhaul”: OpenCode 2.0 puts its terminal, desktop, and web apps on one shared service</a><span class="item-date">Mon, 12 Oct 2026 21:11:33 +0000</span></li><li><a href="https://thenewstack.io/gpus-on-kubernetes/">GPUs on Kubernetes are bring-your-own-everything, starting with the bill</a><span class="item-date">Mon, 12 Oct 2026 20:48:01 +0000</span></li><li><a href="https://thenewstack.io/google-devsite-rce-bounty/">Google paid $90,000 for this bug, then waited two months to fix it</a><span class="item-date">Mon, 12 Oct 2026 20:47:17 +0000</span></li><li><a href="https://thenewstack.io/coding-agents-platform-teams/">Coding agents made building easy. Platform teams that build from scratch are 3.5x more likely to lack a strategy.</a><span class="item-date">Mon, 12 Oct 2026 19:28:27 +0000</span></li></ul></div></div></div>
+<h2 id="vuln-tracking" style="scroll-margin-top:4.5rem;">Scoped Vulnerability Tracking</h2>
+<p>User Safety: safe</p>
+<p>User Safety: safe</p>
+</body>
+</html>
