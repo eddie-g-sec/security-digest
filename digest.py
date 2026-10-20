@@ -22,22 +22,8 @@ MAX_ITEMS_PER_NEWS_SOURCE = 15
 
 
 SCOPES = {
-    "Database": {
-        "targets": {
-            "MySQL": "MySQL",
-            "PostgreSQL": "PostgreSQL",
-            "Oracle Database": "Oracle Database",
-            "Microsoft SQL Server": "Microsoft SQL Server",
-            "MongoDB": "MongoDB",
-        },
-        "match_terms": {
-            "MySQL": ["mysql"],
-            "PostgreSQL": ["postgres"],
-            "Oracle Database": ["oracle database", "oracle db"],
-            "Microsoft SQL Server": ["sql server", "mssql"],
-            "MongoDB": ["mongodb", "mongo"],
-        },
-    },
+
+ 
     "Cloud Security": {
         "targets": {
             "AWS": "Amazon Web Services",
@@ -76,10 +62,6 @@ SECURITY_NEWS_FEEDS = [
 
 DATABASE_NEWS_FEEDS = [
     ("DBTA (Database Trends & Applications)", "https://feeds.feedburner.com/DBTA-Articles"),
-    ("Planet PostgreSQL", "https://planet.postgresql.org/rss20.xml"),
-    ("Planet MySQL", "https://planet.mysql.com/rss20.xml"),
-    ("Oracle Database Blog", "https://blogs.oracle.com/database/rss"),
-    ("SQLServerCentral", "https://www.sqlservercentral.com/blogs/feed"),
 ]
 
 CLOUD_NEWS_FEEDS = [
