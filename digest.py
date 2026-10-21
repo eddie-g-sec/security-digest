@@ -22,8 +22,6 @@ MAX_ITEMS_PER_NEWS_SOURCE = 15
 
 
 SCOPES = {
-
- 
     "Cloud Security": {
         "targets": {
             "AWS": "Amazon Web Services",
@@ -42,8 +40,6 @@ SCOPES = {
             "Terraform": ["terraform"],
         },
     },
-
-
 }
 
 
@@ -60,8 +56,12 @@ SECURITY_NEWS_FEEDS = [
 ]
 
 
-DATABASE_NEWS_FEEDS = [
-    ("DBTA (Database Trends & Applications)", "https://feeds.feedburner.com/DBTA-Articles"),
+DEVSECOPS_NEWS_FEEDS = [
+    ("Snyk Blog", "https://snyk.io/blog/feed"),
+    ("GitGuardian Blog", "https://blog.gitguardian.com/rss"),
+    ("OpenSSF Blog", "https://openssf.org/feed"),
+    ("Sonatype Blog", "https://sonatype.com/blog/rss.xml"),
+    ("DevOps.com", "https://devops.com/feed"),
 ]
 
 CLOUD_NEWS_FEEDS = [
@@ -784,7 +784,7 @@ PAGE_CSS = """
   --sev-low: #7C8B9A;
   --sev-unscored: #6B7C93;
   --row-security: #4FD1C5;
-  --row-database: #F0B429;
+  --row-devsecops: #B98EFF;
   --row-cloud: #5EA8FF;
 }
 
@@ -868,7 +868,7 @@ h1 { font-size: 1.6rem; font-weight: 700; margin: 0 0 0.35rem; letter-spacing: -
   font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; color: var(--text-faint);
 }
 .row-security .dot { background: var(--row-security); }
-.row-database .dot { background: var(--row-database); }
+.row-devsecops .dot { background: var(--row-devsecops); }
 .row-cloud .dot { background: var(--row-cloud); }
 
 /* ---- Raw news columns (horizontal scroll) ---- */
@@ -879,7 +879,7 @@ h1 { font-size: 1.6rem; font-weight: 700; margin: 0 0 0.35rem; letter-spacing: -
   border-top: 2px solid var(--row-accent, var(--border)); border-radius: 8px; padding: 0.9rem 1rem;
 }
 .row-security .news-column { --row-accent: var(--row-security); }
-.row-database .news-column { --row-accent: var(--row-database); }
+.row-devsecops .news-column { --row-accent: var(--row-devsecops); }
 .row-cloud .news-column { --row-accent: var(--row-cloud); }
 .news-column h4 {
   margin: 0 0 0.65rem; font-size: 0.82rem; font-weight: 600; color: var(--text);
@@ -1001,14 +1001,14 @@ def _count_news_items(grouped_html: str) -> int:
 
 QUICK_NAV = """<nav class="quick-nav">
 <a href="#security-news">Security</a>
-<a href="#database-news">Database</a>
+<a href="#devsecops-news">DevSecOps</a>
 <a href="#cloud-news">Cloud</a>
 <a href="#vuln-tracking">Vulnerabilities</a>
 <a href="#archive">Archive</a>
 </nav>"""
 
 
-def write_report_page(security_news_html: str, database_news_html: str, cloud_news_html: str,
+def write_report_page(security_news_html: str, devsecops_news_html: str, cloud_news_html: str,
                        bottom_report_md: str, date_str: str, docs_dir: str) -> str:
     reports_dir = os.path.join(docs_dir, "reports")
     os.makedirs(reports_dir, exist_ok=True)
@@ -1031,8 +1031,8 @@ def write_report_page(security_news_html: str, database_news_html: str, cloud_ne
 {QUICK_NAV}
 {_row_header("security-news", "Security News", _count_news_items(security_news_html), "row-security")}
 {security_news_html}
-{_row_header("database-news", "Database News", _count_news_items(database_news_html), "row-database")}
-{database_news_html}
+{_row_header("devsecops-news", "DevSecOps News", _count_news_items(devsecops_news_html), "row-devsecops")}
+{devsecops_news_html}
 {_row_header("cloud-news", "Cloud News", _count_news_items(cloud_news_html), "row-cloud")}
 {cloud_news_html}
 <h2 id="vuln-tracking" style="scroll-margin-top:4.5rem;">Scoped Vulnerability Tracking</h2>
@@ -1047,7 +1047,7 @@ def write_report_page(security_news_html: str, database_news_html: str, cloud_ne
 
 
 def rebuild_dashboard_index(docs_dir: str, latest_date: str, security_news_html: str,
-                             database_news_html: str, cloud_news_html: str, bottom_report_md: str):
+                             devsecops_news_html: str, cloud_news_html: str, bottom_report_md: str):
     reports_dir = os.path.join(docs_dir, "reports")
     os.makedirs(reports_dir, exist_ok=True)
 
@@ -1078,8 +1078,8 @@ def rebuild_dashboard_index(docs_dir: str, latest_date: str, security_news_html:
 {QUICK_NAV}
 {_row_header("security-news", "Security News", _count_news_items(security_news_html), "row-security")}
 {security_news_html}
-{_row_header("database-news", "Database News", _count_news_items(database_news_html), "row-database")}
-{database_news_html}
+{_row_header("devsecops-news", "DevSecOps News", _count_news_items(devsecops_news_html), "row-devsecops")}
+{devsecops_news_html}
 {_row_header("cloud-news", "Cloud News", _count_news_items(cloud_news_html), "row-cloud")}
 {cloud_news_html}
 <h2 id="vuln-tracking" style="scroll-margin-top:4.5rem;">Scoped Vulnerability Tracking</h2>
@@ -1109,9 +1109,9 @@ def main():
     security_grouped = group_items_by_source(general_items)
     security_news_html = render_raw_news_columns_html(security_grouped)
 
-    print("\n[*] Fetching Database news feeds (for the unfiltered Database row)...")
-    database_items = fetch_feed_list(DATABASE_NEWS_FEEDS, "Database")
-    database_news_html = render_raw_news_columns_html(group_items_by_source(database_items))
+    print("\n[*] Fetching DevSecOps news feeds (for the unfiltered DevSecOps row)...")
+    devsecops_items = fetch_feed_list(DEVSECOPS_NEWS_FEEDS, "DevSecOps")
+    devsecops_news_html = render_raw_news_columns_html(group_items_by_source(devsecops_items))
 
     print("\n[*] Fetching Cloud news feeds (for the unfiltered Cloud row)...")
     cloud_items = fetch_feed_list(CLOUD_NEWS_FEEDS, "Cloud")
@@ -1164,8 +1164,8 @@ def main():
     print(f"[i] Markdown archive written to {md_out_path}")
 
     docs_dir = "docs"
-    write_report_page(security_news_html, database_news_html, cloud_news_html, bottom_md, date_str, docs_dir)
-    rebuild_dashboard_index(docs_dir, date_str, security_news_html, database_news_html, cloud_news_html, bottom_md)
+    write_report_page(security_news_html, devsecops_news_html, cloud_news_html, bottom_md, date_str, docs_dir)
+    rebuild_dashboard_index(docs_dir, date_str, security_news_html, devsecops_news_html, cloud_news_html, bottom_md)
     print(f"[i] Dashboard updated: {docs_dir}/index.html")
 
     if any_scope_failed:
