@@ -1,7 +1,7 @@
-# DB Security Digest — Free Daily Automation
+#Security & Tech News Digest — Free Daily Automation
 
 Every day, this pulls together:
-- **New/updated CVEs** for MySQL, PostgreSQL, Oracle Database, MongoDB, Redis, and Cassandra (from NVD)
+- **New/updated CVEs** 
 - **Actively exploited but not-yet-scored bugs** (from CISA's KEV catalog — catches "exploited in the wild" before NVD assigns a CVSS score)
 - **News and forum chatter** about those systems (Google News, BleepingComputer, The Hacker News, Krebs on Security, relevant subreddits, plus any forum RSS feed you add)
 
