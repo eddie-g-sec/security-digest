@@ -9,8 +9,8 @@ import email.utils
 import urllib.request
 import urllib.parse
 import urllib.error
+from typing import Optional
 import xml.etree.ElementTree as ET
-from collections import Counter
 
 NVD_BASE = "https://services.nvd.nist.gov/rest/json/cves/2.0"
 KEV_URL = "https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json"
@@ -19,6 +19,7 @@ OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
 
 MAX_ENTRIES_PER_SYSTEM = 10
 MAX_ITEMS_PER_NEWS_SOURCE = 15
+MAX_NEWS_ITEMS_PER_SYSTEM = 5
 
 
 SCOPES = {
@@ -50,8 +51,6 @@ SECURITY_NEWS_FEEDS = [
     ("SecurityWeek", "https://feeds.feedburner.com/securityweek"),
     ("Dark Reading", "https://www.darkreading.com/rss.xml"),
     ("Beehiiv Newsletter", "https://rss.beehiiv.com/feeds/xgTKUmMmUm.xml"),
-
-
     ("The Register", "https://www.theregister.com/?lab_viewport=rss"),
 ]
 
@@ -79,7 +78,6 @@ ENABLE_NEWS_FEEDS = os.environ.get("ENABLE_NEWS_FEEDS", "true").lower() != "fals
 
 
 def http_get(url: str, headers: dict = None, timeout: int = 30, retries: int = 2):
-
     headers = headers or {}
     headers.setdefault("User-Agent", "security-digest/1.0 (+https://github.com/)")
     last_err = None
@@ -97,7 +95,6 @@ def http_get(url: str, headers: dict = None, timeout: int = 30, retries: int = 2
 
 
 def nvd_fetch(keyword: str) -> list:
-
     now = datetime.datetime.now(datetime.timezone.utc)
     start = now - datetime.timedelta(hours=LOOKBACK_HOURS)
 
@@ -157,8 +154,6 @@ def nvd_fetch(keyword: str) -> list:
 
 
 def kev_fetch() -> list:
-
-
     raw = http_get(KEV_URL, timeout=30)
     if raw is None:
         return []
@@ -182,7 +177,6 @@ def kev_fetch() -> list:
 
 
 def match_kev_to_scope(kev_entries: list, match_terms: dict) -> dict:
-
     matched = {}
     for vuln in kev_entries:
         haystack = " ".join([
@@ -229,8 +223,6 @@ def merge_kev_into_collected(collected: dict, kev_matched: dict) -> dict:
 
 
 def sort_entries_for_report(collected: dict) -> dict:
-
-
     for label, entries in collected.items():
         entries.sort(
             key=lambda e: (
@@ -249,7 +241,6 @@ def sort_entries_for_report(collected: dict) -> dict:
 
 
 def _parse_rss_datetime(raw: str):
-
     if not raw:
         return None
     try:
@@ -270,8 +261,6 @@ def _parse_rss_datetime(raw: str):
 
 
 def parse_feed(url: str, source_label: str = None) -> list:
-
-
     raw = http_get(url, timeout=20)
     if raw is None:
         return []
@@ -305,8 +294,6 @@ def parse_feed(url: str, source_label: str = None) -> list:
 
 
 def fetch_feed_list(labeled_urls: list, list_name: str, include_custom: bool = False) -> list:
-
-
     if not ENABLE_NEWS_FEEDS:
         print(f"[i] ENABLE_NEWS_FEEDS=false, skipping {list_name} news collection")
         return []
@@ -315,7 +302,6 @@ def fetch_feed_list(labeled_urls: list, list_name: str, include_custom: bool = F
     if include_custom:
         custom = os.environ.get("CUSTOM_RSS_FEEDS", "").strip()
         if custom:
-
 
             labeled_urls += [(None, u.strip()) for u in custom.split(",") if u.strip()]
 
@@ -341,7 +327,6 @@ def fetch_feed_list(labeled_urls: list, list_name: str, include_custom: bool = F
 
 
 def group_items_by_source(items: list) -> dict:
-
     grouped = {}
     for item in items:
         grouped.setdefault(item["source"], []).append(item)
@@ -357,8 +342,6 @@ def group_items_by_source(items: list) -> dict:
 
 
 def build_google_news_feeds_for_scope(scope_targets: dict) -> dict:
-
-
     feeds = {}
     for label, keyword in scope_targets.items():
         q = urllib.parse.quote(f'"{keyword}" (vulnerability OR exploit OR CVE OR security patch)')
@@ -367,7 +350,6 @@ def build_google_news_feeds_for_scope(scope_targets: dict) -> dict:
 
 
 def match_items_to_scope(items: list, match_terms: dict) -> dict:
-
     matched = {}
     for item in items:
         haystack = f"{item.get('title', '')} {item.get('summary', '')}".lower()
@@ -378,12 +360,7 @@ def match_items_to_scope(items: list, match_terms: dict) -> dict:
     return matched
 
 
-MAX_NEWS_ITEMS_PER_SYSTEM = 5
-
-
 def collect_news_for_scope(scope_cfg: dict, general_items: list) -> dict:
-
-
     if not ENABLE_NEWS_FEEDS:
         return {}
 
@@ -403,7 +380,6 @@ def collect_news_for_scope(scope_cfg: dict, general_items: list) -> dict:
     for label, items in matched.items():
         if len(items) > MAX_NEWS_ITEMS_PER_SYSTEM:
             print(f"    -> {label}: capping news mentions to {MAX_NEWS_ITEMS_PER_SYSTEM} of {len(items)}")
-
 
         matched[label] = [
             {**item, "summary": (item.get("summary") or "")[:150]}
@@ -440,8 +416,6 @@ def collect_scope(scope_name: str, scope_cfg: dict, kev_entries: list, general_n
 
 
 def collect_all() -> tuple:
-
-
     print("[*] Fetching Security news feeds (for the unfiltered Security row)...")
     general_items = fetch_feed_list(SECURITY_NEWS_FEEDS, "Security", include_custom=True)
 
@@ -460,9 +434,8 @@ def collect_all() -> tuple:
 
 
 def build_prompt_for_scope(scope_name: str, collected: dict, news: dict) -> str:
-    return f"""You are a security analyst producing a daily internal digest for a cybersecurity
-engineer who administers database systems and cloud infrastructure in a healthcare enterprise
-environment, and who also runs a homelab with Postgres/Vault PKI/mTLS infrastructure.
+    return f"""You are a security analyst producing a daily digest for a security engineer
+responsible for cloud and application infrastructure.
 
 IMPORTANT: Output ONLY the final Markdown report. Do not think out loud, do not show your
 reasoning process, do not narrate how you're analyzing or sorting the data. Go straight to
@@ -516,8 +489,6 @@ for an entry is too sparse for a real summary, say so.
 
 
 def strip_leaked_reasoning(text: str) -> str:
-
-
     text = re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL | re.IGNORECASE)
 
     lines = text.split("\n")
@@ -533,8 +504,6 @@ def strip_leaked_reasoning(text: str) -> str:
 
 
 def looks_like_broken_reasoning_dump(text: str, expected_entry_count: int) -> bool:
-
-
     if len(text) > max(40000, expected_entry_count * 1200):
         return True
 
@@ -549,16 +518,13 @@ def looks_like_broken_reasoning_dump(text: str, expected_entry_count: int) -> bo
         else:
             current_run = 1
 
-
     if max_consecutive_run >= 6:
         return True
 
     return False
 
 
-def call_llm(prompt: str, expected_entry_count: int = 0, label: str = "") -> str:
-
-
+def call_llm(prompt: str, expected_entry_count: int = 0, label: str = "") -> Optional[str]:
     api_key = os.environ.get("OPENROUTER_API_KEY")
     if not api_key:
         print("[!] OPENROUTER_API_KEY not set", file=sys.stderr)
@@ -591,7 +557,6 @@ def call_llm(prompt: str, expected_entry_count: int = 0, label: str = "") -> str
             with urllib.request.urlopen(req, timeout=90) as resp:
                 data = json.loads(resp.read().decode())
             content = data["choices"][0]["message"]["content"]
-
 
             if content is None:
                 last_err = "model returned null content (likely exhausted its token budget on reasoning)"
@@ -627,7 +592,6 @@ def call_llm(prompt: str, expected_entry_count: int = 0, label: str = "") -> str
             break
         except (KeyError, IndexError) as e:
 
-
             error_detail = data.get("error") if isinstance(data, dict) else None
             raw_snippet = json.dumps(data)[:500] if isinstance(data, dict) else str(data)[:500]
             last_err = f"unexpected response shape ({e}). error field: {error_detail}. raw (truncated): {raw_snippet}"
@@ -654,8 +618,6 @@ CVE_HEADER_RE = re.compile(
 
 
 def _classify_severity(score: str, sevword: str, rest_text: str) -> tuple:
-
-
     is_kev = "ACTIVELY EXPLOITED" in rest_text.upper() or "🔴" in rest_text
     if is_kev:
         return "critical", True
@@ -677,8 +639,6 @@ def _classify_severity(score: str, sevword: str, rest_text: str) -> tuple:
 
 
 def markdown_to_html(md: str) -> str:
-
-
     lines = md.split("\n")
     out = []
     in_list = False
@@ -705,7 +665,7 @@ def markdown_to_html(md: str) -> str:
             in_card = False
 
     for raw_line in lines:
-        stripped = raw_line.rstrip().strip()
+        stripped = raw_line.strip()
 
         if stripped.startswith("#### "):
             heading_text = stripped[5:]
@@ -961,8 +921,6 @@ h4.mention-group {
 
 
 def render_raw_news_columns_html(grouped_items: dict) -> str:
-
-
     if not grouped_items:
         return "<p><em>No news items collected this run.</em></p>"
 
@@ -984,8 +942,6 @@ def render_raw_news_columns_html(grouped_items: dict) -> str:
 
 
 def _row_header(anchor_id: str, label: str, count: int, row_class: str) -> str:
-
-
     noun = "item" if count == 1 else "items"
     return (
         f'<div class="row-header {row_class}" id="{anchor_id}">'
@@ -995,7 +951,6 @@ def _row_header(anchor_id: str, label: str, count: int, row_class: str) -> str:
 
 
 def _count_news_items(grouped_html: str) -> int:
-
     return grouped_html.count('<li><a href=')
 
 
@@ -1008,8 +963,20 @@ QUICK_NAV = """<nav class="quick-nav">
 </nav>"""
 
 
-def write_report_page(security_news_html: str, devsecops_news_html: str, cloud_news_html: str,
-                       bottom_report_md: str, date_str: str, docs_dir: str) -> str:
+def _news_rows_html(news_rows: list) -> str:
+    return "\n".join(
+        f"{_row_header(anchor, label, _count_news_items(row_html), css_class)}\n{row_html}"
+        for anchor, label, css_class, row_html in news_rows
+    )
+
+
+def _fetch_news_row_html(feeds: list, name: str) -> str:
+    print(f"\n[*] Fetching {name} news feeds (unfiltered {name} row)...")
+    items = fetch_feed_list(feeds, name)
+    return render_raw_news_columns_html(group_items_by_source(items))
+
+
+def write_report_page(news_rows: list, bottom_report_md: str, date_str: str, docs_dir: str) -> str:
     reports_dir = os.path.join(docs_dir, "reports")
     os.makedirs(reports_dir, exist_ok=True)
 
@@ -1029,12 +996,7 @@ def write_report_page(security_news_html: str, devsecops_news_html: str, cloud_n
 <h1>Security Digest — {date_str}</h1>
 </div>
 {QUICK_NAV}
-{_row_header("security-news", "Security News", _count_news_items(security_news_html), "row-security")}
-{security_news_html}
-{_row_header("devsecops-news", "DevSecOps News", _count_news_items(devsecops_news_html), "row-devsecops")}
-{devsecops_news_html}
-{_row_header("cloud-news", "Cloud News", _count_news_items(cloud_news_html), "row-cloud")}
-{cloud_news_html}
+{_news_rows_html(news_rows)}
 <h2 id="vuln-tracking" style="scroll-margin-top:4.5rem;">Scoped Vulnerability Tracking</h2>
 {bottom_html}
 </body>
@@ -1046,8 +1008,7 @@ def write_report_page(security_news_html: str, devsecops_news_html: str, cloud_n
     return rel_path
 
 
-def rebuild_dashboard_index(docs_dir: str, latest_date: str, security_news_html: str,
-                             devsecops_news_html: str, cloud_news_html: str, bottom_report_md: str):
+def rebuild_dashboard_index(docs_dir: str, latest_date: str, news_rows: list, bottom_report_md: str):
     reports_dir = os.path.join(docs_dir, "reports")
     os.makedirs(reports_dir, exist_ok=True)
 
@@ -1076,12 +1037,7 @@ def rebuild_dashboard_index(docs_dir: str, latest_date: str, security_news_html:
 <p class="meta">Latest run: {latest_date}</p>
 </div>
 {QUICK_NAV}
-{_row_header("security-news", "Security News", _count_news_items(security_news_html), "row-security")}
-{security_news_html}
-{_row_header("devsecops-news", "DevSecOps News", _count_news_items(devsecops_news_html), "row-devsecops")}
-{devsecops_news_html}
-{_row_header("cloud-news", "Cloud News", _count_news_items(cloud_news_html), "row-cloud")}
-{cloud_news_html}
+{_news_rows_html(news_rows)}
 <h2 id="vuln-tracking" style="scroll-margin-top:4.5rem;">Scoped Vulnerability Tracking</h2>
 {bottom_html}
 <h2 id="archive" style="scroll-margin-top:4.5rem;">Archive</h2>
@@ -1105,18 +1061,14 @@ def main():
     date_str = datetime.date.today().isoformat()
     os.makedirs("reports", exist_ok=True)
 
-
-    security_grouped = group_items_by_source(general_items)
-    security_news_html = render_raw_news_columns_html(security_grouped)
-
-    print("\n[*] Fetching DevSecOps news feeds (for the unfiltered DevSecOps row)...")
-    devsecops_items = fetch_feed_list(DEVSECOPS_NEWS_FEEDS, "DevSecOps")
-    devsecops_news_html = render_raw_news_columns_html(group_items_by_source(devsecops_items))
-
-    print("\n[*] Fetching Cloud news feeds (for the unfiltered Cloud row)...")
-    cloud_items = fetch_feed_list(CLOUD_NEWS_FEEDS, "Cloud")
-    cloud_news_html = render_raw_news_columns_html(group_items_by_source(cloud_items))
-
+    news_rows = [
+        ("security-news", "Security News", "row-security",
+         render_raw_news_columns_html(group_items_by_source(general_items))),
+        ("devsecops-news", "DevSecOps News", "row-devsecops",
+         _fetch_news_row_html(DEVSECOPS_NEWS_FEEDS, "DevSecOps")),
+        ("cloud-news", "Cloud News", "row-cloud",
+         _fetch_news_row_html(CLOUD_NEWS_FEEDS, "Cloud")),
+    ]
 
     scope_reports = []
     any_scope_had_data = False
@@ -1164,12 +1116,11 @@ def main():
     print(f"[i] Markdown archive written to {md_out_path}")
 
     docs_dir = "docs"
-    write_report_page(security_news_html, devsecops_news_html, cloud_news_html, bottom_md, date_str, docs_dir)
-    rebuild_dashboard_index(docs_dir, date_str, security_news_html, devsecops_news_html, cloud_news_html, bottom_md)
+    write_report_page(news_rows, bottom_md, date_str, docs_dir)
+    rebuild_dashboard_index(docs_dir, date_str, news_rows, bottom_md)
     print(f"[i] Dashboard updated: {docs_dir}/index.html")
 
     if any_scope_failed:
-
 
         print("[!] One or more scopes failed to generate a report this run (see above). "
               "Dashboard was still updated with everything that succeeded.", file=sys.stderr)
