@@ -60,7 +60,6 @@ DEVSECOPS_NEWS_FEEDS = [
     ("GitGuardian Blog", "https://blog.gitguardian.com/rss"),
     ("OpenSSF Blog", "https://openssf.org/feed"),
     ("Sonatype Blog", "https://sonatype.com/blog/rss.xml"),
-    ("DevOps.com", "https://devops.com/feed"),
 ]
 
 CLOUD_NEWS_FEEDS = [
@@ -127,7 +126,7 @@ def nvd_fetch(keyword: str) -> list:
         cve_id = cve.get("id", "UNKNOWN")
 
         descriptions = cve.get("descriptions", [])
-        desc_en = next((d["value"] for d in descriptions if d.get("lang") == "en"), "")
+        desc_en = next((d["value"] for d in descriptions if d.get("lang") == "en"), "")[:600]
 
         metrics = cve.get("metrics", {})
         cvss_score, cvss_severity = None, None
@@ -537,7 +536,7 @@ def call_llm(prompt: str, expected_entry_count: int = 0, label: str = "") -> Opt
         "messages": [{"role": "user", "content": prompt}],
         "temperature": 0.2,
         "max_tokens": 8192,
-        "reasoning": {"exclude": True},
+        "reasoning": {"effort": "low", "exclude": True},
     }
 
     last_err = None
@@ -558,8 +557,11 @@ def call_llm(prompt: str, expected_entry_count: int = 0, label: str = "") -> Opt
                 data = json.loads(resp.read().decode())
             content = data["choices"][0]["message"]["content"]
 
-            if content is None:
-                last_err = "model returned null content (likely exhausted its token budget on reasoning)"
+            if not content or not content.strip():
+                finish = data["choices"][0].get("finish_reason")
+                usage = data.get("usage")
+                last_err = (f"model returned empty content (finish_reason={finish}, usage={usage}, "
+                            f"model={data.get('model')}); likely spent its token budget on reasoning")
                 print(f"  [!]{tag} Attempt {attempt + 1}: {last_err}", file=sys.stderr)
                 if attempt < 2:
                     time.sleep(10)
