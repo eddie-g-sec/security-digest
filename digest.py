@@ -1043,7 +1043,7 @@ body > :not(.layout):not(.page-header):not(.quick-nav):not(script):not(.back-lin
 
 /* layout: news left, media panel right */
 
-.layout { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 1.5rem; align-items: start; }
+.layout { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 3.5rem; align-items: start; }
 .news-side { min-width: 0; }
 .media-panel {
     position: sticky; top: 1.25rem; margin-top: 1.25rem;
