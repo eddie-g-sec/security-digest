@@ -52,6 +52,21 @@ SECURITY_NEWS_FEEDS = [
     ("Dark Reading", "https://www.darkreading.com/rss.xml"),
     ("Beehiiv Newsletter", "https://rss.beehiiv.com/feeds/xgTKUmMmUm.xml"),
     ("The Register", "https://www.theregister.com/?lab_viewport=rss"),
+    ("The Record", "https://therecord.media/feed"),
+    ("Help Net Security", "https://www.helpnetsecurity.com/feed/"),
+    ("Schneier on Security", "https://www.schneier.com/feed/atom/"),
+    ("SANS Internet Storm Center", "https://isc.sans.edu/rssfeed.xml"),
+    ("Cisco Talos", "https://blog.talosintelligence.com/rss/"),
+    ("NCSC UK", "https://www.ncsc.gov.uk/api/1/services/v1/all-rss-feed.xml"),
+]
+
+
+BREACH_NEWS_FEEDS = [
+    ("HIPAA Journal", "https://www.hipaajournal.com/feed/"),
+    ("Have I Been Pwned", "https://haveibeenpwned.com/feed/breaches/"),
+    ("Ransomware.live", "https://www.ransomware.live/rss.xml"),
+    ("Security Affairs", "https://securityaffairs.com/feed"),
+    ("Infosecurity Magazine", "https://www.infosecurity-magazine.com/rss/news/"),
 ]
 
 
@@ -60,13 +75,24 @@ DEVSECOPS_NEWS_FEEDS = [
     ("GitGuardian Blog", "https://blog.gitguardian.com/rss"),
     ("OpenSSF Blog", "https://openssf.org/feed"),
     ("Sonatype Blog", "https://sonatype.com/blog/rss.xml"),
+    ("Datadog Security Labs", "https://securitylabs.datadoghq.com/rss/feed.xml"),
+    ("Chainguard", "https://www.chainguard.dev/unchained/rss.xml"),
+    ("Docker Blog", "https://www.docker.com/blog/feed/"),
+    ("GitHub Security Blog", "https://github.blog/security/feed/"),
+    ("Sysdig Blog", "https://sysdig.com/feed/"),
 ]
 
 CLOUD_NEWS_FEEDS = [
     ("AWS News Blog", "https://aws.amazon.com/blogs/aws/feed/"),
+    ("AWS Security Blog", "https://aws.amazon.com/blogs/security/feed/"),
     ("Microsoft Azure Blog", "https://azure.microsoft.com/en-us/blog/feed/"),
+    ("Microsoft Security Blog", "https://www.microsoft.com/en-us/security/blog/feed/"),
     ("Google Cloud Blog", "https://cloudblog.withgoogle.com/rss"),
+    ("Cloudflare Blog", "https://blog.cloudflare.com/rss/"),
+    ("Wiz Blog", "https://www.wiz.io/feed/rss.xml"),
     ("Kubernetes Blog", "https://kubernetes.io/feed.xml"),
+    ("CNCF Blog", "https://www.cncf.io/feed/"),
+    ("HashiCorp Blog", "https://www.hashicorp.com/blog/feed.xml"),
     ("The New Stack", "https://thenewstack.io/feed"),
 ]
 
@@ -255,6 +281,10 @@ def _parse_rss_datetime(raw: str):
         if dt.tzinfo is None:
             dt = dt.replace(tzinfo=datetime.timezone.utc)
         return dt
+    except ValueError:
+        pass
+    try:
+        return datetime.datetime.strptime(raw.strip(), "%a, %d %b %Y").replace(tzinfo=datetime.timezone.utc)
     except ValueError:
         return None
 
@@ -750,6 +780,7 @@ PAGE_CSS = """
     --sev-low: #7C8B9A;
     --sev-unscored: #6B7C93;
     --row-security: #43d854;
+    --row-breach: #FF8A5B;
     --row-devsecops: #B98EFF;
     --row-cloud: #5EA8FF;
     --mono: "Monaco", "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
@@ -861,6 +892,7 @@ h1 {
 }
 .row-header .count { font-family: var(--mono); font-size: 0.72rem; color: var(--text-faint); }
 .row-security .dot { background: var(--row-security); box-shadow: 0 0 6px var(--row-security); }
+.row-breach .dot { background: var(--row-breach); box-shadow: 0 0 6px var(--row-breach); }
 .row-devsecops .dot { background: var(--row-devsecops); box-shadow: 0 0 6px var(--row-devsecops); }
 .row-cloud .dot { background: var(--row-cloud); box-shadow: 0 0 6px var(--row-cloud); }
 
@@ -868,15 +900,18 @@ h1 {
 
 .news-grid-wrapper {
     overflow-x: auto; -webkit-overflow-scrolling: touch;
-    margin: 0 0 1rem; padding: 0.75rem 40px 1.5rem;
+    margin: 0 0 1rem; padding: 0.75rem 0 1.5rem 40px;
     scrollbar-width: thin; scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
     -webkit-mask-image: linear-gradient(to right, transparent 0, #000 40px, #000 calc(100% - 40px), transparent 100%);
     mask-image: linear-gradient(to right, transparent 0, #000 40px, #000 calc(100% - 40px), transparent 100%);
 }
-.news-grid { display: flex; gap: 1.25rem; width: max-content; }
+.news-grid {
+    display: grid; grid-auto-flow: column; grid-auto-columns: 290px;
+    gap: 1.25rem; width: max-content; padding-right: 40px;
+}
 .news-column {
     position: relative;
-    flex: 0 0 290px; display: flex; flex-direction: column; max-height: 560px;
+    min-width: 0; display: flex; flex-direction: column; max-height: 560px;
     background: var(--surface); border: 1px solid rgba(255, 255, 255, 0.12);
     border-radius: 1em; overflow: hidden;
     box-shadow: var(--shadow-card);
@@ -997,7 +1032,7 @@ h4.mention-group {
 
 @media (max-width: 760px) {
     h1 { font-size: 1.5rem; }
-    .news-column { flex-basis: 260px; }
+    .news-grid { grid-auto-columns: 260px; }
 }
 @media (max-width: 620px) {
     body { font-size: 13px; }
@@ -1043,6 +1078,7 @@ def _count_news_items(grouped_html: str) -> int:
 
 QUICK_NAV = """<nav class="quick-nav">
 <a href="#security-news">Security</a>
+<a href="#breach-news">Breaches</a>
 <a href="#devsecops-news">DevSecOps</a>
 <a href="#cloud-news">Cloud</a>
 <a href="#vuln-tracking">Vulnerabilities</a>
@@ -1151,6 +1187,8 @@ def main():
     news_rows = [
         ("security-news", "Security News", "row-security",
          render_raw_news_columns_html(group_items_by_source(general_items))),
+        ("breach-news", "Breaches & Incidents", "row-breach",
+         _fetch_news_row_html(BREACH_NEWS_FEEDS, "Breach")),
         ("devsecops-news", "DevSecOps News", "row-devsecops",
          _fetch_news_row_html(DEVSECOPS_NEWS_FEEDS, "DevSecOps")),
         ("cloud-news", "Cloud News", "row-cloud",
