@@ -868,15 +868,24 @@ h1 {
 
 .news-grid-wrapper {
     overflow-x: auto; -webkit-overflow-scrolling: touch;
-    margin: 0 0 1rem; padding: 0.5rem 0.5rem 1rem;
+    margin: 0 0 1rem; padding: 0.75rem 40px 1.5rem;
     scrollbar-width: thin; scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+    -webkit-mask-image: linear-gradient(to right, transparent 0, #000 40px, #000 calc(100% - 40px), transparent 100%);
+    mask-image: linear-gradient(to right, transparent 0, #000 40px, #000 calc(100% - 40px), transparent 100%);
 }
 .news-grid { display: flex; gap: 1.25rem; width: max-content; }
 .news-column {
+    position: relative;
     flex: 0 0 290px; display: flex; flex-direction: column; max-height: 560px;
-    background: var(--surface); border-radius: 1em; overflow: hidden;
-    box-shadow: var(--glow-col);
+    background: var(--surface); border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 1em; overflow: hidden;
+    box-shadow: var(--shadow-card);
     animation: float-in-left 0.8s ease both;
+}
+.news-column::after {
+    content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 36px;
+    background: linear-gradient(to bottom, rgba(31, 33, 34, 0), #1f2122);
+    pointer-events: none;
 }
 .news-column h4 {
     margin: 0; padding: 0.5rem 0.85rem; flex-shrink: 0;
@@ -885,7 +894,7 @@ h1 {
     background: var(--surface-2); border-bottom: 1px solid var(--border);
 }
 .news-column ul {
-    list-style: none; margin: 0; padding: 0.5rem 0.85rem 0.75rem;
+    list-style: none; margin: 0; padding: 0.5rem 0.85rem 2.25rem;
     flex: 1; overflow-y: auto;
     scrollbar-width: thin; scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
 }
@@ -922,7 +931,8 @@ ul { padding-left: 1.3rem; margin: 0.6rem 0; }
 li { margin: 0.3rem 0; }
 
 .vuln-card {
-    background: var(--surface); border-left: 4px solid var(--sev-unscored);
+    background: var(--surface); border: 1px solid rgba(255, 255, 255, 0.12);
+    border-left: 4px solid var(--sev-unscored);
     border-radius: 1em; padding: 1rem 1.25rem; margin-bottom: 1.25rem;
     box-shadow: var(--shadow-card);
     animation: float-in-left 0.8s ease both;
@@ -1005,7 +1015,7 @@ def render_raw_news_columns_html(grouped_items: dict) -> str:
     for source, items in sorted(grouped_items.items()):
         list_items = []
         for item in items:
-            title = html_mod.escape(item.get("title", "(untitled)"))
+            title = html_mod.escape(html_mod.unescape(item.get("title", "(untitled)")))
             link = html_mod.escape(item.get("link", "#"))
             pub = item.get("published") or ""
             list_items.append(
