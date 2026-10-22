@@ -1034,8 +1034,33 @@ h4.mention-group {
     to { opacity: 1; }
 }
 
+/* layout: news left, media panel right */
+
+.layout { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 1.5rem; align-items: start; }
+.news-side { min-width: 0; }
+.media-panel {
+    position: sticky; top: 4.5rem; margin-top: 3.5rem;
+    background: var(--surface); border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 1em; box-shadow: var(--shadow-card); padding: 0.9rem;
+}
+.media-panel h3 { margin: 0 0 0.6rem; font-family: var(--display); font-weight: normal; letter-spacing: 0.08em; font-size: 1rem; }
+.media-tabs { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.7rem; }
+.media-tab {
+    font: inherit; font-size: 0.75rem; color: var(--text-dim); background: transparent; cursor: pointer;
+    border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 999px; padding: 0.2rem 0.7rem;
+}
+.media-tab.active, .media-tab:hover { color: black; background: whitesmoke; }
+.media-frame { display: none; }
+.media-frame.active { display: block; }
+.media-frame iframe { width: 100%; aspect-ratio: 16 / 9; border: 0; border-radius: 0.6em; background: #000; display: block; }
+.media-open { display: inline-block; margin-top: 0.6rem; font-size: 0.75rem; color: var(--link); }
+
 /* responsive */
 
+@media (max-width: 1000px) {
+    .layout { grid-template-columns: minmax(0, 1fr); }
+    .media-panel { position: static; margin-top: 1.5rem; order: -1; }
+}
 @media (max-width: 760px) {
     h1 { font-size: 1.5rem; }
     .news-grid { grid-auto-columns: 260px; }
@@ -1082,6 +1107,48 @@ def _count_news_items(grouped_html: str) -> int:
     return grouped_html.count('<li><a href=')
 
 
+# Media panel beside the news rows. Each entry is (tab label, embed URL, "Open" link).
+# The YouTube entry embeds the channel's uploads playlist, so it shows the latest
+# episode and the live stream while one is running. Any https iframe embed works
+# (Spotify, Apple Podcasts, Twitch, ...).
+MEDIA_PANELS = [
+    ("Simply Cyber",
+     "https://www.youtube-nocookie.com/embed/videoseries?list=UUG-48Ki-b6W_siaUkukJOSw",
+     "https://www.youtube.com/channel/UCG-48Ki-b6W_siaUkukJOSw/live"),
+]
+
+
+def render_media_panel_html() -> str:
+    if not MEDIA_PANELS:
+        return ""
+    tabs = "".join(
+        f'<button type="button" class="media-tab{" active" if i == 0 else ""}" data-i="{i}">'
+        f'{html_mod.escape(label)}</button>'
+        for i, (label, _, _) in enumerate(MEDIA_PANELS)
+    )
+    frames = "".join(
+        f'<div class="media-frame{" active" if i == 0 else ""}">'
+        f'<iframe src="{html_mod.escape(embed)}" title="{html_mod.escape(label)}" loading="lazy" '
+        f'allow="encrypted-media; picture-in-picture; fullscreen" allowfullscreen '
+        f'referrerpolicy="strict-origin-when-cross-origin"></iframe>'
+        f'<a class="media-open" href="{html_mod.escape(link)}" target="_blank" rel="noopener">Open on source &rarr;</a></div>'
+        for i, (label, embed, link) in enumerate(MEDIA_PANELS)
+    )
+    script = (
+        "<script>document.querySelectorAll('.media-tab').forEach(function(b){b.addEventListener('click',function(){"
+        "var i=b.dataset.i;document.querySelectorAll('.media-tab').forEach(function(x){x.classList.toggle('active',x===b)});"
+        "document.querySelectorAll('.media-frame').forEach(function(f,j){f.classList.toggle('active',String(j)===i)});"
+        "});});</script>"
+    )
+    return (f'<aside class="media-panel"><h3>Live &amp; Latest</h3>'
+            f'<div class="media-tabs">{tabs}</div>{frames}</aside>{script}')
+
+
+def _news_layout_html(news_rows: list) -> str:
+    return (f'<div class="layout"><div class="news-side">{_news_rows_html(news_rows)}</div>'
+            f'{render_media_panel_html()}</div>')
+
+
 QUICK_NAV = """<nav class="quick-nav">
 <a href="#security-news">Security</a>
 <a href="#breach-news">Breaches</a>
@@ -1125,7 +1192,7 @@ def write_report_page(news_rows: list, bottom_report_md: str, date_str: str, doc
 <h1>Security Digest — {date_str}</h1>
 </div>
 {QUICK_NAV}
-{_news_rows_html(news_rows)}
+{_news_layout_html(news_rows)}
 <h2 id="vuln-tracking" style="scroll-margin-top:4.5rem;">Scoped Vulnerability Tracking</h2>
 {bottom_html}
 </body>
@@ -1166,7 +1233,7 @@ def rebuild_dashboard_index(docs_dir: str, latest_date: str, news_rows: list, bo
 <p class="meta">Latest run: {latest_date}</p>
 </div>
 {QUICK_NAV}
-{_news_rows_html(news_rows)}
+{_news_layout_html(news_rows)}
 <h2 id="vuln-tracking" style="scroll-margin-top:4.5rem;">Scoped Vulnerability Tracking</h2>
 {bottom_html}
 <h2 id="archive" style="scroll-margin-top:4.5rem;">Archive</h2>
