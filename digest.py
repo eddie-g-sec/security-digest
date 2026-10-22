@@ -10,7 +10,7 @@ import urllib.request
 import urllib.parse
 import urllib.error
 from typing import Optional
-import xml.etree.ElementTree as ET
+import xml.etree.ElementTree as ET  # nosec B405
 
 NVD_BASE = "https://services.nvd.nist.gov/rest/json/cves/2.0"
 KEV_URL = "https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json"
@@ -105,11 +105,14 @@ ENABLE_NEWS_FEEDS = os.environ.get("ENABLE_NEWS_FEEDS", "true").lower() != "fals
 def http_get(url: str, headers: dict = None, timeout: int = 30, retries: int = 2):
     headers = headers or {}
     headers.setdefault("User-Agent", "security-digest/1.0 (+https://github.com/)")
+    if not url.startswith("https://"):
+        print(f"  [!] Refusing non-https URL: {url}", file=sys.stderr)
+        return None
     last_err = None
     for attempt in range(retries + 1):
         try:
             req = urllib.request.Request(url, headers=headers)
-            with urllib.request.urlopen(req, timeout=timeout) as resp:
+            with urllib.request.urlopen(req, timeout=timeout) as resp:  # nosec B310
                 return resp.read()
         except Exception as e:
             last_err = e
@@ -294,8 +297,11 @@ def parse_feed(url: str, source_label: str = None) -> list:
     if raw is None:
         return []
 
+    if re.search(rb"<!(DOCTYPE|ENTITY)", raw, re.I):
+        print(f"  [!] Feed rejected (DOCTYPE/ENTITY not allowed): {url}", file=sys.stderr)
+        return []
     try:
-        root = ET.fromstring(raw)
+        root = ET.fromstring(raw)  # nosec B314
     except ET.ParseError as e:
         print(f"  [!] RSS parse failed for {url}: {e}", file=sys.stderr)
         return []
@@ -583,7 +589,7 @@ def call_llm(prompt: str, expected_entry_count: int = 0, label: str = "") -> Opt
             method="POST",
         )
         try:
-            with urllib.request.urlopen(req, timeout=90) as resp:
+            with urllib.request.urlopen(req, timeout=90) as resp:  # nosec B310
                 data = json.loads(resp.read().decode())
             content = data["choices"][0]["message"]["content"]
 
