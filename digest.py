@@ -6,6 +6,7 @@ import html as html_mod
 import re
 import datetime
 import email.utils
+import functools
 import urllib.request
 import urllib.parse
 import urllib.error
@@ -14,7 +15,7 @@ import xml.etree.ElementTree as ET  # nosec B405
 
 NVD_BASE = "https://services.nvd.nist.gov/rest/json/cves/2.0"
 KEV_URL = "https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json"
-OPENROUTER_MODEL = "openrouter/free"
+OPENROUTER_MODEL = os.environ.get("OPENROUTER_MODEL", "openrouter/free")
 OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
 
 MAX_ENTRIES_PER_SYSTEM = 10
@@ -297,8 +298,8 @@ def parse_feed(url: str, source_label: str = None) -> list:
     if raw is None:
         return []
 
-    if re.search(rb"<!(DOCTYPE|ENTITY)", raw, re.I):
-        print(f"  [!] Feed rejected (DOCTYPE/ENTITY not allowed): {url}", file=sys.stderr)
+    if re.search(rb"<!ENTITY", raw, re.I):
+        print(f"  [!] Feed rejected (ENTITY declarations not allowed): {url}", file=sys.stderr)
         return []
     try:
         root = ET.fromstring(raw)  # nosec B314
@@ -577,6 +578,7 @@ def call_llm(prompt: str, expected_entry_count: int = 0, label: str = "") -> Opt
 
     last_err = None
     for attempt in range(3):
+        body["max_tokens"] = 8192 if attempt == 0 else 16384
         req = urllib.request.Request(
             OPENROUTER_URL,
             data=json.dumps(body).encode(),
@@ -816,7 +818,7 @@ html {
 
 body {
     font-family: var(--mono);
-    max-width: 1180px;
+    max-width: 1760px;
     margin: 0 auto;
     padding: 0 1.25rem 4rem;
     line-height: 1.6;
@@ -1034,12 +1036,17 @@ h4.mention-group {
     to { opacity: 1; }
 }
 
+/* keep text-heavy sections readable while the news area uses the full width */
+body > :not(.layout):not(.page-header):not(.quick-nav):not(script):not(.back-link) {
+    max-width: 1180px; margin-left: auto; margin-right: auto;
+}
+
 /* layout: news left, media panel right */
 
 .layout { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 1.5rem; align-items: start; }
 .news-side { min-width: 0; }
 .media-panel {
-    position: sticky; top: 4.5rem; margin-top: 3.5rem;
+    position: sticky; top: 1.25rem; margin-top: 1.25rem;
     background: var(--surface); border: 1px solid rgba(255, 255, 255, 0.12);
     border-radius: 1em; box-shadow: var(--shadow-card); padding: 0.9rem;
 }
@@ -1053,13 +1060,21 @@ h4.mention-group {
 .media-frame { display: none; }
 .media-frame.active { display: block; }
 .media-frame iframe { width: 100%; aspect-ratio: 16 / 9; border: 0; border-radius: 0.6em; background: #000; display: block; }
+.media-panel .audio-heading { margin: 1.4rem 0 0.4rem; font-family: var(--display); font-weight: normal; letter-spacing: 0.08em; font-size: 1rem; }
+.media-panel > h3:first-child { margin-top: 0; }
+.audio-card { padding: 0.7rem 0; border-top: 1px solid rgba(255, 255, 255, 0.08); }
+.audio-label { font-size: 0.7rem; color: var(--text-faint); letter-spacing: 0.08em; text-transform: uppercase; }
+.audio-title { font-size: 0.8rem; line-height: 1.4; margin: 0.2rem 0; }
+.audio-title a { color: var(--link); text-decoration: none; }
+.audio-card .item-date { font-size: 0.7rem; color: var(--text-faint); }
+.audio-card audio { width: 100%; height: 36px; margin-top: 0.4rem; }
 .media-open { display: inline-block; margin-top: 0.6rem; font-size: 0.75rem; color: var(--link); }
 
 /* responsive */
 
 @media (max-width: 1000px) {
     .layout { grid-template-columns: minmax(0, 1fr); }
-    .media-panel { position: static; margin-top: 1.5rem; order: -1; }
+    .media-panel { position: static; order: -1; width: 100%; max-width: 480px; margin: 1.25rem auto 0; }
 }
 @media (max-width: 760px) {
     h1 { font-size: 1.5rem; }
@@ -1118,8 +1133,54 @@ MEDIA_PANELS = [
 ]
 
 
+# Daily audio briefs: (label, podcast RSS feed, optional title prefix to pick one show out of a mixed feed).
+AUDIO_PODCASTS = [
+    ("SANS Stormcast", "https://isc.sans.edu/dailypodcast.xml", ""),
+    ("Risky Bulletin", "https://risky.biz/feeds/risky-business-news/", "Risky Bulletin"),
+]
+
+
+def fetch_latest_episode(feed_url: str, title_prefix: str = "") -> Optional[dict]:
+    raw = http_get(feed_url, timeout=20)
+    if raw is None or re.search(rb"<!ENTITY", raw, re.I):
+        return None
+    try:
+        root = ET.fromstring(raw)  # nosec B314
+    except ET.ParseError:
+        return None
+    for item in root.findall(".//item"):
+        title = (item.findtext("title") or "").strip()
+        enc = item.find("enclosure")
+        audio = enc.get("url", "") if enc is not None else ""
+        if title.startswith(title_prefix) and audio.startswith("https://"):
+            return {"title": title, "audio": audio, "link": (item.findtext("link") or "").strip(),
+                    "published": item.findtext("pubDate") or ""}
+    return None
+
+
+@functools.lru_cache(maxsize=1)
+def render_audio_html() -> str:
+    cards = []
+    for label, feed_url, prefix in AUDIO_PODCASTS:
+        print(f"[*] Fetching podcast feed: {label}")
+        ep = fetch_latest_episode(feed_url, prefix)
+        if not ep:
+            continue
+        link = ep["link"] if ep["link"].startswith("https://") else ""
+        title = html_mod.escape(html_mod.unescape(ep["title"]))
+        title_html = f'<a href="{html_mod.escape(link)}" target="_blank" rel="noopener">{title}</a>' if link else title
+        cards.append(
+            f'<div class="audio-card"><div class="audio-label">{html_mod.escape(label)}</div>'
+            f'<div class="audio-title">{title_html}</div>'
+            f'<div class="item-date">{html_mod.escape(ep["published"])}</div>'
+            f'<audio controls preload="none" src="{html_mod.escape(ep["audio"])}"></audio></div>'
+        )
+    return f'<h3 class="audio-heading">Daily Audio</h3>{"".join(cards)}' if cards else ""
+
+
 def render_media_panel_html() -> str:
-    if not MEDIA_PANELS:
+    audio = render_audio_html()
+    if not MEDIA_PANELS and not audio:
         return ""
     tabs = "".join(
         f'<button type="button" class="media-tab{" active" if i == 0 else ""}" data-i="{i}">'
@@ -1139,13 +1200,13 @@ def render_media_panel_html() -> str:
         "var i=b.dataset.i;document.querySelectorAll('.media-tab').forEach(function(x){x.classList.toggle('active',x===b)});"
         "document.querySelectorAll('.media-frame').forEach(function(f,j){f.classList.toggle('active',String(j)===i)});"
         "});});</script>"
-    )
-    return (f'<aside class="media-panel"><h3>Live &amp; Latest</h3>'
-            f'<div class="media-tabs">{tabs}</div>{frames}</aside>{script}')
+    ) if len(MEDIA_PANELS) > 1 else ""
+    video = (f'<h3>Live &amp; Latest</h3><div class="media-tabs">{tabs}</div>{frames}') if MEDIA_PANELS else ""
+    return f'<aside class="media-panel">{video}{audio}</aside>{script}'
 
 
-def _news_layout_html(news_rows: list) -> str:
-    return (f'<div class="layout"><div class="news-side">{_news_rows_html(news_rows)}</div>'
+def _news_layout_html(top_html: str, news_rows: list) -> str:
+    return (f'<div class="layout"><div class="news-side">{top_html}{QUICK_NAV}{_news_rows_html(news_rows)}</div>'
             f'{render_media_panel_html()}</div>')
 
 
@@ -1177,6 +1238,9 @@ def write_report_page(news_rows: list, bottom_report_md: str, date_str: str, doc
     os.makedirs(reports_dir, exist_ok=True)
 
     bottom_html = markdown_to_html(bottom_report_md)
+    top_html = (f'<a class="back-link" href="../index.html">&larr; All reports</a>'
+                f'<div class="page-header"><p class="eyebrow">Daily Digest</p>'
+                f'<h1>Security Digest — {date_str}</h1></div>')
     page = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1186,13 +1250,7 @@ def write_report_page(news_rows: list, bottom_report_md: str, date_str: str, doc
 <style>{PAGE_CSS}</style>
 </head>
 <body>
-<a class="back-link" href="../index.html">&larr; All reports</a>
-<div class="page-header">
-<p class="eyebrow">Daily Digest</p>
-<h1>Security Digest — {date_str}</h1>
-</div>
-{QUICK_NAV}
-{_news_layout_html(news_rows)}
+{_news_layout_html(top_html, news_rows)}
 <h2 id="vuln-tracking" style="scroll-margin-top:4.5rem;">Scoped Vulnerability Tracking</h2>
 {bottom_html}
 </body>
@@ -1217,6 +1275,8 @@ def rebuild_dashboard_index(docs_dir: str, latest_date: str, news_rows: list, bo
     )
 
     bottom_html = markdown_to_html(bottom_report_md)
+    top_html = (f'<div class="page-header"><p class="eyebrow">Updated daily</p><h1>Security Digest</h1>'
+                f'<p class="meta">Latest run: {latest_date}</p></div>')
 
     index = f"""<!DOCTYPE html>
 <html lang="en">
@@ -1227,13 +1287,7 @@ def rebuild_dashboard_index(docs_dir: str, latest_date: str, news_rows: list, bo
 <style>{PAGE_CSS}</style>
 </head>
 <body>
-<div class="page-header">
-<p class="eyebrow">Updated daily</p>
-<h1>Security Digest</h1>
-<p class="meta">Latest run: {latest_date}</p>
-</div>
-{QUICK_NAV}
-{_news_layout_html(news_rows)}
+{_news_layout_html(top_html, news_rows)}
 <h2 id="vuln-tracking" style="scroll-margin-top:4.5rem;">Scoped Vulnerability Tracking</h2>
 {bottom_html}
 <h2 id="archive" style="scroll-margin-top:4.5rem;">Archive</h2>
