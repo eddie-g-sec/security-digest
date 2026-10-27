@@ -775,7 +775,7 @@ PAGE_CSS = """
 
 :root {
     --bg: #181a1b;
-    --surface: rgba(255, 255, 255, 0.03);
+    --surface: rgba(24, 26, 27, 0.6);
     --surface-2: rgba(255, 255, 255, 0.05);
     --border: rgba(255, 255, 255, 0.08);
     --text: #ffffff;
@@ -807,7 +807,8 @@ html {
 }
 html::before {
     content: ""; position: fixed; left: 0; top: 0; width: 100%; height: 100vh; height: 100lvh;
-    background: url("/media/grid2.png") center bottom / cover no-repeat;
+    background-image: linear-gradient(rgba(24, 26, 27, .6), rgba(24, 26, 27, .6)), url("/media/grid2.png");
+    background-position: center bottom; background-size: cover; background-repeat: no-repeat;
     z-index: -1; pointer-events: none; transform: translateZ(0);
 }
 
@@ -935,7 +936,7 @@ h1 {
 }
 .news-column::after {
     content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 36px;
-    background: linear-gradient(to bottom, rgba(31, 33, 34, 0), #1f2122);
+    background: linear-gradient(to bottom, rgba(24, 26, 27, 0), rgba(24, 26, 27, 0.9));
     pointer-events: none;
 }
 .news-column h4 {
