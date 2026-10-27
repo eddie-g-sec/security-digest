@@ -176,7 +176,7 @@ def nvd_fetch(keyword: str) -> list:
             "cvss_severity": cvss_severity,
             "published": cve.get("published"),
             "last_modified": cve.get("lastModified"),
-            "references": refs[:5],
+            "references": refs[:3],
         })
 
     return results
@@ -513,11 +513,11 @@ FORMAL VULNERABILITY DATA (from NVD + CISA KEV), grouped by system. Entries with
 are ALREADY SORTED (KEV-confirmed first, then CVSS descending) -- present them in this order,
 do not re-sort. If a system has more than {MAX_ENTRIES_PER_SYSTEM} entries, only the top
 {MAX_ENTRIES_PER_SYSTEM} by priority are included; say so if relevant, don't imply completeness.
-{json.dumps(collected, indent=2)}
+{json.dumps(collected, separators=(',', ':'))}
 
 NEWS/FORUM MENTIONS (supplementary, NOT authoritative -- do not invent CVE numbers from this
 data). Capped at {MAX_NEWS_ITEMS_PER_SYSTEM} items per system.
-{json.dumps(news, indent=2)}
+{json.dumps(news, separators=(',', ':'))}
 
 Do not fabricate CVE IDs, scores, version numbers, or details beyond what's given above. If data
 for an entry is too sparse for a real summary, say so.
@@ -1311,6 +1311,46 @@ def rebuild_dashboard_index(docs_dir: str, latest_date: str, news_rows: list, bo
         open(nojekyll_path, "w").close()
 
 
+def fallback_report_md(scope_name: str, collected: dict, news: dict) -> str:
+    """Plain-Python report used when the free LLM can't produce one. Same markdown shape, no AI text."""
+    entries = sorted(
+        ((system, e) for system, items in collected.items() for e in items),
+        key=lambda se: (not se[1].get("confirmed_exploited_by_cisa_kev"), -(se[1].get("cvss_score") or 0)),
+    )
+    kev_count = sum(1 for _, e in entries if e.get("confirmed_exploited_by_cisa_kev"))
+    lines = [
+        f"## {scope_name}", "",
+        f"{len(entries)} vulnerability entries across {len(collected)} systems "
+        f"({kev_count} confirmed exploited per CISA KEV). Entries are sorted KEV-confirmed first, then by CVSS. "
+        "The written analysis was unavailable this run, so descriptions below are the raw NVD/CISA text.",
+        "",
+    ]
+    if entries:
+        lines += ["### Formal Vulnerabilities", ""]
+    for system, e in entries:
+        score = e.get("cvss_score")
+        sev = (e.get("cvss_severity") or "").split(" ")[0].upper() if score is not None else ""
+        score_txt = f"{score} {sev}".strip() if score is not None else "UNSCORED"
+        kev = e.get("confirmed_exploited_by_cisa_kev")
+        lines += [
+            f"#### {system} — {e['id']} (CVSS {score_txt})" + (" 🔴 ACTIVELY EXPLOITED (CISA KEV)" if kev else ""),
+            f"**Summary:** {(e.get('description') or 'No description provided.').strip()}", "",
+            "**Source:**",
+            *[f"- {r}" for r in e.get("references", [])[:3]], "",
+        ]
+        action = e.get("required_action") or e.get("kev_required_action")
+        due = e.get("due_date") or e.get("kev_due_date")
+        if action:
+            lines += ["**Actions:**", f"- Fix: {action}" + (f" (CISA due date: {due})" if due else ""), ""]
+    news_lines = [
+        f"- **{system}:** [{(i.get('title') or '').strip()}]({i.get('link')}) ({i.get('source')})"
+        for system, items in news.items() for i in items if i.get("link")
+    ]
+    if news_lines:
+        lines += ["### News & Community Mentions", "*Unverified chatter, not authoritative.*", "", *news_lines, ""]
+    return "\n".join(lines)
+
+
 def main():
     general_items, collected_by_scope, news_by_scope = collect_all()
 
@@ -1330,7 +1370,6 @@ def main():
 
     scope_reports = []
     any_scope_had_data = False
-    any_scope_failed = False
 
     for scope_name in SCOPES:
         collected = collected_by_scope.get(scope_name, {})
@@ -1347,16 +1386,8 @@ def main():
         result = call_llm(prompt, expected_entry_count=total_entries, label=scope_name)
 
         if result is None:
-            any_scope_failed = True
-            cve_count = sum(len(v) for v in collected.values())
-            news_count = sum(len(v) for v in news.values())
-            scope_reports.append(
-                f"## {scope_name}\n\n"
-                f"*Report generation failed for this scope after multiple retries -- see the "
-                f"Action log for details. Raw data was still collected successfully: "
-                f"{cve_count} formal vulnerability entries and {news_count} news/forum mentions "
-                f"across this scope's systems, just not yet turned into a written report.*"
-            )
+            print(f"::warning::{scope_name}: LLM report failed, published the plain-data fallback report instead")
+            scope_reports.append(fallback_report_md(scope_name, collected, news))
         else:
             scope_reports.append(result)
 
@@ -1377,12 +1408,6 @@ def main():
     write_report_page(news_rows, bottom_md, date_str, docs_dir)
     rebuild_dashboard_index(docs_dir, date_str, news_rows, bottom_md)
     print(f"[i] Dashboard updated: {docs_dir}/index.html")
-
-    if any_scope_failed:
-
-        print("[!] One or more scopes failed to generate a report this run (see above). "
-              "Dashboard was still updated with everything that succeeded.", file=sys.stderr)
-        sys.exit(1)
 
 
 if __name__ == "__main__":
