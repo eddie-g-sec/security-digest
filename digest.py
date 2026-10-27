@@ -802,8 +802,13 @@ PAGE_CSS = """
 html {
     margin: 0;
     padding: 0;
-    background: var(--bg) url("/media/grid2.png") center bottom / cover no-repeat fixed;
+    background: var(--bg);
     scroll-behavior: smooth;
+}
+html::before {
+    content: ""; position: fixed; left: 0; top: 0; width: 100%; height: 100vh; height: 100lvh;
+    background: url("/media/grid2.png") center bottom / cover no-repeat;
+    z-index: -1; pointer-events: none; transform: translateZ(0);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -826,7 +831,10 @@ body {
     background: transparent;
     font-size: 14px;
     overflow-x: hidden;
+    overflow-x: clip;
 }
+
+.text-section, .news-column, .media-panel, .audio-card { overflow-wrap: anywhere; }
 
 hr {
     box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.7), 0 6px 20px 0 rgba(0, 0, 0, 0.7);
