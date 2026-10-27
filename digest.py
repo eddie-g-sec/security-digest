@@ -802,7 +802,7 @@ PAGE_CSS = """
 html {
     margin: 0;
     padding: 0;
-    background-color: var(--bg);
+    background: var(--bg) url("/media/grid2.png") center bottom / cover no-repeat fixed;
     scroll-behavior: smooth;
 }
 
@@ -823,7 +823,7 @@ body {
     padding: 0 1.25rem 4rem;
     line-height: 1.6;
     color: var(--text);
-    background: var(--bg);
+    background: transparent;
     font-size: 14px;
     overflow-x: hidden;
 }
@@ -1070,6 +1070,13 @@ h4.mention-group {
 
 /* responsive */
 
+/* very wide screens: main column centered on the page, media panel in the right margin */
+@media (min-width: 1900px) {
+    body { max-width: none; }
+    .layout { grid-template-columns: minmax(488px, 1fr) minmax(0, 1180px) minmax(488px, 1fr); gap: 0; }
+    .news-side { grid-column: 2; }
+    .media-slot { grid-column: 3; justify-self: end; width: 440px; }
+}
 @media (max-width: 1000px) {
     .layout { grid-template-columns: minmax(0, 1fr); }
     .media-slot { order: -1; align-self: auto; }
