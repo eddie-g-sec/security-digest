@@ -775,7 +775,7 @@ PAGE_CSS = """
 
 :root {
     --bg: #181a1b;
-    --surface: rgba(24, 26, 27, 0.6);
+    --surface: rgba(255, 255, 255, 0.03);
     --surface-2: rgba(255, 255, 255, 0.05);
     --border: rgba(255, 255, 255, 0.08);
     --text: #ffffff;
@@ -803,11 +803,6 @@ html {
     margin: 0;
     padding: 0;
     background-color: var(--bg);
-    background-image: linear-gradient(rgba(24, 26, 27, .6), rgba(24, 26, 27, .6)),
-        url("/media/grid2.png");
-    background-size: cover;
-    background-position: center bottom;
-    background-attachment: fixed;
     scroll-behavior: smooth;
 }
 
@@ -828,7 +823,7 @@ body {
     padding: 0 1.25rem 4rem;
     line-height: 1.6;
     color: var(--text);
-    background: transparent;
+    background: var(--bg);
     font-size: 14px;
     overflow-x: hidden;
 }
@@ -843,7 +838,7 @@ hr {
     padding: 2.5rem 0 1.5rem;
     margin-bottom: 1rem;
     text-align: center;
-    animation: slide-in-top 1s both;
+    animation: slide-in-top 0.8s ease both;
 }
 .page-header .eyebrow {
     font-family: var(--mono);
@@ -873,7 +868,7 @@ h1 {
 .quick-nav {
     position: sticky; top: 0; z-index: 10;
     display: flex; justify-content: center; gap: 0.25rem; flex-wrap: wrap;
-    background: rgba(24, 26, 27, 0.6);
+    background: rgba(24, 26, 27, 0.94);
     backdrop-filter: blur(6px);
     padding: 0.6rem 0;
     margin-bottom: 2rem;
@@ -887,16 +882,16 @@ h1 {
     padding: 0.25em 0.7em;
     border-radius: 0.25em;
     background: transparent;
-    transition: all 1s ease;
+    transition: all 0.4s ease;
 }
-.quick-nav a:hover { text-decoration: none; color: black; background: whitesmoke; border-color: whitesmoke; }
+.quick-nav a:hover { color: black; background: whitesmoke; }
 
 /* section headers */
 
 .row-header {
     display: flex; align-items: center; gap: 0.7rem;
     margin: 3.5rem 0 1rem; scroll-margin-top: 4.5rem;
-    animation: float-in-left 1s both;
+    animation: float-in-left 0.8s ease both;
 }
 .row-header .dot { width: 8px; height: 8px; border-radius: 50%; flex: none; }
 .row-header h2 {
@@ -928,7 +923,12 @@ h1 {
     background: var(--surface); border: 1px solid rgba(255, 255, 255, 0.12);
     border-radius: 1em; overflow: hidden;
     box-shadow: var(--shadow-card);
-    animation: float-in-left 1s both;
+    animation: float-in-left 0.8s ease both;
+}
+.news-column::after {
+    content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 36px;
+    background: linear-gradient(to bottom, rgba(31, 33, 34, 0), #1f2122);
+    pointer-events: none;
 }
 .news-column h4 {
     margin: 0; padding: 0.5rem 0.85rem; flex-shrink: 0;
@@ -940,8 +940,6 @@ h1 {
     list-style: none; margin: 0; padding: 0.5rem 0.85rem 2.25rem;
     flex: 1; overflow-y: auto;
     scrollbar-width: thin; scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
-    -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 36px), transparent 100%);
-    mask-image: linear-gradient(to bottom, #000 calc(100% - 36px), transparent 100%);
 }
 .news-column ul::-webkit-scrollbar { width: 4px; }
 .news-column ul::-webkit-scrollbar-track { background: transparent; }
@@ -971,7 +969,7 @@ h3 {
     letter-spacing: 0.15em; text-transform: uppercase; color: var(--text-faint); border: none;
 }
 p { margin: 0.6rem 0; }
-a { color: var(--link); overflow-wrap: anywhere; }
+a { color: var(--link); }
 ul { padding-left: 1.3rem; margin: 0.6rem 0; }
 li { margin: 0.3rem 0; }
 
@@ -980,7 +978,7 @@ li { margin: 0.3rem 0; }
     border-left: 4px solid var(--sev-unscored);
     border-radius: 1em; padding: 1rem 1.25rem; margin-bottom: 1.25rem;
     box-shadow: var(--shadow-card);
-    animation: float-in-left 1s both;
+    animation: float-in-left 0.8s ease both;
 }
 .vuln-card.sev-critical { border-left-color: var(--sev-critical); }
 .vuln-card.sev-high { border-left-color: var(--sev-high); }
@@ -1019,36 +1017,34 @@ h4.mention-group {
 .archive-list a {
     display: inline-block; font-family: var(--mono); font-size: 0.78rem;
     color: white; text-decoration: none; padding: 0.35rem 0.8rem;
-    border: 1px solid var(--border); border-radius: 0.4em; transition: all 1s ease;
+    border: 1px solid var(--border); border-radius: 0.4em; transition: all 0.4s ease;
 }
 .archive-list a:hover { color: black; background: whitesmoke; border-color: whitesmoke; }
 
 /* animations */
 
 @keyframes slide-in-top {
-    from { opacity: 0; transform: translateY(-100%); }
+    from { opacity: 0; transform: translateY(-40px); }
     to { opacity: 1; transform: translateY(0); }
 }
 @keyframes float-in-left {
-    from { transform: translateX(-100%); opacity: 0; }
-    to { transform: translateX(0); opacity: 1; }
+    from { opacity: 0; transform: translateX(-40px); }
+    to { opacity: 1; transform: translateX(0); }
 }
 @keyframes fadeIn {
     from { opacity: 0; }
     to { opacity: 1; }
 }
 
-/* keep text-heavy sections readable while the news area uses the full width */
-body > :not(.layout):not(.page-header):not(.quick-nav):not(script):not(.back-link) {
-    max-width: 1180px; margin-left: auto; margin-right: auto;
-}
-
 /* layout: news left, media panel right */
 
-.layout { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 3.5rem; align-items: start; }
+.layout { display: grid; grid-template-columns: minmax(0, 1fr) 440px; gap: 3.5rem; align-items: start; }
 .news-side { min-width: 0; }
+.text-section { max-width: 1180px; margin: 0 auto; }
+.media-slot { align-self: stretch; }
+.media-sticky { position: sticky; top: 0; height: 100vh; display: flex; align-items: center; }
+.media-sticky .media-panel { max-height: calc(100vh - 2rem); overflow-y: auto; width: 100%; }
 .media-panel {
-    position: sticky; top: 1.25rem; margin-top: 1.25rem;
     background: var(--surface); border: 1px solid rgba(255, 255, 255, 0.12);
     border-radius: 1em; box-shadow: var(--shadow-card); padding: 0.9rem;
 }
@@ -1072,24 +1068,13 @@ body > :not(.layout):not(.page-header):not(.quick-nav):not(script):not(.back-lin
 .audio-card audio { width: 100%; height: 36px; margin-top: 0.4rem; }
 .media-open { display: inline-block; margin-top: 0.6rem; font-size: 0.75rem; color: var(--link); }
 
-/* footer (matches egil.tech) */
-
-footer {
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    padding: 1em; margin-top: 4rem; background-color: transparent; color: white;
-    font-family: var(--mono); font-size: 12px; text-align: center; max-width: 100%; border: none;
-}
-footer ul { list-style-type: none; display: flex; padding: 0; margin: 0; }
-footer ul li { margin: 0.5em; }
-.footer_link { color: gray; font-family: var(--mono); }
-.footer_link a { color: gray; text-decoration: none; transition: all 1s ease; }
-.footer_link a:hover { text-decoration: underline; color: white; }
-
 /* responsive */
 
 @media (max-width: 1000px) {
     .layout { grid-template-columns: minmax(0, 1fr); }
-    .media-panel { position: static; order: -1; width: 100%; max-width: 480px; margin: 1.25rem auto 0; }
+    .media-slot { order: -1; align-self: auto; }
+    .media-sticky { position: static; height: auto; display: block; }
+    .media-sticky .media-panel { max-width: 480px; margin: 1.25rem auto 0; max-height: none; overflow: visible; }
 }
 @media (max-width: 760px) {
     h1 { font-size: 1.5rem; }
@@ -1101,16 +1086,6 @@ footer ul li { margin: 0.5em; }
     .vuln-card { padding: 0.9rem 1rem; box-shadow: 0 0 3px rgba(0, 0, 0, 0.5), 0 3px 10px rgba(0, 0, 0, 0.5); }
 }
 """
-
-
-PAGE_FOOTER = """<footer>
-<ul class="footer_link">
-<li><a href="https://www.linkedin.com/in/eddie-g" target="_blank" rel="noopener noreferrer">LinkedIn</a></li>
-<li><a href="https://www.credly.com/users/eddie-rene-gil/badges" target="_blank" rel="noopener noreferrer">Credly</a></li>
-<li><a href="https://egil.tech">egil.tech</a></li>
-</ul>
-<p class="footer_link">&copy; 2024 Eddie Gil</p>
-</footer>"""
 
 
 def render_raw_news_columns_html(grouped_items: dict) -> str:
@@ -1230,9 +1205,10 @@ def render_media_panel_html() -> str:
     return f'<aside class="media-panel">{video}{audio}</aside>{script}'
 
 
-def _news_layout_html(top_html: str, news_rows: list) -> str:
-    return (f'<div class="layout"><div class="news-side">{top_html}{QUICK_NAV}{_news_rows_html(news_rows)}</div>'
-            f'{render_media_panel_html()}</div>')
+def _news_layout_html(top_html: str, news_rows: list, tail_html: str) -> str:
+    return (f'<div class="layout"><div class="news-side">{top_html}{QUICK_NAV}{_news_rows_html(news_rows)}'
+            f'<div class="text-section">{tail_html}</div></div>'
+            f'<div class="media-slot"><div class="media-sticky">{render_media_panel_html()}</div></div></div>')
 
 
 QUICK_NAV = """<nav class="quick-nav">
@@ -1266,6 +1242,8 @@ def write_report_page(news_rows: list, bottom_report_md: str, date_str: str, doc
     top_html = (f'<a class="back-link" href="../index.html">&larr; All reports</a>'
                 f'<div class="page-header"><p class="eyebrow">Daily Digest</p>'
                 f'<h1>Security Digest — {date_str}</h1></div>')
+    tail_html = (f'<h2 id="vuln-tracking" style="scroll-margin-top:4.5rem;">Scoped Vulnerability Tracking</h2>'
+                 f'{bottom_html}')
     page = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1275,10 +1253,7 @@ def write_report_page(news_rows: list, bottom_report_md: str, date_str: str, doc
 <style>{PAGE_CSS}</style>
 </head>
 <body>
-{_news_layout_html(top_html, news_rows)}
-<h2 id="vuln-tracking" style="scroll-margin-top:4.5rem;">Scoped Vulnerability Tracking</h2>
-{bottom_html}
-{PAGE_FOOTER}
+{_news_layout_html(top_html, news_rows, tail_html)}
 </body>
 </html>"""
 
@@ -1303,6 +1278,10 @@ def rebuild_dashboard_index(docs_dir: str, latest_date: str, news_rows: list, bo
     bottom_html = markdown_to_html(bottom_report_md)
     top_html = (f'<div class="page-header"><p class="eyebrow">Updated daily</p><h1>Security Digest</h1>'
                 f'<p class="meta">Latest run: {latest_date}</p></div>')
+    tail_html = (f'<h2 id="vuln-tracking" style="scroll-margin-top:4.5rem;">Scoped Vulnerability Tracking</h2>'
+                 f'{bottom_html}'
+                 f'<h2 id="archive" style="scroll-margin-top:4.5rem;">Archive</h2>'
+                 f'<ul class="archive-list">\n{archive_items}\n</ul>')
 
     index = f"""<!DOCTYPE html>
 <html lang="en">
@@ -1313,14 +1292,7 @@ def rebuild_dashboard_index(docs_dir: str, latest_date: str, news_rows: list, bo
 <style>{PAGE_CSS}</style>
 </head>
 <body>
-{_news_layout_html(top_html, news_rows)}
-<h2 id="vuln-tracking" style="scroll-margin-top:4.5rem;">Scoped Vulnerability Tracking</h2>
-{bottom_html}
-<h2 id="archive" style="scroll-margin-top:4.5rem;">Archive</h2>
-<ul class="archive-list">
-{archive_items}
-</ul>
-{PAGE_FOOTER}
+{_news_layout_html(top_html, news_rows, tail_html)}
 </body>
 </html>"""
 
