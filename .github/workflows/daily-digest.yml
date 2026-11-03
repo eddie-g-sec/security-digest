@@ -3,7 +3,9 @@ name: Daily Security Digest
 on:
   schedule:
     # 12:00 UTC = 7:00 AM Eastern (adjust for DST as needed, or just leave it)
-    - cron: "0 12 * * *"
+    - cron: "40 6 * * *"
+      timezone: "America/New_York"
+
   workflow_dispatch: {}  # lets you manually trigger a run from the Actions tab
 
 permissions:
