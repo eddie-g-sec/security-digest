@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Security Digest — 2026-11-10</title>
+<style>
+@font-face {
+    font-family: 'Mando';
+    src: local('Mando'), url("/media/mandaloretitle.ttf");
+    font-display: swap;
+}
+
+:root {
+    --bg: #181a1b;
+    --surface: rgba(24, 26, 27, 0.6);
+    --surface-2: rgba(255, 255, 255, 0.05);
+    --border: rgba(255, 255, 255, 0.08);
+    --text: #ffffff;
+    --text-dim: rgba(255, 255, 255, 0.65);
+    --text-faint: rgba(255, 255, 255, 0.45);
+    --link: #cce6ff;
+    --sev-critical: #d84a43;
+    --sev-high: #FFA94D;
+    --sev-medium: #FFD43B;
+    --sev-low: #7C8B9A;
+    --sev-unscored: #6B7C93;
+    --row-security: #43d854;
+    --row-breach: #FF8A5B;
+    --row-devsecops: #B98EFF;
+    --row-cloud: #5EA8FF;
+    --mono: "Monaco", "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+    --display: 'Mando', "Monaco", "SF Mono", Menlo, Consolas, monospace;
+    --shadow-card: 0 0 5px 0 rgba(0, 0, 0, 0.7), 0 6px 20px 0 rgba(0, 0, 0, 0.7);
+    --glow-col: 0 0 2.5px 0 rgba(255, 255, 255, 0.7), 0 3px 10px 0 rgba(255, 255, 255, 0.7);
+}
+
+* { box-sizing: border-box; }
+
+html {
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    scroll-behavior: smooth;
+}
+html::before {
+    content: ""; position: fixed; left: 0; top: 0; width: 100%; height: 100vh; height: 100lvh;
+    background-image: linear-gradient(rgba(24, 26, 27, .6), rgba(24, 26, 27, .6)), url("/media/grid2.png");
+    background-position: center bottom; background-size: cover; background-repeat: no-repeat;
+    z-index: -1; pointer-events: none; transform: translateZ(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    * { transition: none !important; animation: none !important; }
+}
+
+::selection {
+    background: rgb(204, 230, 255);
+    color: black;
+}
+
+body {
+    font-family: var(--mono);
+    max-width: 1760px;
+    margin: 0 auto;
+    padding: 0 1.25rem 4rem;
+    line-height: 1.6;
+    color: var(--text);
+    background: transparent;
+    font-size: 14px;
+    overflow-x: hidden;
+    overflow-x: clip;
+}
+
+.text-section, .news-column, .media-panel, .audio-card { overflow-wrap: anywhere; }
+
+hr {
+    box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.7), 0 6px 20px 0 rgba(0, 0, 0, 0.7);
+}
+
+/* header */
+
+.page-header {
+    padding: 2.5rem 0 1.5rem;
+    margin-bottom: 1rem;
+    text-align: center;
+    animation: slide-in-top 0.8s ease both;
+}
+.page-header .eyebrow {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+    margin: 0 0 0.5rem;
+}
+h1 {
+    font-family: var(--display);
+    font-size: 2rem;
+    font-weight: normal;
+    margin: 0 0 0.35rem;
+    letter-spacing: 0.04em;
+}
+.page-header .meta { color: var(--text-dim); font-size: 0.8rem; margin: 0; }
+.back-link {
+    display: inline-block; margin: 1rem 0 0; color: var(--text-dim);
+    font-family: var(--mono); font-size: 0.8rem; text-decoration: none;
+    transition: color 0.3s;
+}
+.back-link:hover { color: var(--text); text-decoration: underline; }
+
+/* nav */
+
+.quick-nav {
+    position: sticky; top: 0; z-index: 10;
+    display: flex; justify-content: center; gap: 0.25rem; flex-wrap: wrap;
+    background: rgba(24, 26, 27, 0.94);
+    backdrop-filter: blur(6px);
+    padding: 0.6rem 0;
+    margin-bottom: 2rem;
+    animation: fadeIn 2s ease both;
+}
+.quick-nav a {
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    color: white;
+    text-decoration: none;
+    padding: 0.25em 0.7em;
+    border-radius: 0.25em;
+    background: transparent;
+    transition: all 0.4s ease;
+}
+.quick-nav a:hover { color: black; background: whitesmoke; }
+
+/* section headers */
+
+.row-header {
+    display: flex; align-items: center; gap: 0.7rem;
+    margin: 3.5rem 0 1rem; scroll-margin-top: 4.5rem;
+    animation: float-in-left 0.8s ease both;
+}
+.row-header .dot { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+.row-header h2 {
+    margin: 0; font-family: var(--display); font-size: 1.2rem; font-weight: normal;
+    letter-spacing: 0.08em; color: var(--text); border: none; padding: 0;
+}
+.row-header .count { font-family: var(--mono); font-size: 0.72rem; color: var(--text-faint); }
+.row-security .dot { background: var(--row-security); box-shadow: 0 0 6px var(--row-security); }
+.row-breach .dot { background: var(--row-breach); box-shadow: 0 0 6px var(--row-breach); }
+.row-devsecops .dot { background: var(--row-devsecops); box-shadow: 0 0 6px var(--row-devsecops); }
+.row-cloud .dot { background: var(--row-cloud); box-shadow: 0 0 6px var(--row-cloud); }
+
+/* news columns */
+
+.news-grid-wrapper {
+    overflow-x: auto; -webkit-overflow-scrolling: touch;
+    margin: 0 0 1rem; padding: 0.75rem 0 1.5rem 40px;
+    scrollbar-width: thin; scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+    -webkit-mask-image: linear-gradient(to right, transparent 0, #000 40px, #000 calc(100% - 40px), transparent 100%);
+    mask-image: linear-gradient(to right, transparent 0, #000 40px, #000 calc(100% - 40px), transparent 100%);
+}
+.news-grid {
+    display: grid; grid-auto-flow: column; grid-auto-columns: 290px;
+    gap: 1.25rem; width: max-content; padding-right: 40px;
+}
+.news-column {
+    position: relative;
+    min-width: 0; display: flex; flex-direction: column; max-height: 560px;
+    background: var(--surface); border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 1em; overflow: hidden;
+    box-shadow: var(--shadow-card);
+    animation: float-in-left 0.8s ease both;
+}
+.news-column::after {
+    content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 36px;
+    background: linear-gradient(to bottom, rgba(24, 26, 27, 0), rgba(24, 26, 27, 0.9));
+    pointer-events: none;
+}
+.news-column h4 {
+    margin: 0; padding: 0.5rem 0.85rem; flex-shrink: 0;
+    font-family: var(--display); font-size: 1rem; font-weight: normal;
+    letter-spacing: 0.15em; color: var(--text-faint);
+    background: var(--surface-2); border-bottom: 1px solid var(--border);
+}
+.news-column ul {
+    list-style: none; margin: 0; padding: 0.5rem 0.85rem 2.25rem;
+    flex: 1; overflow-y: auto;
+    scrollbar-width: thin; scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+}
+.news-column ul::-webkit-scrollbar { width: 4px; }
+.news-column ul::-webkit-scrollbar-track { background: transparent; }
+.news-column ul::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 2px; }
+.news-column li { padding: 0.6rem 0; margin: 0; border-bottom: 1px solid rgba(255, 255, 255, 0.06); }
+.news-column li:last-child { border-bottom: none; }
+.news-column a {
+    color: rgba(255, 255, 255, 0.95); text-decoration: none;
+    font-size: 0.82rem; line-height: 1.5; transition: color 0.2s;
+}
+.news-column a:hover { color: var(--link); }
+.news-column .item-date {
+    display: block; font-family: var(--mono); color: var(--text-faint);
+    font-size: 0.7rem; margin-top: 0.25rem;
+}
+
+/* vulnerability tracking */
+
+h2 {
+    margin: 3.5rem 0 0.6rem; font-family: var(--display); font-size: 1.4rem;
+    font-weight: normal; letter-spacing: 0.06em; color: var(--text);
+    border: none; padding: 0; scroll-margin-top: 4.5rem; text-align: center;
+}
+h2 + p { color: var(--text-dim); margin: 0 auto 1.25rem; max-width: 68ch; }
+h3 {
+    margin: 2rem 0 0.9rem; font-family: var(--display); font-size: 0.95rem; font-weight: normal;
+    letter-spacing: 0.15em; text-transform: uppercase; color: var(--text-faint); border: none;
+}
+p { margin: 0.6rem 0; }
+a { color: var(--link); }
+ul { padding-left: 1.3rem; margin: 0.6rem 0; }
+li { margin: 0.3rem 0; }
+
+.vuln-card {
+    background: var(--surface); border: 1px solid rgba(255, 255, 255, 0.12);
+    border-left: 4px solid var(--sev-unscored);
+    border-radius: 1em; padding: 1rem 1.25rem; margin-bottom: 1.25rem;
+    box-shadow: var(--shadow-card);
+    animation: float-in-left 0.8s ease both;
+}
+.vuln-card.sev-critical { border-left-color: var(--sev-critical); }
+.vuln-card.sev-high { border-left-color: var(--sev-high); }
+.vuln-card.sev-medium { border-left-color: var(--sev-medium); }
+.vuln-card.sev-low { border-left-color: var(--sev-low); }
+.vuln-card-head { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; margin-bottom: 0.7rem; }
+.vuln-system { font-weight: bold; font-size: 0.95rem; color: rgba(255, 255, 255, 0.95); }
+.badge {
+    font-family: var(--mono); font-size: 0.72rem; padding: 0.18rem 0.55rem;
+    border-radius: 0.4em; white-space: nowrap;
+}
+.badge-cve { background: var(--surface-2); color: var(--text-dim); border: 1px solid var(--border); }
+.badge-cvss { color: #181a1b; font-weight: bold; }
+.badge-cvss.sev-critical { background: var(--sev-critical); color: white; }
+.badge-cvss.sev-high { background: var(--sev-high); }
+.badge-cvss.sev-medium { background: var(--sev-medium); }
+.badge-cvss.sev-low { background: var(--sev-low); color: white; }
+.badge-cvss.sev-unscored { background: var(--surface-2); color: var(--text-dim); border: 1px solid var(--border); font-weight: normal; }
+.badge-kev {
+    background: rgba(216, 74, 67, 0.15); color: #ff8b85; border: 1px solid rgba(216, 74, 67, 0.5);
+    text-transform: uppercase; letter-spacing: 0.04em; font-size: 0.68rem;
+}
+.vuln-card-body p { color: var(--text-dim); font-size: 0.82rem; line-height: 1.55; }
+.vuln-card-body strong { color: rgba(255, 255, 255, 0.95); }
+.vuln-card-body ul { font-size: 0.82rem; color: var(--text-dim); }
+.vuln-card-body a { word-break: break-word; }
+h4.mention-group {
+    margin: 1.5rem 0 0.5rem; font-family: var(--display); font-size: 0.95rem; font-weight: normal;
+    letter-spacing: 0.1em; color: var(--text); border: none; background: none; padding: 0;
+}
+
+/* archive */
+
+.archive-list { list-style: none; padding: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem; }
+.archive-list li { margin: 0; }
+.archive-list a {
+    display: inline-block; font-family: var(--mono); font-size: 0.78rem;
+    color: white; text-decoration: none; padding: 0.35rem 0.8rem;
+    border: 1px solid var(--border); border-radius: 0.4em; transition: all 0.4s ease;
+}
+.archive-list a:hover { color: black; background: whitesmoke; border-color: whitesmoke; }
+
+/* animations */
+
+@keyframes slide-in-top {
+    from { opacity: 0; transform: translateY(-40px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+@keyframes float-in-left {
+    from { opacity: 0; transform: translateX(-40px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* layout: news left, media panel right */
+
+.layout { display: grid; grid-template-columns: minmax(0, 1fr) 440px; gap: 3.5rem; align-items: start; }
+.news-side { min-width: 0; }
+.text-section { max-width: 1180px; margin: 0 auto; }
+.media-slot { align-self: stretch; }
+.media-sticky { position: sticky; top: 0; height: 100vh; display: flex; align-items: center; }
+.media-sticky .media-panel { max-height: calc(100vh - 2rem); overflow-y: auto; width: 100%; }
+.media-panel {
+    background: var(--surface); border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 1em; box-shadow: var(--shadow-card); padding: 0.9rem;
+}
+.media-panel h3 { margin: 0 0 0.6rem; font-family: var(--display); font-weight: normal; letter-spacing: 0.08em; font-size: 1rem; }
+.media-tabs { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.7rem; }
+.media-tab {
+    font: inherit; font-size: 0.75rem; color: var(--text-dim); background: transparent; cursor: pointer;
+    border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 999px; padding: 0.2rem 0.7rem;
+}
+.media-tab.active, .media-tab:hover { color: black; background: whitesmoke; }
+.media-frame { display: none; }
+.media-frame.active { display: block; }
+.media-frame iframe { width: 100%; aspect-ratio: 16 / 9; border: 0; border-radius: 0.6em; background: #000; display: block; }
+.media-panel .audio-heading { margin: 1.4rem 0 0.4rem; font-family: var(--display); font-weight: normal; letter-spacing: 0.08em; font-size: 1rem; }
+.media-panel > h3:first-child { margin-top: 0; }
+.audio-card { padding: 0.7rem 0; border-top: 1px solid rgba(255, 255, 255, 0.08); }
+.audio-label { font-size: 0.7rem; color: var(--text-faint); letter-spacing: 0.08em; text-transform: uppercase; }
+.audio-title { font-size: 0.8rem; line-height: 1.4; margin: 0.2rem 0; }
+.audio-title a { color: var(--link); text-decoration: none; }
+.audio-card .item-date { font-size: 0.7rem; color: var(--text-faint); }
+.audio-card audio { width: 100%; height: 36px; margin-top: 0.4rem; }
+.media-open { display: inline-block; margin-top: 0.6rem; font-size: 0.75rem; color: var(--link); }
+
+/* responsive */
+
+/* very wide screens: main column centered on the page, media panel in the right margin */
+@media (min-width: 1900px) {
+    body { max-width: none; }
+    .layout { grid-template-columns: minmax(488px, 1fr) minmax(0, 1180px) minmax(488px, 1fr); gap: 0; }
+    .news-side { grid-column: 2; }
+    .media-slot { grid-column: 3; justify-self: end; width: 440px; }
+}
+@media (max-width: 1000px) {
+    .layout { grid-template-columns: minmax(0, 1fr); }
+    .media-slot { order: -1; align-self: auto; }
+    .media-sticky { position: static; height: auto; display: block; }
+    .media-sticky .media-panel { max-width: 480px; margin: 1.25rem auto 0; max-height: none; overflow: visible; }
+}
+@media (max-width: 760px) {
+    h1 { font-size: 1.5rem; }
+    .news-grid { grid-auto-columns: 260px; }
+}
+@media (max-width: 620px) {
+    body { font-size: 13px; }
+    .quick-nav { justify-content: flex-start; overflow-x: auto; flex-wrap: nowrap; }
+    .vuln-card { padding: 0.9rem 1rem; box-shadow: 0 0 3px rgba(0, 0, 0, 0.5), 0 3px 10px rgba(0, 0, 0, 0.5); }
+}
+</style>
+</head>
+<body>
+<div class="layout"><div class="news-side"><a class="back-link" href="../index.html">&larr; All reports</a><div class="page-header"><p class="eyebrow">Daily Digest</p><h1>Security Digest — 2026-11-10</h1></div><nav class="quick-nav">
+<a href="#security-news">Security</a>
+<a href="#breach-news">Breaches</a>
+<a href="#devsecops-news">DevSecOps</a>
+<a href="#cloud-news">Cloud</a>
+<a href="#vuln-tracking">Vulnerabilities</a>
+<a href="#archive">Archive</a>
+</nav><div class="row-header row-security" id="security-news"><span class="dot"></span><h2>Security News</h2><span class="count">83 items</span></div>
+<div class="news-grid-wrapper"><div class="news-grid"><div class="news-column"><h4>BleepingComputer</h4><ul><li><a href="https://www.bleepingcomputer.com/news/microsoft/windows-11-kb5132061-and-kb5131087-cumulative-updates-released/">Windows 11 KB5132061 &amp; KB5131087 cumulative updates released</a><span class="item-date">Tue, 10 Nov 2026 13:33:26 -0500</span></li><li><a href="https://www.bleepingcomputer.com/news/security/critical-xen-orchestra-auth-bypass-flaw-exploited-to-hijack-vm-servers/">Critical Xen Orchestra auth bypass flaw exploited to hijack VM servers</a><span class="item-date">Tue, 10 Nov 2026 11:17:16 -0500</span></li><li><a href="https://www.bleepingcomputer.com/news/security/binance-warns-of-ios-flaw-that-could-leak-crypto-wallet-secrets/">Binance warns of iOS flaw that could leak crypto wallet secrets</a><span class="item-date">Tue, 10 Nov 2026 10:59:19 -0500</span></li><li><a href="https://www.bleepingcomputer.com/news/security/ransomware-recovery-is-now-a-client-retention-metric/">Ransomware recovery is now a client retention metric</a><span class="item-date">Tue, 10 Nov 2026 10:01:11 -0500</span></li><li><a href="https://www.bleepingcomputer.com/news/security/sap-patches-four-maximum-severity-security-vulnerabilities/">SAP patches ICM2SHELL and PROXYGATE maximum severity flaws</a><span class="item-date">Tue, 10 Nov 2026 07:07:03 -0500</span></li><li><a href="https://www.bleepingcomputer.com/news/security/hackers-exploit-barracuda-email-security-gateway-flaws-to-get-root-access/">Hackers now exploit critical Barracuda ESG flaws to gain root access</a><span class="item-date">Tue, 10 Nov 2026 05:10:20 -0500</span></li><li><a href="https://www.bleepingcomputer.com/news/security/turla-hackers-use-new-ceral-malware-to-spy-on-govt-exchange-servers/">Turla hackers use new Cereal malware to spy on govt Exchange servers</a><span class="item-date">Tue, 10 Nov 2026 05:04:32 -0500</span></li><li><a href="https://www.bleepingcomputer.com/news/security/google-patches-eighth-chrome-zero-day-exploited-in-attacks-this-year/">Google patches eighth Chrome zero-day exploited in attacks this year</a><span class="item-date">Tue, 10 Nov 2026 03:51:25 -0500</span></li><li><a href="https://www.bleepingcomputer.com/news/security/fireworks-ai-discloses-new-breach-after-cloud-provider-hack/">Fireworks AI discloses new breach after cloud provider hack</a><span class="item-date">Tue, 10 Nov 2026 02:49:58 -0500</span></li><li><a href="https://www.bleepingcomputer.com/news/security/vanderbilt-university-hit-in-byod-ransomware-attack-data-theft-claimed/">Vanderbilt University hit in BYOD ransomware attack, data theft claimed</a><span class="item-date">Mon, 09 Nov 2026 18:52:12 -0500</span></li><li><a href="https://www.bleepingcomputer.com/news/security/sega-newsletter-data-breach-exposes-22-million-email-addresses/">SEGA newsletter data breach exposes 2.2 million email addresses</a><span class="item-date">Mon, 09 Nov 2026 17:09:33 -0500</span></li><li><a href="https://www.bleepingcomputer.com/news/security/n-able-takes-cloud-platform-offline-after-30-plus-zero-days-published/">N-able takes cloud platform offline after 30+ &quot;zero-days&quot; published</a><span class="item-date">Mon, 09 Nov 2026 16:26:25 -0500</span></li><li><a href="https://www.bleepingcomputer.com/news/security/york-university-breach-exposed-personal-information-dating-to-2007/">York University breach exposed personal information dating to 2007</a><span class="item-date">Mon, 09 Nov 2026 16:22:31 -0500</span></li><li><a href="https://www.bleepingcomputer.com/news/security/france-blames-iranian-hackers-for-supermarket-attacks-that-sparked-fires/">France blames Iranian hackers for supermarket attacks that sparked fires</a><span class="item-date">Mon, 09 Nov 2026 13:32:42 -0500</span></li><li><a href="https://www.bleepingcomputer.com/news/security/russian-cloud-firm-beget-rebuilds-from-scratch-after-data-wiper-attack/">Russian cloud firm Beget rebuilds from scratch after data wiper attack</a><span class="item-date">Mon, 09 Nov 2026 12:50:32 -0500</span></li></ul></div><div class="news-column"><h4>Dark Reading</h4><ul><li><a href="https://www.darkreading.com/application-security/ai-reverse-engineering-apps">AI Makes Reverse Engineering Mainstream Software &amp; Malware Far Easier</a><span class="item-date">Tue, 10 Nov 2026 13:00:00 GMT</span></li><li><a href="https://www.darkreading.com/cyberattacks-data-breaches/cisa-announces-enhanced-reporting-form-cyber-incidents">CISA Announces Enhanced Reporting Form for Cyber Incidents</a><span class="item-date">Mon, 09 Nov 2026 21:38:20 GMT</span></li><li><a href="https://www.darkreading.com/application-security/microsoft-rce-bug-windows-paint-confusion">Microsoft Fixes RCE Bug in Windows Paint After Weeks of Confusion</a><span class="item-date">Mon, 09 Nov 2026 21:12:24 GMT</span></li><li><a href="https://www.darkreading.com/cybersecurity-operations/black-hat-india-2026-landmark-debut">Black Hat India 2026 Makes a Landmark Debut in Bengaluru, Bringing the Global Cybersecurity Community to India</a><span class="item-date">Mon, 09 Nov 2026 20:19:56 GMT</span></li><li><a href="https://www.darkreading.com/endpoint-security/attackers-claude-office-party-flaw-malicious-code-linux">Attackers Crash Claude&#x27;s &#x27;Office Party&#x27; Flaw to Run Malicious Code on Linux</a><span class="item-date">Mon, 09 Nov 2026 18:08:30 GMT</span></li><li><a href="https://www.darkreading.com/cybersecurity-operations/pwc-ciso-ai-robots-security">PwC&#x27;s CISO on AI, Robots &amp; What&#x27;s Next for Security</a><span class="item-date">Mon, 09 Nov 2026 17:17:23 GMT</span></li><li><a href="https://www.darkreading.com/cybersecurity-operations/nist-solo-shouldnt-mean-less-secure">NIST: Solo Shouldn&#x27;t Mean Less Secure</a><span class="item-date">Mon, 09 Nov 2026 15:46:10 GMT</span></li></ul></div><div class="news-column"><h4>Help Net Security</h4><ul><li><a href="https://www.helpnetsecurity.com/2026/11/10/firefox-free-vpn-data/">Firefox free VPN drops its 50GB launch cap until January 31</a><span class="item-date">Tue, 10 Nov 2026 18:05:38 +0000</span></li><li><a href="https://www.helpnetsecurity.com/2026/11/10/x-org-server-vulnerabilities-november-2026/">X.Org patches eight server vulnerabilities a month after fixing 12 others</a><span class="item-date">Tue, 10 Nov 2026 16:15:36 +0000</span></li><li><a href="https://www.helpnetsecurity.com/2026/11/10/slack-ai-reverse-engineering/">AI reverse engineering let researchers add a new feature to Slack</a><span class="item-date">Tue, 10 Nov 2026 14:45:18 +0000</span></li><li><a href="https://www.helpnetsecurity.com/2026/11/10/dreeze-application-revival-33-million-funding/">Dreeze raises $33 million to automate recovery of entire cloud applications</a><span class="item-date">Tue, 10 Nov 2026 14:00:13 +0000</span></li><li><a href="https://www.helpnetsecurity.com/2026/11/10/cisa-incident-reporting-form-update/">CISA tweaks cyber incident form to spot attacks that might be linked</a><span class="item-date">Tue, 10 Nov 2026 13:17:50 +0000</span></li><li><a href="https://www.helpnetsecurity.com/2026/11/10/irisscon-2026-dublin/">IRISSCON 2026 puts preparedness for cyberattacks and hybrid threats in focus</a><span class="item-date">Tue, 10 Nov 2026 12:16:40 +0000</span></li><li><a href="https://www.helpnetsecurity.com/2026/11/10/anthropic-claude-fable-and-mythos-5-2-safeguards/">Claude Mythos 5.2 arrives with stronger bug hunting and less sandbox-breaking behavior</a><span class="item-date">Tue, 10 Nov 2026 11:40:00 +0000</span></li><li><a href="https://www.helpnetsecurity.com/2026/11/10/windows-settings-backup-default/">Windows settings backup is on by default starting with Windows 11 26H2</a><span class="item-date">Tue, 10 Nov 2026 10:03:40 +0000</span></li><li><a href="https://www.helpnetsecurity.com/2026/11/10/eset-turla-exchange-malware/">Turla’s Cereal malware turns victims’ Exchange servers into spy hubs</a><span class="item-date">Tue, 10 Nov 2026 10:00:39 +0000</span></li><li><a href="https://www.helpnetsecurity.com/2026/11/10/eric-fourrier-gitguardian-leaked-credentials/">What a security leader should tell the CEO about leaked credentials</a><span class="item-date">Tue, 10 Nov 2026 07:40:43 +0000</span></li></ul></div><div class="news-column"><h4>SANS Internet Storm Center</h4><ul><li><a href="https://isc.sans.edu/diary/rss/33506">Apple Patches Everyting: November 2026 Edition, (Tue, Nov 10th)</a><span class="item-date">Tue, 10 Nov 2026 12:48:55 GMT</span></li><li><a href="https://isc.sans.edu/diary/rss/33504">ISC Stormcast For Tuesday, November 10th, 2026 https://isc.sans.edu/podcastdetail/10172, (Tue, Nov 10th)</a><span class="item-date">Tue, 10 Nov 2026 02:00:02 GMT</span></li><li><a href="https://isc.sans.edu/diary/rss/33502">Attackers Searching for SAP Netweaver Webshells, (Mon, Nov 9th)</a><span class="item-date">Mon, 09 Nov 2026 18:18:15 GMT</span></li><li><a href="https://isc.sans.edu/diary/rss/33500">ISC Stormcast For Monday, November 9th, 2026 https://isc.sans.edu/podcastdetail/10170, (Mon, Nov 9th)</a><span class="item-date">Mon, 09 Nov 2026 02:05:10 GMT</span></li></ul></div><div class="news-column"><h4>Schneier on Security</h4><ul><li><a href="https://www.schneier.com/blog/archives/2026/11/new-openssh-vulnerability.html">New OpenSSH Vulnerability</a><span class="item-date">2026-11-10T12:02:46Z</span></li><li><a href="https://www.schneier.com/blog/archives/2026/11/ai-security.html">AI Security</a><span class="item-date">2026-11-09T12:06:34Z</span></li></ul></div><div class="news-column"><h4>SecurityWeek</h4><ul><li><a href="https://www.securityweek.com/adobe-patches-110-vulnerabilities-across-9-products/">Adobe Patches 110 Vulnerabilities Across 9 Products</a><span class="item-date">Tue, 10 Nov 2026 18:11:54 +0000</span></li><li><a href="https://www.securityweek.com/software-transparency-is-changing-allan-friedman-on-sbom-ai-boms-and-what-comes-next/">Software Transparency Is Changing: Allan Friedman on SBOM, AI BOMs and What Comes Next</a><span class="item-date">Tue, 10 Nov 2026 16:45:00 +0000</span></li><li><a href="https://www.securityweek.com/google-widens-gemini-4-carbon-access-after-ai-agents-verify-signal-code/">Google Widens Gemini 4 Carbon Access After AI Agents Verify Signal Code</a><span class="item-date">Tue, 10 Nov 2026 16:42:02 +0000</span></li><li><a href="https://www.securityweek.com/today-ciso-forum-virtual-summit-2026-join-global-cybersecurity-leaders/">Today: CISO Forum Virtual Summit 2026 – Join Global Cybersecurity Leaders</a><span class="item-date">Tue, 10 Nov 2026 15:00:00 +0000</span></li><li><a href="https://www.securityweek.com/whitematter-raises-20-million-in-series-a-funding/">WhiteMatter Raises $20 Million in Series A Funding</a><span class="item-date">Tue, 10 Nov 2026 14:58:19 +0000</span></li><li><a href="https://www.securityweek.com/sap-patches-critical-icm2shell-proxygate-vulnerabilities/">SAP Patches Critical ICM2SHELL, ProxyGate Vulnerabilities</a><span class="item-date">Tue, 10 Nov 2026 14:46:28 +0000</span></li><li><a href="https://www.securityweek.com/over-a-dozen-organizations-hit-in-qubole-supply-chain-attack/">Over a Dozen Organizations Hit in Qubole Supply Chain Attack</a><span class="item-date">Tue, 10 Nov 2026 13:27:44 +0000</span></li><li><a href="https://www.securityweek.com/anthropic-rolls-out-mythos-5-2-with-improved-bug-hunting-fewer-sandbox-escapes/">Anthropic Rolls Out Mythos 5.2 With Improved Bug Hunting, Fewer Sandbox Escapes</a><span class="item-date">Tue, 10 Nov 2026 12:17:13 +0000</span></li><li><a href="https://www.securityweek.com/n-able-takes-n-central-offline-as-researcher-drops-over-30-zero-days/">N-able Takes N-central Offline as Researcher Drops Over 30 Zero-Days</a><span class="item-date">Tue, 10 Nov 2026 09:56:28 +0000</span></li><li><a href="https://www.securityweek.com/ibm-aspera-faspex-signalwire-freeswitch-vulnerabilities-exploited-in-attacks/">IBM Aspera Faspex, SignalWire FreeSwitch Vulnerabilities Exploited in Attacks</a><span class="item-date">Tue, 10 Nov 2026 09:42:27 +0000</span></li></ul></div><div class="news-column"><h4>The Hacker News</h4><ul><li><a href="https://thehackernews.com/2026/11/attackers-exploit-ahsaycbs-flaws-to.html">Attackers Exploit AhsayCBS Flaws to Deploy Sandbox-Evading Python Backdoor</a><span class="item-date">Tue, 10 Nov 2026 21:30:55 +0530</span></li><li><a href="https://thehackernews.com/2026/11/blind-eagle-uses-fake-court-notices-to.html">Blind Eagle Uses Fake Court Notices to Deliver Remote Access Trojan Across Latin America</a><span class="item-date">Tue, 10 Nov 2026 21:28:44 +0530</span></li><li><a href="https://thehackernews.com/2026/11/fireworks-ai-breach-widens-to-expose.html">Fireworks AI Breach Widens to Expose Customer Billing Data and Incomplete Model Weights</a><span class="item-date">Tue, 10 Nov 2026 21:03:59 +0530</span></li><li><a href="https://thehackernews.com/2026/11/binance-warns-of-ios-sandbox-escape.html">Binance Warns of iOS Sandbox Escape That Could Expose Crypto Wallet Keys, No Fix Confirmed</a><span class="item-date">Tue, 10 Nov 2026 17:45:31 +0530</span></li><li><a href="https://thehackernews.com/2026/11/beyond-alert-case-for-rich-network-data.html">Beyond the Alert: The Case for Rich Network Data</a><span class="item-date">Tue, 10 Nov 2026 17:08:13 +0530</span></li><li><a href="https://thehackernews.com/2026/11/apple-patches-imessage-group-chat.html">Apple Patches iMessage Group Chat Privacy Flaws and Bluetooth Pairing Vulnerabilities</a><span class="item-date">Tue, 10 Nov 2026 15:46:51 +0530</span></li><li><a href="https://thehackernews.com/2026/11/russian-turla-hackers-use-new-cereal.html">Russian Turla Hackers Use New Cereal Malware to Steal Emails From Government Exchange Servers</a><span class="item-date">Tue, 10 Nov 2026 15:37:29 +0530</span></li><li><a href="https://thehackernews.com/2026/11/sap-patches-four-cvss-100-flaws.html">SAP Patches Four CVSS 10.0 Flaws, Including Two Enabling Remote Code Execution</a><span class="item-date">Tue, 10 Nov 2026 15:32:40 +0530</span></li><li><a href="https://thehackernews.com/2026/11/france-blames-iran-for-sabotage-attack.html">France Blames Iran for Sabotage Attack on Refrigeration Controllers at About 700 Retail Sites</a><span class="item-date">Tue, 10 Nov 2026 14:38:20 +0530</span></li><li><a href="https://thehackernews.com/2026/11/anthropics-claude-fable-52-beats-gpt-6.html">Anthropic&#x27;s Claude Fable 5.2 Beats GPT-6 Cyber in Multi-Stage Cyberattack Benchmark</a><span class="item-date">Tue, 10 Nov 2026 13:46:14 +0530</span></li><li><a href="https://thehackernews.com/2026/11/google-issues-chrome-security-update.html">Google Issues Chrome Security Update for Eighth Actively Exploited Zero-Day of 2026</a><span class="item-date">Tue, 10 Nov 2026 12:22:54 +0530</span></li><li><a href="https://thehackernews.com/2026/11/n-able-takes-hosted-n-central-offline.html">N-able Takes N-central Cloud Offline After Researcher Discloses 33 Zero-Days with PoC Exploits</a><span class="item-date">Tue, 10 Nov 2026 12:14:36 +0530</span></li><li><a href="https://thehackernews.com/2026/11/cisa-warns-of-active-exploitation-of.html">CISA Warns of Active Exploitation of OpenSSH, GPUStack, FreeSWITCH, and IBM Flaws</a><span class="item-date">Tue, 10 Nov 2026 12:01:42 +0530</span></li><li><a href="https://thehackernews.com/2026/11/hackers-exploit-quboles-trusted-aws.html">Hackers Exploit Qubole&#x27;s Trusted AWS Access to Breach Customer Accounts and Steal Data</a><span class="item-date">Mon, 09 Nov 2026 23:21:21 +0530</span></li><li><a href="https://thehackernews.com/2026/11/hackers-compromise-etherspheres-bee-js.html">Hackers Compromise Ethersphere&#x27;s bee-js and Swarm Desktop to Deliver Wallet-Stealing Malware</a><span class="item-date">Mon, 09 Nov 2026 23:06:28 +0530</span></li></ul></div><div class="news-column"><h4>The Record</h4><ul><li><a href="https://therecord.media/ai-company-fireworks-says-hackers-stole-data-in-oct-attacks">AI company Fireworks says hackers stole data, billing info during October breaches</a><span class="item-date">Tue, 10 Nov 2026 16:08:00 GMT</span></li><li><a href="https://therecord.media/spyware-cyber-crime-iverify">Cybercriminals are increasingly infecting regular people with spyware</a><span class="item-date">Tue, 10 Nov 2026 15:45:00 GMT</span></li><li><a href="https://therecord.media/michael-losapio-cisa-director-nomination">Palantir exec nominated to lead CISA; lame-duck Senate vote is uncertain</a><span class="item-date">Tue, 10 Nov 2026 14:31:00 GMT</span></li><li><a href="https://therecord.media/russia-hackers-espionage-romania-kazakhstan">Russian hackers compromised government email servers to steal NATO, EU correspondence</a><span class="item-date">Tue, 10 Nov 2026 13:00:00 GMT</span></li><li><a href="https://therecord.media/amplifon-hearing-aid-company-data-breach">Data breach at hearing aid giant Amplifon impacts thousands</a><span class="item-date">Mon, 09 Nov 2026 20:44:00 GMT</span></li></ul></div><div class="news-column"><h4>The Register</h4><ul><li><a href="https://www.theregister.com/ai-and-ml/2026/11/10/14-year-old-creates-tool-for-ai-agents-to-band-together-like-a-team/5308841">14-year-old creates tool for AI agents to band together like a team</a><span class="item-date">Tue, 10 Nov 2026 18:31:53 +0000</span></li><li><a href="https://www.theregister.com/software/2026/11/10/mozilla-thunderbird-email-service-edges-closer-to-launch-with-early-access/5308826">Mozilla Thunderbird email service edges closer to launch with early access</a><span class="item-date">Tue, 10 Nov 2026 18:13:57 +0000</span></li><li><a href="https://www.theregister.com/systems/2026/11/10/amd-winds-up-zen-6-cores-for-faster-clock-speeds/5308603">AMD winds up Zen 6 cores for faster clock speeds</a><span class="item-date">Tue, 10 Nov 2026 17:20:00 +0000</span></li><li><a href="https://www.theregister.com/systems/2026/11/10/amds-epyc-x-chips-are-back-after-a-three-year-hiatus/5308269">AMD&#x27;s Epyc X-chips are back after a three-year hiatus</a><span class="item-date">Tue, 10 Nov 2026 17:10:00 +0000</span></li><li><a href="https://www.theregister.com/systems/2026/11/10/a-closer-look-at-verano-amds-first-step-toward-a-zen-based-superchip-to-rival-nvidias-vera-rubin/5308523">A closer look at Verano, AMD&#x27;s first step toward a Zen-based superchip to rival Nvidia&#x27;s Vera Rubin</a><span class="item-date">Tue, 10 Nov 2026 17:00:00 +0000</span></li><li><a href="https://www.theregister.com/security/2026/11/10/trump-taps-palantir-security-chief-to-run-battered-us-cyber-defense-agency/5308763">Trump taps Palantir security chief to run battered US cyber defense agency</a><span class="item-date">Tue, 10 Nov 2026 16:15:00 +0000</span></li><li><a href="https://www.theregister.com/cyber-crime/2026/11/10/fireworks-ai-gets-burned-twice-as-customer-data-exposure-widens/5308722">Fireworks AI gets burned twice as customer data exposure widens</a><span class="item-date">Tue, 10 Nov 2026 15:28:00 +0000</span></li><li><a href="https://www.theregister.com/public-sector/2026/11/10/another-contract-extension-for-fujitsu-on-the-post-offices-horizon/5308793">Another contract extension for Fujitsu on the Post Office&#x27;s Horizon</a><span class="item-date">Tue, 10 Nov 2026 14:45:11 +0000</span></li><li><a href="https://www.theregister.com/ai-and-ml/2026/11/10/stanfords-century-long-ai-study-admits-its-already-out-of-date/5308574">Stanford&#x27;s century-long AI study admits it&#x27;s already out of date</a><span class="item-date">Tue, 10 Nov 2026 14:00:00 +0000</span></li><li><a href="https://www.theregister.com/security/2026/11/10/chrome-zero-day-whack-a-mole-continues-as-2026-tally-hits-8/5308732">Chrome zero-day whack-a-mole continues as 2026 tally hits 8</a><span class="item-date">Tue, 10 Nov 2026 13:28:00 +0000</span></li><li><a href="https://www.theregister.com/cyber-crime/2026/11/10/ransomware-threat-blares-from-vanderbilt-university-computers-during-cyberattack/5308687">Ransomware threat blares from Vanderbilt University computers during cyberattack</a><span class="item-date">Tue, 10 Nov 2026 13:00:00 +0000</span></li><li><a href="https://www.theregister.com/networks/2026/11/10/smart-meters-to-cost-the-uk-billions-2g-switch-off-means-replacing-12-13-million/5308728">Smart meters to cost the UK billions: 2G switch-off means replacing 12-13 million</a><span class="item-date">Tue, 10 Nov 2026 12:38:51 +0000</span></li><li><a href="https://www.theregister.com/ai-and-ml/2026/11/10/google-deepmind-melds-humans-and-ai-agents-to-vet-signals-secure-messaging-techniques/5308625">Google DeepMind melds humans and AI agents to vet Signal&#x27;s secure messaging techniques</a><span class="item-date">Tue, 10 Nov 2026 12:00:00 +0000</span></li><li><a href="https://www.theregister.com/ai-and-ml/2026/11/10/microsoft-is-giving-claude-the-keys-to-uk-copilot-tenants-by-default/5308693">Microsoft is giving Claude the keys to UK Copilot tenants by default</a><span class="item-date">Tue, 10 Nov 2026 11:30:00 +0000</span></li><li><a href="https://www.theregister.com/public-sector/2026/11/10/eus-212m-border-it-project-lands-ibm-and-atos-in-legal-water/5308669">EU&#x27;s €212M border IT project lands IBM and Atos in legal water</a><span class="item-date">Tue, 10 Nov 2026 11:01:00 +0000</span></li></ul></div></div></div>
+<div class="row-header row-breach" id="breach-news"><span class="dot"></span><h2>Breaches &amp; Incidents</h2><span class="count">40 items</span></div>
+<div class="news-grid-wrapper"><div class="news-grid"><div class="news-column"><h4>HIPAA Journal</h4><ul><li><a href="https://www.hipaajournal.com/cybercriminals-hit-two-california-dental-practices/">Cybercriminals Hit Two California Dental Practices</a><span class="item-date">Tue, 10 Nov 2026 16:35:32 +0000</span></li><li><a href="https://www.hipaajournal.com/sutherland-healthcare-hoag-memorial-hospital-data-breaches/">Sutherland Healthcare Solutions; Hoag Memorial Hospital Presbyterian Announce Cyber Incidents</a><span class="item-date">Tue, 10 Nov 2026 16:26:21 +0000</span></li><li><a href="https://www.hipaajournal.com/healthcare-providers-unauthorized-disclosure-phi-ai-tools/">Healthcare Providers Discover Unauthorized PHI Disclosures to AI Tools</a><span class="item-date">Mon, 09 Nov 2026 16:46:27 +0000</span></li><li><a href="https://www.hipaajournal.com/pja-multi-state-settlement-hipaa/">PJ&amp;A to Pay Up to $10 Million to Resolve Violations of HIPAA; State Law</a><span class="item-date">Mon, 09 Nov 2026 14:55:12 +0000</span></li><li><a href="https://www.hipaajournal.com/hipaa-violation-fines/">HIPAA Violation Fines</a><span class="item-date">Mon, 09 Nov 2026 11:00:48 +0000</span></li></ul></div><div class="news-column"><h4>Infosecurity Magazine</h4><ul><li><a href="https://www.infosecurity-magazine.com/news/cisa-incident-reporting-form-circia/">CISA Expands Incident Reporting Form While CIRCIA Mandate Waits</a><span class="item-date">Tue, 10 Nov 2026 17:00:00 GMT</span></li><li><a href="https://www.infosecurity-magazine.com/news/turla-cereal-exchange-email/">Russia-Linked Turla Hijacks Exchange Servers to Spy on NATO and EU Emails</a><span class="item-date">Tue, 10 Nov 2026 14:30:00 GMT</span></li><li><a href="https://www.infosecurity-magazine.com/news/cloud-vulnerabilities-surge/">Cloud Vulnerabilities Surge Fourfold in Less Than a Year</a><span class="item-date">Tue, 10 Nov 2026 14:00:00 GMT</span></li><li><a href="https://www.infosecurity-magazine.com/news/forgerock-openidm-default-password/">Default Admin Password Let Researchers Unlock and Start Cars</a><span class="item-date">Tue, 10 Nov 2026 12:15:00 GMT</span></li><li><a href="https://www.infosecurity-magazine.com/news/vanderbilt-university-cyber/">Vanderbilt University Takes Systems Offline After Cyber Incident</a><span class="item-date">Tue, 10 Nov 2026 11:15:00 GMT</span></li><li><a href="https://www.infosecurity-magazine.com/news/france-blames-iran-supermarket/">France Blames Iran for Supermarket Fridge Hack, Requests International Arrest Warrants</a><span class="item-date">Tue, 10 Nov 2026 10:35:00 GMT</span></li><li><a href="https://www.infosecurity-magazine.com/news/binance-investigates-shinyhunters/">Binance Investigates ShinyHunters Breach Claims</a><span class="item-date">Tue, 10 Nov 2026 09:30:00 GMT</span></li><li><a href="https://www.infosecurity-magazine.com/news/operation-snowball-ai-telecom/">Jailbroken AI Agent Ran Two-Week Attack on European Telecom</a><span class="item-date">Mon, 09 Nov 2026 16:00:00 GMT</span></li><li><a href="https://www.infosecurity-magazine.com/news/supply-chain-attack-thousands/">New Supply Chain Attack Compromises Tens of Thousands of GitHub Repositories</a><span class="item-date">Mon, 09 Nov 2026 14:30:00 GMT</span></li><li><a href="https://www.infosecurity-magazine.com/news/email-sega-customers-vendor-breach/">Email Addresses of 2.2 Million Sega Customers Leaked in Vendor Breach</a><span class="item-date">Mon, 09 Nov 2026 13:31:00 GMT</span></li><li><a href="https://www.infosecurity-magazine.com/news/crdit-mutuel-arka-targeted/">Crédit Mutuel Arkéa Targeted in Reported $133m Heist</a><span class="item-date">Mon, 09 Nov 2026 10:30:00 GMT</span></li><li><a href="https://www.infosecurity-magazine.com/news/aml-watchdog-fatf-scam-compounds/">Anti-Money Laundering Watchdog FATF Targets Scam Compounds</a><span class="item-date">Mon, 09 Nov 2026 09:16:00 GMT</span></li></ul></div><div class="news-column"><h4>Ransomware.live</h4><ul><li><a href="https://www.ransomware.live/id/dGNhZGFyd2luQEhZRkxPQ0s">🏴‍☠️ Hyflock has just published a new victim : tcadarwin</a><span class="item-date">Tue, 10 Nov 2026 18:24:14 +0000</span></li><li><a href="https://www.ransomware.live/id/UHJvdmlkZW5jZUBCWU9E">🏴‍☠️ Byod has just published a new victim : Providence</a><span class="item-date">Tue, 10 Nov 2026 18:21:10 +0000</span></li><li><a href="https://www.ransomware.live/id/VG95b3RhQEJZT0Q">🏴‍☠️ Byod has just published a new victim : Toyota</a><span class="item-date">Tue, 10 Nov 2026 18:20:50 +0000</span></li><li><a href="https://www.ransomware.live/id/SGVybWluaW8gSW5kaWEgUHJlY2lzaW9uIFRlY2hub2xvZ3lAT3JvdmE">🏴‍☠️ Orova has just published a new victim : Herminio India Precision Technology</a><span class="item-date">Tue, 10 Nov 2026 16:58:23 +0000</span></li><li><a href="https://www.ransomware.live/id/QWN0dWFsaXplIENvbnN1bHRpbmdAa3J5Yml0">🏴‍☠️ Krybit has just published a new victim : Actualize Consulting</a><span class="item-date">Tue, 10 Nov 2026 13:34:23 +0000</span></li><li><a href="https://www.ransomware.live/id/UmVkYWN0ZWQgUmVkYWN0ZWRAQ2xpbWF4IEluYw">🏴‍☠️ Climax inc has just published a new victim : Redacted Redacted</a><span class="item-date">Tue, 10 Nov 2026 12:54:38 +0000</span></li><li><a href="https://www.ransomware.live/id/TmVwYWwgRWxlY3RyaWNpdHkgQXV0aG9yaXR5QENsaW1heCBJbmM">🏴‍☠️ Climax inc has just published a new victim : Nepal Electricity Authority</a><span class="item-date">Tue, 10 Nov 2026 12:54:04 +0000</span></li><li><a href="https://www.ransomware.live/id/RnJvbGluYSBIb21lQENsaW1heCBJbmM">🏴‍☠️ Climax inc has just published a new victim : Frolina Home</a><span class="item-date">Tue, 10 Nov 2026 12:53:22 +0000</span></li><li><a href="https://www.ransomware.live/id/Q09NUFVURVIgVEFTSyBHUk9VUCwgSW5jLkBCb29iYSBQcm9qZWN0">🏴‍☠️ Booba project has just published a new victim : COMPUTER TASK GROUP, Inc.</a><span class="item-date">Tue, 10 Nov 2026 12:52:35 +0000</span></li><li><a href="https://www.ransomware.live/id/R2VvcmdldG93biBTbGVlcCBDZW50ZXJAQm9vYmEgUHJvamVjdA">🏴‍☠️ Booba project has just published a new victim : Georgetown Sleep Center</a><span class="item-date">Tue, 10 Nov 2026 12:52:13 +0000</span></li><li><a href="https://www.ransomware.live/id/Q29sbGllciBTcG9ydHMgTWVkaWNpbmUgYW5kIE9ydGhvcGVkaWMgQ2VudGVyQEJvb2JhIFByb2plY3Q">🏴‍☠️ Booba project has just published a new victim : Collier Sports Medicine and Orthopedic Center</a><span class="item-date">Tue, 10 Nov 2026 12:51:52 +0000</span></li><li><a href="https://www.ransomware.live/id/RWwgUG9ydGFsIEltYWdpbmcgQ2VudGVyQEJvb2JhIFByb2plY3Q">🏴‍☠️ Booba project has just published a new victim : El Portal Imaging Center</a><span class="item-date">Tue, 10 Nov 2026 12:51:31 +0000</span></li><li><a href="https://www.ransomware.live/id/RGF5IE9uZSBSSUBCb29iYSBQcm9qZWN0">🏴‍☠️ Booba project has just published a new victim : Day One RI</a><span class="item-date">Tue, 10 Nov 2026 12:51:10 +0000</span></li><li><a href="https://www.ransomware.live/id/QWNjbGFpbSBIZWFsdGhAQm9vYmEgUHJvamVjdA">🏴‍☠️ Booba project has just published a new victim : Acclaim Health</a><span class="item-date">Tue, 10 Nov 2026 12:50:49 +0000</span></li><li><a href="https://www.ransomware.live/id/TWFkaXNvbiBIb25kYUBpbnRlcmxvY2s">🏴‍☠️ Interlock has just published a new victim : Madison Honda</a><span class="item-date">Tue, 10 Nov 2026 07:13:00 +0000</span></li></ul></div><div class="news-column"><h4>Security Affairs</h4><ul><li><a href="https://securityaffairs.com/202788/hacking/ios-sandbox-escape-is-public-and-apple-hasnt-confirmed-a-fix.html">iOS Sandbox Escape Is Public, and Apple Hasn’t Confirmed a Fix</a><span class="item-date">Tue, 10 Nov 2026 15:46:20 +0000</span></li><li><a href="https://securityaffairs.com/202772/breaking-news/google-fixes-the-eighth-actively-exploited-chrome-zero-day-of-2026.html">Google fixes the eighth actively exploited Chrome zero-day of 2026</a><span class="item-date">Tue, 10 Nov 2026 10:05:00 +0000</span></li><li><a href="https://securityaffairs.com/202740/data-breach/iris-ohyama-data-breach-may-expose-personal-information-of-7-7-million-people.html">Iris Ohyama data breach may expose personal information of 7.7 million people</a><span class="item-date">Tue, 10 Nov 2026 06:28:06 +0000</span></li><li><a href="https://securityaffairs.com/202742/hacking/france-blames-iran-for-the-supermarket-fridge-attacks.html">France Blames Iran for the Supermarket Fridge Attacks</a><span class="item-date">Mon, 09 Nov 2026 19:12:43 +0000</span></li><li><a href="https://securityaffairs.com/202708/cyber-crime/qnap-warns-users-as-plex2shell-flaws-are-used-to-hack-nas-devices.html">QNAP Warns Users as Plex2Shell Flaws Are Used to Hack NAS Devices</a><span class="item-date">Mon, 09 Nov 2026 14:40:18 +0000</span></li><li><a href="https://securityaffairs.com/202730/hacking/cisa-and-the-fbi-warn-of-attacks-against-industrial-refrigeration-controllers.html">CISA and the FBI Warn Of Attacks against Industrial Refrigeration Controllers</a><span class="item-date">Mon, 09 Nov 2026 11:57:12 +0000</span></li><li><a href="https://securityaffairs.com/202717/malware/fake-github-security-tools-infect-over-2000-pcs-with-malware.html">Fake GitHub Security Tools Infect Over 2,000 PCs With Malware</a><span class="item-date">Mon, 09 Nov 2026 08:07:39 +0000</span></li><li><a href="https://securityaffairs.com/202667/cyber-warfare-2/the-bbc-has-a-plan-for-a-black-sky-event-and-it-runs-on-fm-radio.html">The BBC has a plan for a Black Sky event, and it runs on FM radio</a><span class="item-date">Mon, 09 Nov 2026 07:04:52 +0000</span></li></ul></div></div></div>
+<div class="row-header row-devsecops" id="devsecops-news"><span class="dot"></span><h2>DevSecOps News</h2><span class="count">10 items</span></div>
+<div class="news-grid-wrapper"><div class="news-grid"><div class="news-column"><h4>Chainguard</h4><ul><li><a href="https://www.chainguard.dev/unchained/ci-in-2027-why-the-future-of-coding-needs-instant-back-pressure">CI in 2027: Why the future of coding needs instant back-pressure</a><span class="item-date">Mon, 09 Nov 2026 00:00:00 GMT</span></li></ul></div><div class="news-column"><h4>Datadog Security Labs</h4><ul><li><a href="https://securitylabs.datadoghq.com/articles/artex-agentic-attacks-aws-environments/">On the hunt for ARTEX: understanding agentic attacks in AWS environments</a><span class="item-date">2026-11-09T00:00:00Z</span></li></ul></div><div class="news-column"><h4>GitGuardian Blog</h4><ul><li><a href="https://blog.gitguardian.com/ai-pentesting-tools-beyond-artex/">Beyond ARTEX: 45 Agentic Attack Frameworks, What They Hunt For, and How to Find Them</a><span class="item-date">Mon, 09 Nov 2026 16:50:57 GMT</span></li><li><a href="https://blog.gitguardian.com/claude-code-settings-local-json-secrets-docker-hub/">Claude Code settings.local.json Secrets: 17 months of exposure on GitHub, &amp; Docker Hub</a><span class="item-date">Mon, 09 Nov 2026 11:03:18 GMT</span></li></ul></div><div class="news-column"><h4>GitHub Security Blog</h4><ul><li><a href="https://github.blog/open-source/git/git-security-vulnerabilities-announced-7/">Git security vulnerabilities announced</a><span class="item-date">Tue, 10 Nov 2026 18:00:00 +0000</span></li></ul></div><div class="news-column"><h4>OpenSSF Blog</h4><ul><li><a href="https://openssf.org/blog/2026/11/09/the-ai-security-gap-hiding-in-routine-maintenance/">The AI Security Gap Hiding in Routine Maintenance</a><span class="item-date">Mon, 09 Nov 2026 17:42:25 +0000</span></li><li><a href="https://openssf.org/press-release/2026/11/09/openssf-welcomes-new-members-and-expands-ai-security-resources/">OpenSSF Welcomes New Members and Expands AI Security Resources</a><span class="item-date">Mon, 09 Nov 2026 15:00:08 +0000</span></li><li><a href="https://openssf.org/blog/2026/11/09/announcing-zarf-1-0-security-and-stability-for-airgap-software-delivery/">Announcing Zarf 1.0: Security and Stability for Airgap Software Delivery</a><span class="item-date">Mon, 09 Nov 2026 14:01:14 +0000</span></li></ul></div><div class="news-column"><h4>Snyk Blog</h4><ul><li><a href="https://snyk.io/blog/governing-ai-coding-agents-evo-ads/">Say Yes To MCP, Safely A Guide For Governing AI Coding Agents With Evo ADS</a><span class="item-date">Mon, 09 Nov 2026 00:00:00 GMT</span></li></ul></div><div class="news-column"><h4>Sonatype Blog</h4><ul><li><a href="https://www.sonatype.com/blog/your-artifact-repositories-need-a-firewall">Your Artifact Repositories Need a Firewall</a><span class="item-date">Tue, 10 Nov 2026 12:00:02 GMT</span></li></ul></div></div></div>
+<div class="row-header row-cloud" id="cloud-news"><span class="dot"></span><h2>Cloud News</h2><span class="count">42 items</span></div>
+<div class="news-grid-wrapper"><div class="news-grid"><div class="news-column"><h4>AWS News Blog</h4><ul><li><a href="https://aws.amazon.com/blogs/aws/aws-weekly-roundup-agentcore-runtime-v2-amazon-dynamodb-bulk-put-items-and-more-november-9-2026/">AWS Weekly Roundup: AgentCore Runtime V2, Amazon DynamoDB bulk put items, and more (November 9, 2026)</a><span class="item-date">Mon, 09 Nov 2026 17:55:26 +0000</span></li></ul></div><div class="news-column"><h4>AWS Security Blog</h4><ul><li><a href="https://aws.amazon.com/blogs/security/digital-sovereignty-at-reinvent-2026-sessions-you-wont-want-to-miss/">Digital sovereignty at re:Invent 2026: Sessions you won’t want to miss</a><span class="item-date">Tue, 10 Nov 2026 18:10:41 +0000</span></li><li><a href="https://aws.amazon.com/blogs/security/help-defend-against-memory-poisoning-in-amazon-bedrock-agentcore-with-multi-layer-write-validation/">Help defend against memory poisoning in Amazon Bedrock AgentCore with multi-layer write validation</a><span class="item-date">Mon, 09 Nov 2026 19:05:52 +0000</span></li><li><a href="https://aws.amazon.com/blogs/security/simplify-cross-partition-access-with-aws-iam-outbound-identity-federation/">Simplify cross-partition access with AWS IAM outbound identity federation</a><span class="item-date">Mon, 09 Nov 2026 16:08:30 +0000</span></li></ul></div><div class="news-column"><h4>CNCF Blog</h4><ul><li><a href="https://www.cncf.io/announcements/2026/11/10/cncf-welcomes-twelve-new-members-as-organizations-look-to-run-ai-agents-on-open-sovereign-infrastructure/">CNCF Welcomes Twelve New Members as Organizations Look to Run AI Agents on Open, Sovereign Infrastructure</a><span class="item-date">Tue, 10 Nov 2026 16:00:00 +0000</span></li><li><a href="https://www.cncf.io/announcements/2026/11/10/cncf-welcomes-coreweave-as-a-platinum-member-to-further-open-source-ai-infrastructure/">CNCF Welcomes CoreWeave as a Platinum Member to Further Open Source AI Infrastructure</a><span class="item-date">Tue, 10 Nov 2026 16:00:00 +0000</span></li><li><a href="https://www.cncf.io/blog/2026/11/10/open-cluster-management-ocm-becomes-a-cncf-incubating-project/">Open Cluster Management (OCM) becomes a CNCF Incubating Project</a><span class="item-date">Tue, 10 Nov 2026 16:00:00 +0000</span></li><li><a href="https://www.cncf.io/announcements/2026/11/10/cncf-welcomes-vultr-as-a-platinum-member-to-advance-open-and-sovereign-cloud-infrastructure-for-ai/">CNCF Welcomes Vultr as a Platinum Member to Advance Open and Sovereign Cloud Infrastructure for AI</a><span class="item-date">Tue, 10 Nov 2026 16:00:00 +0000</span></li><li><a href="https://www.cncf.io/announcements/2026/11/10/cncf-and-slashdata-report-finds-cloud-native-developers-are-more-ai-ready-global-population-surpasses-21-million/">CNCF and SlashData Report Finds Cloud Native Developers Are More AI-Ready, Global Population Surpasses 21 Million</a><span class="item-date">Tue, 10 Nov 2026 16:00:00 +0000</span></li><li><a href="https://www.cncf.io/announcements/2026/11/10/cncf-welcomes-qualcomm-upgrade-to-gold-membership-to-advance-ai-infrastructure-across-the-edge-to-cloud-continuum/">CNCF Welcomes Qualcomm Upgrade to Gold Membership to Advance AI Infrastructure Across the Edge-to-Cloud Continuum</a><span class="item-date">Tue, 10 Nov 2026 16:00:00 +0000</span></li><li><a href="https://www.cncf.io/blog/2026/11/10/donating-kuberay-to-cncf/">Donating KubeRay to CNCF</a><span class="item-date">Tue, 10 Nov 2026 16:00:00 +0000</span></li><li><a href="https://www.cncf.io/announcements/2026/11/10/cncf-and-slashdata-report-finds-platform-engineering-strategies-are-shaping-ai-infrastructure-adoption/">CNCF and SlashData Report Finds Platform Engineering Strategies Are Shaping AI Infrastructure Adoption</a><span class="item-date">Tue, 10 Nov 2026 16:00:00 +0000</span></li><li><a href="https://www.cncf.io/announcements/2026/11/10/cncf-hits-major-milestones-with-global-community-growth-record-industry-investment-and-a-new-generation-of-projects-to-build-ai-systems-in-production/">CNCF Hits Major Milestones with Global Community Growth, Record Industry Investment and a New Generation of Projects to Build AI Systems in Production</a><span class="item-date">Tue, 10 Nov 2026 16:00:00 +0000</span></li><li><a href="https://www.cncf.io/announcements/2026/11/10/cncf-launches-certified-kubernetes-network-engineer-certification-ckne-to-advance-production-ready-networking-skills-for-ai-era/">CNCF Launches Certified Kubernetes Network Engineer Certification (CKNE) to Advance Production Ready Networking Skills for AI Era</a><span class="item-date">Tue, 10 Nov 2026 16:00:00 +0000</span></li></ul></div><div class="news-column"><h4>Cloudflare Blog</h4><ul><li><a href="https://blog.cloudflare.com/launching-vite-ecosystem-fund/">Launching the Vite Ecosystem Fund</a><span class="item-date">Mon, 09 Nov 2026 13:00:00 GMT</span></li></ul></div><div class="news-column"><h4>Google Cloud Blog</h4><ul><li><a href="https://cloud.google.com/blog/products/data-analytics/bigquery-measures-ga-unifying-bi-metrics-and-knowledge-graphs/">BigQuery measures is now GA, unifying BI metrics and knowledge graphs for AI accuracy</a><span class="item-date">Tue, 10 Nov 2026 17:00:00 +0000</span></li><li><a href="https://cloud.google.com/blog/products/identity-security/how-to-run-codemender-in-your-pull-requests/">Don&#x27;t just flag it, fix it: How to run CodeMender in your pull requests</a><span class="item-date">Tue, 10 Nov 2026 17:00:00 +0000</span></li><li><a href="https://cloud.google.com/blog/topics/partners/inside-the-gemini-factory-accelerating-partner-solutions/">Inside the Gemini factory: Accelerating partner solutions</a><span class="item-date">Tue, 10 Nov 2026 17:00:00 +0000</span></li><li><a href="https://cloud.google.com/blog/topics/developers-practitioners/experimenting-with-clusternetworkpolicy-in-gke/">Experimenting with ClusterNetworkPolicy in GKE</a><span class="item-date">Tue, 10 Nov 2026 16:00:00 +0000</span></li><li><a href="https://cloud.google.com/blog/products/ai-machine-learning/gemini-for-healthcare/">Introducing Gemini for healthcare</a><span class="item-date">Tue, 10 Nov 2026 12:00:00 +0000</span></li><li><a href="https://cloud.google.com/blog/topics/retail/the-blueprint-how-authentic-brands-group-expands-creativity-with-authos/">The Blueprint: How Authentic Brands Group expands creativity with AuthOS</a><span class="item-date">Tue, 10 Nov 2026 12:00:00 +0000</span></li><li><a href="https://cloud.google.com/blog/topics/developers-practitioners/the-open-ai-native-stack-on-kubernetes-from-open-models-to-distributed-inference-and-agents/">The open AI-native stack on Kubernetes: From open models to distributed inference and agents</a><span class="item-date">Tue, 10 Nov 2026 01:00:00 +0000</span></li><li><a href="https://cloud.google.com/blog/products/ai-machine-learning/new-survey-finds-enterprises-trapped-between-legacy-software-and-ai-modernization/">New survey finds enterprises trapped between legacy software and AI modernization</a><span class="item-date">Mon, 09 Nov 2026 17:00:00 +0000</span></li><li><a href="https://cloud.google.com/blog/products/identity-security/cloud-ciso-perspectives-our-security-forecast-2027/">Cloud CISO Perspectives: Our security forecast for 2027</a><span class="item-date">Mon, 09 Nov 2026 16:00:00 +0000</span></li><li><a href="https://cloud.google.com/blog/topics/ai-infrastructure/introducing-tpu-sync-fast-kv-cache-and-weight-transfer-on-tpu/">Introducing TPU Sync: Fast KV cache and weight transfer for inference and RL on TPU</a><span class="item-date">Mon, 09 Nov 2026 13:00:00 +0000</span></li><li><a href="https://cloud.google.com/blog/products/containers-kubernetes/gke-dynamic-slicing-on-tpus/">Now generally available: GKE dynamic slicing for higher resilience, and efficiency for TPUs</a><span class="item-date">Mon, 09 Nov 2026 13:00:00 +0000</span></li><li><a href="https://cloud.google.com/blog/topics/ai-infrastructure/tpu-8tx-and-tpu-8i-max/">Our newest TPUs: 8tx and 8i Max, built for the agentic era</a><span class="item-date">Mon, 09 Nov 2026 13:00:00 +0000</span></li><li><a href="https://cloud.google.com/blog/topics/ai-infrastructure/cloud-pathways-a-distributed-ml-runtime-is-ga/">Cloud Pathways, a distributed ML runtime for massive accelerator fleets, now GA</a><span class="item-date">Mon, 09 Nov 2026 13:00:00 +0000</span></li></ul></div><div class="news-column"><h4>Microsoft Security Blog</h4><ul><li><a href="https://www.microsoft.com/en-us/security/blog/2026/11/09/forge-lab-uses-agentic-tools-to-identify-memory-safety-issues-in-rust/">FORGE Lab uses agentic tools to identify memory safety issues in Rust</a><span class="item-date">Mon, 09 Nov 2026 20:17:31 +0000</span></li></ul></div><div class="news-column"><h4>The New Stack</h4><ul><li><a href="https://thenewstack.io/gemini-4-carbon-swarm/">Google says its new AI proved Signal’s encryption in weeks</a><span class="item-date">Tue, 10 Nov 2026 16:17:22 +0000</span></li><li><a href="https://thenewstack.io/grok-api-watermarking-default/">SpaceXSI quietly flips Grok API text watermarking to off by default</a><span class="item-date">Tue, 10 Nov 2026 15:58:44 +0000</span></li><li><a href="https://thenewstack.io/cncf-developer-ai-adoption/">New CNCF report: 75% of cloud-native developers ship code with AI. Jonathan Bryce explains why.</a><span class="item-date">Tue, 10 Nov 2026 15:42:54 +0000</span></li><li><a href="https://thenewstack.io/ramp-hires-teen-intern/">A $60 billion fintech hired a 14-year-old. Its CEO explains why.</a><span class="item-date">Mon, 09 Nov 2026 23:18:34 +0000</span></li><li><a href="https://thenewstack.io/anthropic-fable-coding-upgrade/">Anthropic launches Fable 5.2 with a price cut and stronger coding scores</a><span class="item-date">Mon, 09 Nov 2026 19:08:20 +0000</span></li><li><a href="https://thenewstack.io/google-tpu-sync-inference/">Google claims its new AI software cuts inference latency by over 90% — but there’s a catch</a><span class="item-date">Mon, 09 Nov 2026 18:40:01 +0000</span></li><li><a href="https://thenewstack.io/cursor-antigravity-voice-agents/">Cursor and Google join OpenAI in giving coding agents a voice. Claude Code stays silent.</a><span class="item-date">Mon, 09 Nov 2026 18:22:41 +0000</span></li><li><a href="https://thenewstack.io/meta-muse-ember-launch/">Meta launches Muse Ember to take on Claude Haiku and GPT-6 Luna</a><span class="item-date">Mon, 09 Nov 2026 18:00:00 +0000</span></li><li><a href="https://thenewstack.io/semantic-layers-enterprise-ai/">Why semantic layers will be essential for enterprise AI</a><span class="item-date">Mon, 09 Nov 2026 15:00:00 +0000</span></li><li><a href="https://thenewstack.io/duplicated-streaming-state-costs/">Real-time state has a cost your memory bill won’t show</a><span class="item-date">Mon, 09 Nov 2026 14:29:57 +0000</span></li></ul></div><div class="news-column"><h4>Wiz Blog</h4><ul><li><a href="https://www.wiz.io/blog/cyber-model-arena-ai-benchmark">How to Evaluate AI Agent Cybersecurity Capabilities</a><span class="item-date">Tue, 10 Nov 2026 16:03:25 GMT</span></li><li><a href="https://www.wiz.io/blog/wiz-and-ismap-for-japan-public-sector">Wiz and ISMAP: Building the Foundation for Japan&#x27;s Public Sector</a><span class="item-date">Tue, 10 Nov 2026 13:48:36 GMT</span></li><li><a href="https://www.wiz.io/blog/qubole-cross-account-access-abused-in-the-wild">Trusted by Default: Qubole Cross-Account Access Abused in the Wild</a><span class="item-date">Mon, 09 Nov 2026 14:56:32 GMT</span></li></ul></div></div></div><div class="text-section"><h2 id="vuln-tracking" style="scroll-margin-top:4.5rem;">Scoped Vulnerability Tracking</h2><h2>Cloud Security</h2>
+<p>The most urgent issue this cycle is <strong>CVE-2026-122310 in Kyverno (CVSS 9.9 CRITICAL)</strong>, which allows a namespace-scoped user to escalate to cluster-admin by hiding path traversal sequences in a Policy&#x27;s `urlPath` fragment or query. This directly compromises Kubernetes control-plane integrity and affects any cluster running Kyverno 1.19.1. No CISA KEV-confirmed exploits appear in today&#x27;s formal vulnerability set, so the highest theoretical severity drives priority. Docker/PaaS tooling also carries multiple critical RCEs (Dokploy, Yuxi, Chartbrew, mailcow) that warrant immediate patching where deployed.</p>
+<h3>Formal Vulnerabilities</h3>
+<div class="vuln-card sev-unscored"><div class="vuln-card-head"><span class="vuln-system">AWS</span><span class="badge badge-cve">CVE-2026-121686</span><span class="badge badge-cvss sev-unscored">UNSCORED</span></div><div class="vuln-card-body">
+<p><strong>Summary:</strong> FrodoBots EarthRover Mini+ firmware (version 6.2.4_6.2.5_0.614.0) accepts arbitrary shell commands via AWS IoT MQTT messages and executes them as root. Authentication relies solely on shared IoT credentials with no per-device verification, enabling fleet-wide unauthenticated remote code execution.</p>
+<p><strong>Affected Features / Interoperability:</strong> The firmware&#x27;s MQTT command handler; downstream impact includes full device compromise, potential pivot to AWS IoT Core resources, and disruption of telemetry/control pipelines.</p>
+<p><strong>Source:</strong> <a href="https://github.com/frodobots-org,">https://github.com/frodobots-org,</a> <a href="https://kb.cert.org/vuls/id/188754,">https://kb.cert.org/vuls/id/188754,</a> <a href="https://www.frodobots.ai/">https://www.frodobots.ai/</a></p>
+<p><strong>Actions:</strong></p>
+<ul>
+<li>Fix: Apply patched firmware version (vendor has not specified a version number in the advisory; monitor FrodoBots releases).</li>
+<li>Workaround: Rotate and restrict IoT credentials, enforce network-level segmentation to limit MQTT broker exposure, and monitor for anomalous command payloads.</li>
+<li>Tradeoff: Credential rotation may temporarily disrupt legitimate device management; network segmentation could break legitimate fleet orchestration.</li>
+</ul>
+</div></div>
+<div class="vuln-card sev-low"><div class="vuln-card-head"><span class="vuln-system">Microsoft Azure</span><span class="badge badge-cve">CVE-2026-112337</span><span class="badge badge-cvss sev-low">CVSS 3.7 · LOW</span></div><div class="vuln-card-body">
+<p><strong>Summary:</strong> Wazuh 3.7.0 through 4.14.8 contains a server-side request forgery in the Azure wodle `get_graph_events()` function. The function follows `@odata.nextLink` pagination URLs without host or HTTPS validation, allowing an attacker who can influence the `nextLink` value to redirect manager requests to an attacker-controlled endpoint, capture the reused Microsoft Graph bearer token, and reach internal services.</p>
+<p><strong>Affected Features / Interoperability:</strong> Wazuh&#x27;s Azure log collection wodle; downstream impact includes potential token theft and internal service enumeration via the Wazuh manager.</p>
+<p><strong>Source:</strong> <a href="https://github.com/wazuh/wazuh/releases/tag/v4.14.9,">https://github.com/wazuh/wazuh/releases/tag/v4.14.9,</a> <a href="https://github.com/wazuh/wazuh/security/advisories/GHSA-qxg8-jrjm-w96h,">https://github.com/wazuh/wazuh/security/advisories/GHSA-qxg8-jrjm-w96h,</a> <a href="https://www.vulncheck.com/advisories/wazuh-3.7.0-before-4.14.9-ssrf-via-azure-graph-nextlink-pagination">https://www.vulncheck.com/advisories/wazuh-3.7.0-before-4.14.9-ssrf-via-azure-graph-nextlink-pagination</a></p>
+<p><strong>Actions:</strong></p>
+<ul>
+<li>Fix: Upgrade Wazuh to 4.14.9 or later.</li>
+<li>Workaround: Disable the Azure wodle if not required, or restrict the manager&#x27;s outbound network access to only required Microsoft Graph endpoints.</li>
+<li>Tradeoff: Disabling the wodle loses Azure security event ingestion; network restrictions may break legitimate Graph API pagination.</li>
+</ul>
+</div></div>
+<div class="vuln-card sev-critical"><div class="vuln-card-head"><span class="vuln-system">Kubernetes</span><span class="badge badge-cve">CVE-2026-122310</span><span class="badge badge-cvss sev-critical">CVSS 9.9 · CRITICAL</span></div><div class="vuln-card-body">
+<p><strong>Summary:</strong> Kyverno 1.19.1 validates a Policy&#x27;s `context.apiCall.urlPath` after cleaning it but executes the raw path. A namespace-scoped user who can create a Policy can hide `../` segments behind a fragment (`#`) or query (`?`) to reach cluster-scoped endpoints using Kyverno&#x27;s ServiceAccount, achieving cluster-admin privileges.</p>
+<p><strong>Affected Features / Interoperability:</strong> Kyverno&#x27;s policy engine `apiCall` mechanism; downstream impact includes full cluster compromise via the Kyverno controller&#x27;s elevated ServiceAccount.</p>
+<p><strong>Source:</strong> <a href="https://github.com/kyverno/kyverno/security/advisories/GHSA-3xfv-vq8x-qhg4,">https://github.com/kyverno/kyverno/security/advisories/GHSA-3xfv-vq8x-qhg4,</a> <a href="https://www.vulncheck.com/advisories/kyverno-1.19.1-before-1.19.2-privilege-escalation-via-policy-apicall-urlpath">https://www.vulncheck.com/advisories/kyverno-1.19.1-before-1.19.2-privilege-escalation-via-policy-apicall-urlpath</a></p>
+<p><strong>Actions:</strong></p>
+<ul>
+<li>Fix: Upgrade Kyverno to 1.19.2 or later.</li>
+<li>Workaround: Restrict Policy creation permissions (RBAC) to trusted administrators only; avoid running Kyverno with a cluster-admin ServiceAccount if possible.</li>
+<li>Tradeoff: Restricting Policy creation may hinder GitOps workflows; reducing Kyverno&#x27;s ServiceAccount privileges could break legitimate policy enforcement.</li>
+</ul>
+</div></div>
+<div class="vuln-card sev-high"><div class="vuln-card-head"><span class="vuln-system">Kubernetes</span><span class="badge badge-cve">CVE-2026-102340</span><span class="badge badge-cvss sev-high">CVSS 8.5 · HIGH</span></div><div class="vuln-card-body">
+<p><strong>Summary:</strong> Telepresence before 2.31.0 exposes an unauthenticated gRPC API on port 8081. The `ArriveAsClient` RPC stores a caller-supplied namespace using only a manager watchlist check, and `CreateIntercept` can target any managed namespace without verifying the session&#x27;s Kubernetes RBAC. Any pod with network access to the Traffic Manager can register in an arbitrary managed namespace, create service intercepts, receive intercepted traffic, and obtain the victim pod&#x27;s credentials.</p>
+<p><strong>Affected Features / Interoperability:</strong> Telepresence Traffic Manager&#x27;s gRPC API; downstream impact includes traffic interception, credential theft, and lateral movement within the cluster.</p>
+<p><strong>Source:</strong> <a href="https://github.com/telepresenceio/telepresence/commit/04ec3464fe8878fdc96420cdc8036edefa0dc9ae,">https://github.com/telepresenceio/telepresence/commit/04ec3464fe8878fdc96420cdc8036edefa0dc9ae,</a> <a href="https://github.com/telepresenceio/telepresence/commit/36458b65a010d2b316af48cd90e193ba190785d9,">https://github.com/telepresenceio/telepresence/commit/36458b65a010d2b316af48cd90e193ba190785d9,</a> <a href="https://github.com/telepresenceio/telepresence/commit/6871235b674a6e843908d09696354c4b0f91578c">https://github.com/telepresenceio/telepresence/commit/6871235b674a6e843908d09696354c4b0f91578c</a></p>
+<p><strong>Actions:</strong></p>
+<ul>
+<li>Fix: Upgrade Telepresence to 2.31.0 or later.</li>
+<li>Workaround: Block network access to the Traffic Manager&#x27;s port 8081 from untrusted pods using NetworkPolicies; run the Traffic Manager in a dedicated, isolated namespace.</li>
+<li>Tradeoff: NetworkPolicies may interfere with legitimate development workflows; isolation adds operational overhead.</li>
+</ul>
+</div></div>
+<div class="vuln-card sev-high"><div class="vuln-card-head"><span class="vuln-system">Kubernetes</span><span class="badge badge-cve">CVE-2026-102339</span><span class="badge badge-cvss sev-high">CVSS 8.2 · HIGH</span></div><div class="vuln-card-body">
+<p><strong>Summary:</strong> Telepresence before 2.31.0 parses a session ID from the first bytes of a caller-controlled message in the Tunnel gRPC streaming endpoint and passes it to `state.Tunnel` without verifying ownership. An attacker who obtains a valid active session ID (via log leakage, cluster-internal channels, or the unauthenticated `ArriveAsClient` endpoint) can attach a routed tunnel to that session and gain its network routing capabilities.</p>
+<p><strong>Affected Features / Interoperability:</strong> Telepresence Tunnel gRPC endpoint; downstream impact includes session hijacking and unauthorized network routing.</p>
+<p><strong>Source:</strong> <a href="https://github.com/telepresenceio/telepresence/commit/1312482488b771742dbedd3015f9a81a27532de6,">https://github.com/telepresenceio/telepresence/commit/1312482488b771742dbedd3015f9a81a27532de6,</a> <a href="https://github.com/telepresenceio/telepresence/commit/36458b65a010d2b316af48cd90e193ba190785d9,">https://github.com/telepresenceio/telepresence/commit/36458b65a010d2b316af48cd90e193ba190785d9,</a> <a href="https://github.com/telepresenceio/telepresence/pull/4217">https://github.com/telepresenceio/telepresence/pull/4217</a></p>
+<p><strong>Actions:</strong></p>
+<ul>
+<li>Fix: Upgrade Telepresence to 2.31.0 or later.</li>
+<li>Workaround: Same as CVE-2026-102340 — restrict Traffic Manager network exposure and monitor logs for session ID leakage.</li>
+<li>Tradeoff: No significant tradeoff beyond the network restriction mentioned above.</li>
+</ul>
+</div></div>
+<div class="vuln-card sev-high"><div class="vuln-card-head"><span class="vuln-system">Kubernetes</span><span class="badge badge-cve">CVE-2026-66297</span><span class="badge badge-cvss sev-high">CVSS 8.0 · HIGH</span></div><div class="vuln-card-body">
+<p><strong>Summary:</strong> Livebook (livebook-dev) allows OS command injection into generated deployment setup commands. The `docker_instructions/2` and `fly_instructions/4` functions interpolate deployment group environment variable values into Docker and Fly.io setup commands without shell escaping. A user who can control those environment variables can execute arbitrary commands during deployment setup.</p>
+<p><strong>Affected Features / Interoperability:</strong> Livebook&#x27;s team deployment group agent component; downstream impact includes compromise of the deployment host (Docker/Fly.io) and potential supply-chain contamination.</p>
+<p><strong>Source:</strong> <a href="https://cna.erlef.org/cves/CVE-2026-66297.html,">https://cna.erlef.org/cves/CVE-2026-66297.html,</a> <a href="https://github.com/livebook-dev/livebook/commit/0c2487326bbb37cb1eb43bb2f76eb93ad9f8fd6b,">https://github.com/livebook-dev/livebook/commit/0c2487326bbb37cb1eb43bb2f76eb93ad9f8fd6b,</a> <a href="https://github.com/livebook-dev/livebook/commit/7cf4af5c10ec645f55a10f30e5661c54f6a6b319">https://github.com/livebook-dev/livebook/commit/7cf4af5c10ec645f55a10f30e5661c54f6a6b319</a></p>
+<p><strong>Actions:</strong></p>
+<ul>
+<li>Fix: Update Livebook to a version containing the referenced commits (no specific version number provided in advisory; check releases after the commit dates).</li>
+<li>Workaround: Restrict who can modify deployment group environment variables; sanitize inputs manually before deployment.</li>
+<li>Tradeoff: Manual sanitization is error-prone and slows deployment automation.</li>
+</ul>
+</div></div>
+<div class="vuln-card sev-high"><div class="vuln-card-head"><span class="vuln-system">Kubernetes</span><span class="badge badge-cve">CVE-2026-109797</span><span class="badge badge-cvss sev-high">CVSS 7.1 · HIGH</span></div><div class="vuln-card-body">
+<p><strong>Summary:</strong> SAP/astonish&#x27;s legacy Incus sandbox-management API handlers lack tenant-aware session lookups, allowing an authenticated user to identify and operate on another team&#x27;s sandbox containers (list, expose, proxy, delete). Only the legacy Incus backend is affected; Kubernetes and OpenShell deployments are not vulnerable.</p>
+<p><strong>Affected Features / Interoperability:</strong> Astonish&#x27;s Incus sandbox API handlers; downstream impact includes cross-tenant container takeover and data exposure.</p>
+<p><strong>Source:</strong> <a href="https://github.com/SAP/astonish/security/advisories/GHSA-93c9-96j8-4vg9,">https://github.com/SAP/astonish/security/advisories/GHSA-93c9-96j8-4vg9,</a> <a href="https://url.sap/sapsecuritypatchday">https://url.sap/sapsecuritypatchday</a></p>
+<p><strong>Actions:</strong></p>
+<ul>
+<li>Fix: Apply the patch from SAP Security Patch Day (specific version not provided; consult SAP advisory).</li>
+<li>Workaround: Migrate away from the legacy Incus backend to Kubernetes or OpenShell deployments; enforce strict network segmentation between tenant sandboxes.</li>
+<li>Tradeoff: Migration may require significant engineering effort; segmentation adds infrastructure complexity.</li>
+</ul>
+</div></div>
+<div class="vuln-card sev-medium"><div class="vuln-card-head"><span class="vuln-system">Kubernetes</span><span class="badge badge-cve">CVE-2026-91168</span><span class="badge badge-cvss sev-medium">CVSS 6.8 · MEDIUM</span></div><div class="vuln-card-body">
+<p><strong>Summary:</strong> Warpgate 0.21.0 through 0.29.0 uses username, target name, and client IP to key an authorized `AdmittedTarget` in its Kubernetes request correlator, rather than the immutable user UUID. When an account is deleted and a new low-privilege account is created with the same username, the replacement account can reuse the predecessor&#x27;s still-live correlation entry and gain unauthorized access to Kubernetes targets.</p>
+<p><strong>Affected Features / Interoperability:</strong> Warpgate&#x27;s Kubernetes protocol correlator; downstream impact includes privilege escalation via account recreation.</p>
+<p><strong>Source:</strong> <a href="https://github.com/warp-tech/warpgate/commit/2f77f07b8335ff495068aa10d650d4b314bf4cc8,">https://github.com/warp-tech/warpgate/commit/2f77f07b8335ff495068aa10d650d4b314bf4cc8,</a> <a href="https://github.com/warp-tech/warpgate/releases/tag/v0.29.0,">https://github.com/warp-tech/warpgate/releases/tag/v0.29.0,</a> <a href="https://github.com/warp-tech/warpgate/security/advisories/GHSA-pw7m-635x-pmx7">https://github.com/warp-tech/warpgate/security/advisories/GHSA-pw7m-635x-pmx7</a></p>
+<p><strong>Actions:</strong></p>
+<ul>
+<li>Fix: Upgrade Warpgate to 0.29.0 or later.</li>
+<li>Workaround: Avoid reusing usernames after account deletion; implement a grace period before username reuse.</li>
+<li>Tradeoff: Username reuse prevention may conflict with organizational identity management policies.</li>
+</ul>
+</div></div>
+<div class="vuln-card sev-medium"><div class="vuln-card-head"><span class="vuln-system">Kubernetes</span><span class="badge badge-cve">CVE-2026-97373</span><span class="badge badge-cvss sev-medium">CVSS 5.8 · MEDIUM</span></div><div class="vuln-card-body">
+<p><strong>Summary:</strong> draw.io before 30.3.8 has an incomplete SSRF blocklist in the optional `/proxy` endpoint. The URL validator does not reject the RFC 6598 shared address range (100.64.0.0/10), allowing unauthenticated remote attackers to cause the server to request internal services in that range (Carrier-Grade NAT, Kubernetes, cloud, or overlay-network addresses).</p>
+<p><strong>Affected Features / Interoperability:</strong> draw.io&#x27;s `/proxy` endpoint; downstream impact includes internal service enumeration and data disclosure from CGNAT/cloud metadata endpoints.</p>
+<p><strong>Source:</strong> <a href="https://github.com/jgraph/drawio/commit/73c4a91196246bbdb60f52b15871e82006b7972d,">https://github.com/jgraph/drawio/commit/73c4a91196246bbdb60f52b15871e82006b7972d,</a> <a href="https://github.com/jgraph/drawio/security/advisories/GHSA-xc39-mcq4-fr4q">https://github.com/jgraph/drawio/security/advisories/GHSA-xc39-mcq4-fr4q</a></p>
+<p><strong>Actions:</strong></p>
+<ul>
+<li>Fix: Upgrade draw.io to 30.3.8 or later.</li>
+<li>Workaround: Disable the `/proxy` endpoint if not required; block outbound access to 100.64.0.0/10 from the draw.io server.</li>
+<li>Tradeoff: Disabling the proxy removes legitimate diagramming integrations; network blocking may affect other services using that range.</li>
+</ul>
+</div></div>
+<div class="vuln-card sev-medium"><div class="vuln-card-head"><span class="vuln-system">Kubernetes</span><span class="badge badge-cve">CVE-2026-88982</span><span class="badge badge-cvss sev-medium">CVSS 5.4 · MEDIUM</span></div><div class="vuln-card-body">
+<p><strong>Summary:</strong> Kubeflow Pipelines before 2.18.0 uses a cache key that omits the Kubernetes namespace, trusts a mutable annotation for cache publishing, and uses the key alone for lookups. In multi-tenant deployments sharing the cache service, a tenant with workload-submission privileges can read another namespace&#x27;s cached outputs or seed matching cache entries to poison results.</p>
+<p><strong>Affected Features / Interoperability:</strong> Kubeflow Pipelines V1/raw-Argo execution cache mutating webhook and cache-server; downstream impact includes cross-tenant data leakage and pipeline result integrity violation.</p>
+<p><strong>Source:</strong> <a href="https://github.com/kubeflow/pipelines/commit/620d0cc89ae0d042a484a003f8ffe6e9a55d347e,">https://github.com/kubeflow/pipelines/commit/620d0cc89ae0d042a484a003f8ffe6e9a55d347e,</a> <a href="https://github.com/kubeflow/pipelines/pull/14359,">https://github.com/kubeflow/pipelines/pull/14359,</a> <a href="https://github.com/kubeflow/pipelines/releases/tag/2.18.0">https://github.com/kubeflow/pipelines/releases/tag/2.18.0</a></p>
+<p><strong>Actions:</strong></p>
+<ul>
+<li>Fix: Upgrade Kubeflow Pipelines to 2.18.0 or later.</li>
+<li>Workaround: Deploy separate cache services per tenant namespace; restrict workload submission privileges.</li>
+<li>Tradeoff: Per-tenant cache services increase resource consumption; privilege restriction may limit collaboration.</li>
+</ul>
+</div></div>
+<div class="vuln-card sev-medium"><div class="vuln-card-head"><span class="vuln-system">Kubernetes</span><span class="badge badge-cve">CVE-2026-123810</span><span class="badge badge-cvss sev-medium">CVSS 4.3 · MEDIUM</span></div><div class="vuln-card-body">
+<p><strong>Summary:</strong> Dynatrace MCP Server before 2.1.1 interpolates caller-controlled values into DQL queries without sufficient validation or escaping in several read capabilities (`find-monitored-entity-by-name`, `list-problems`, `list-vulnerabilities`, `list-exceptions`, `get-events-for-cluster`). Crafted values can close string literals and append pipeline commands, leading to DQL injection.</p>
+<p><strong>Affected Features / Interoperability:</strong> Dynatrace MCP Server&#x27;s read capabilities; downstream impact includes unauthorized data access and potential DQL query manipulation.</p>
+<p><strong>Source:</strong> <a href="https://github.com/dynatrace-oss/dynatrace-mcp/commit/15d3546c0618ffbaeaeca477337e08e92f2151bc,">https://github.com/dynatrace-oss/dynatrace-mcp/commit/15d3546c0618ffbaeaeca477337e08e92f2151bc,</a> <a href="https://github.com/dynatrace-oss/dynatrace-mcp/releases/tag/v2.1.1,">https://github.com/dynatrace-oss/dynatrace-mcp/releases/tag/v2.1.1,</a> <a href="https://github.com/dynatrace-oss/dynatrace-mcp/security/advisories/GHSA-pqh8-p93p-2rx7">https://github.com/dynatrace-oss/dynatrace-mcp/security/advisories/GHSA-pqh8-p93p-2rx7</a></p>
+<p><strong>Actions:</strong></p>
+<ul>
+<li>Fix: Upgrade Dynatrace MCP Server to 2.1.1 or later.</li>
+<li>Workaround: Restrict MCP server access to trusted clients; implement input validation at the API gateway layer.</li>
+<li>Tradeoff: Gateway validation adds latency and maintenance burden.</li>
+</ul>
+</div></div>
+<div class="vuln-card sev-low"><div class="vuln-card-head"><span class="vuln-system">Kubernetes</span><span class="badge badge-cve">CVE-2026-91163</span><span class="badge badge-cvss sev-low">CVSS 3.7 · LOW</span></div><div class="vuln-card-body">
+<p><strong>Summary:</strong> Warpgate before 0.29.0 uses `AcceptAnyClientCert` in its Kubernetes protocol listener, deferring certificate validation to an auth module that renders failures verbatim in an HTTP 500 response body. The Kubernetes protocol lacks the outer request-logging wrapper used by the HTTP protocol, potentially exposing sensitive error details.</p>
+<p><strong>Affected Features / Interoperability:</strong> Warpgate&#x27;s Kubernetes protocol listener TLS handling; downstream impact includes information disclosure via error messages.</p>
+<p><strong>Source:</strong> <a href="https://github.com/warp-tech/warpgate/commit/8426196a27c30fca521656653f9df1faf3df7523,">https://github.com/warp-tech/warpgate/commit/8426196a27c30fca521656653f9df1faf3df7523,</a> <a href="https://github.com/warp-tech/warpgate/pull/2547,">https://github.com/warp-tech/warpgate/pull/2547,</a> <a href="https://github.com/warp-tech/warpgate/releases/tag/v0.29.0">https://github.com/warp-tech/warpgate/releases/tag/v0.29.0</a></p>
+<p><strong>Actions:</strong></p>
+<ul>
+<li>Fix: Upgrade Warpgate to 0.29.0 or later.</li>
+<li>Workaround: Disable the Kubernetes protocol listener if not needed; ensure TLS client certificates are validated at the network edge.</li>
+<li>Tradeoff: Disabling the listener removes Kubernetes bastion functionality; edge validation duplicates effort.</li>
+</ul>
+</div></div>
+<div class="vuln-card sev-critical"><div class="vuln-card-head"><span class="vuln-system">Docker</span><span class="badge badge-cve">CVE-2026-72868</span><span class="badge badge-cvss sev-critical">CVSS 9.9 · CRITICAL</span></div><div class="vuln-card-body">
+<p><strong>Summary:</strong> Dokploy before 0.29.13 interpolates user-supplied destination fields (`accessKey`, `secretAccessKey`, `region`, `endpoint`, `provider`, `bucket`) into an `rclone ls` command executed via `child_process.exec`. A low-privileged organization member with `destination:create` permission can inject arbitrary commands, achieving root RCE in the Dokploy container which has access to the host Docker socket.</p>
+<p><strong>Affected Features / Interoperability:</strong> Dokploy&#x27;s destination test connection API; downstream impact includes full host compromise via Docker socket access.</p>
+<p><strong>Source:</strong> <a href="https://github.com/Dokploy/dokploy/commit/eeb6e7b8ea88e4b4b1fac8460755464100516ac9,">https://github.com/Dokploy/dokploy/commit/eeb6e7b8ea88e4b4b1fac8460755464100516ac9,</a> <a href="https://github.com/Dokploy/dokploy/pull/4873,">https://github.com/Dokploy/dokploy/pull/4873,</a> <a href="https://github.com/Dokploy/dokploy/releases/tag/v0.29.13">https://github.com/Dokploy/dokploy/releases/tag/v0.29.13</a></p>
+<p><strong>Actions:</strong></p>
+<ul>
+<li>Fix: Upgrade Dokploy to 0.29.13 or later.</li>
+<li>Workaround: Revoke `destination:create` permission for non-admin users; run Dokploy without host Docker socket access (use rootless Docker or a remote Docker daemon with limited privileges).</li>
+<li>Tradeoff: Removing Docker socket access breaks Dokploy&#x27;s core container management functionality; permission changes may disrupt self-service workflows.</li>
+</ul>
+</div></div>
+<div class="vuln-card sev-critical"><div class="vuln-card-head"><span class="vuln-system">Docker</span><span class="badge badge-cve">CVE-2026-97693</span><span class="badge badge-cvss sev-critical">CVSS 9.9 · CRITICAL</span></div><div class="vuln-card-body">
+<p><strong>Summary:</strong> Yuxi 0.6.0.beta1 through 0.7.1 has insufficient isolation between execution-capable Docker sandboxes and trusted application services. A low-privileged authenticated user can reach other tenants&#x27; sandbox APIs, access files/secrets, execute commands in active sandboxes, and enumerate/create/delete sandboxes via an unauthenticated provisioner — all without administrator, database, or MinIO credentials.</p>
+<p><strong>Affected Features / Interoperability:</strong> Yuxi&#x27;s sandbox provisioner and execution environment; downstream impact includes complete multi-tenant data breach and arbitrary code execution in neighboring sandboxes.</p>
+<p><strong>Source:</strong> <a href="https://github.com/xerrors/Yuxi/commit/b5b5713e6e639dd4ed2ebce41579a3c458347663,">https://github.com/xerrors/Yuxi/commit/b5b5713e6e639dd4ed2ebce41579a3c458347663,</a> <a href="https://github.com/xerrors/Yuxi/security/advisories/GHSA-qpm5-6332-9445">https://github.com/xerrors/Yuxi/security/advisories/GHSA-qpm5-6332-9445</a></p>
+<p><strong>Actions:</strong></p>
+<ul>
+<li>Fix: Upgrade Yuxi to a version after 0.7.1 (specific version not provided; check releases after the advisory commit).</li>
+<li>Workaround: Disable the provisioner endpoint if not required; enforce network policies to isolate sandbox networks; run sandboxes with minimal privileges and no access to host Docker socket.</li>
+<li>Tradeoff: Disabling the provisioner breaks dynamic sandbox creation; network policies add operational complexity.</li>
+</ul>
+</div></div>
+<div class="vuln-card sev-critical"><div class="vuln-card-head"><span class="vuln-system">Docker</span><span class="badge badge-cve">CVE-2026-85295</span><span class="badge badge-cvss sev-critical">CVSS 9.8 · CRITICAL</span></div><div class="vuln-card-body">
+<p><strong>Summary:</strong> Chartbrew before 5.2.3 uses weak or default `CB_SECRET` values for signing session JWTs across four authentication helpers. An attacker can forge a valid HS256 token decoding to a target user ID and achieve authentication bypass, leading to full account takeover.</p>
+<p><strong>Affected Features / Interoperability:</strong> Chartbrew&#x27;s session verification (`verifyToken.js`, `verifyUser.js`, `getUserFromToken.js`, `socketManager.js`); downstream impact includes unauthorized access to dashboards, data sources, and API endpoints.</p>
+<p><strong>Source:</strong> <a href="https://github.com/chartbrew/chartbrew/commit/da8c71f156aaa13fbc7ead15a4726740fef2b3c5,">https://github.com/chartbrew/chartbrew/commit/da8c71f156aaa13fbc7ead15a4726740fef2b3c5,</a> <a href="https://github.com/chartbrew/chartbrew/releases/tag/v5.2.3,">https://github.com/chartbrew/chartbrew/releases/tag/v5.2.3,</a> <a href="https://github.com/chartbrew/chartbrew/security/advisories/GHSA-qvv4-r3q6-8797">https://github.com/chartbrew/chartbrew/security/advisories/GHSA-qvv4-r3q6-8797</a></p>
+<p><strong>Actions:</strong></p>
+<ul>
+<li>Fix: Upgrade Chartbrew to 5.2.3 or later and rotate `CB_SECRET` to a strong random value.</li>
+<li>Workaround: Immediately rotate `CB_SECRET` to a high-entropy value; invalidate all existing sessions.</li>
+<li>Tradeoff: Secret rotation logs out all users; no functional degradation otherwise.</li>
+</ul>
+</div></div>
+<div class="vuln-card sev-critical"><div class="vuln-card-head"><span class="vuln-system">Docker</span><span class="badge badge-cve">CVE-2026-125757</span><span class="badge badge-cvss sev-critical">CVSS 9.1 · CRITICAL</span></div><div class="vuln-card-body">
+<p><strong>Summary:</strong> mailcow: dockerized before 2026-11 contains a server-side template injection in the domain-wide footer rendered by the rspamd `MOO_FOOTER` prefilter. Domain administrators can embed a Jinja macro with an `os.execute` default value to execute commands in the shared rspamd container, enabling mail read/injection for all tenants and filter bypass.</p>
+<p><strong>Affected Features / Interoperability:</strong> mailcow&#x27;s rspamd footer templating; downstream impact includes cross-tenant mail compromise and spam filter disablement.</p>
+<p><strong>Source:</strong> <a href="https://github.com/mailcow/mailcow-dockerized/blob/55982ac74bfd35581cc44b122ab5fc659e3ae90a/data/conf/rspamd/lua/rspamd.local.lua#L847-L850,">https://github.com/mailcow/mailcow-dockerized/blob/55982ac74bfd35581cc44b122ab5fc659e3ae90a/data/conf/rspamd/lua/rspamd.local.lua#L847-L850,</a> <a href="https://github.com/mailcow/mailcow-dockerized/commit/e986803980db8b29435a2ddba5d9760737a818e3,">https://github.com/mailcow/mailcow-dockerized/commit/e986803980db8b29435a2ddba5d9760737a818e3,</a> <a href="https://github.com/mailcow/mailcow-dockerized/releases/tag/2026-11">https://github.com/mailcow/mailcow-dockerized/releases/tag/2026-11</a></p>
+<p><strong>Actions:</strong></p>
+<ul>
+<li>Fix: Upgrade mailcow to the 2026-11 release or later.</li>
+<li>Workaround: Restrict domain administrator privileges; disable custom footer functionality if not needed.</li>
+<li>Tradeoff: Disabling custom footers removes a legitimate branding feature; privilege restriction may affect delegated administration.</li>
+</ul>
+</div></div>
+<div class="vuln-card sev-high"><div class="vuln-card-head"><span class="vuln-system">Docker</span><span class="badge badge-cve">CVE-2026-66297</span><span class="badge badge-cvss sev-high">CVSS 8.0 · HIGH</span></div><div class="vuln-card-body">
+<p><strong>Summary:</strong> Livebook (livebook-dev) allows OS command injection into generated deployment setup commands. The `docker_instructions/2` and `fly_instructions/4` functions interpolate deployment group environment variable values into Docker and Fly.io setup commands without shell escaping. A user who can control those environment variables can execute arbitrary commands during deployment setup.</p>
+<p><strong>Affected Features / Interoperability:</strong> Livebook&#x27;s team deployment group agent component; downstream impact includes compromise of the deployment host (Docker/Fly.io) and potential supply-chain contamination.</p>
+<p><strong>Source:</strong> <a href="https://cna.erlef.org/cves/CVE-2026-66297.html,">https://cna.erlef.org/cves/CVE-2026-66297.html,</a> <a href="https://github.com/livebook-dev/livebook/commit/0c2487326bbb37cb1eb43bb2f76eb93ad9f8fd6b,">https://github.com/livebook-dev/livebook/commit/0c2487326bbb37cb1eb43bb2f76eb93ad9f8fd6b,</a> <a href="https://github.com/livebook-dev/livebook/commit/7cf4af5c10ec645f55a10f30e5661c54f6a6b319">https://github.com/livebook-dev/livebook/commit/7cf4af5c10ec645f55a10f30e5661c54f6a6b319</a></p>
+<p><strong>Actions:</strong></p>
+<ul>
+<li>Fix: Update Livebook to a version containing the referenced commits (no specific version number provided in advisory; check releases after the commit dates).</li>
+<li>Workaround: Restrict who can modify deployment group environment variables; sanitize inputs manually before deployment.</li>
+<li>Tradeoff: Manual sanitization is error-prone and slows deployment automation.</li>
+</ul>
+</div></div>
+<div class="vuln-card sev-high"><div class="vuln-card-head"><span class="vuln-system">Docker</span><span class="badge badge-cve">CVE-2026-125323</span><span class="badge badge-cvss sev-high">CVSS 7.8 · HIGH</span></div><div class="vuln-card-body">
+<p><strong>Summary:</strong> pgEdge Control Plane 0.1.0 through 0.10.1 generates `pg_hba.conf` files with hard-coded `trust` entries for Unix-socket and loopback connections at the top of the file. Because PostgreSQL evaluates rules top-down, these entries preempt operator-supplied rules, allowing any unprivileged OS account on a database host to authenticate as any PostgreSQL role (including superuser) without credentials.</p>
+<p><strong>Affected Features / Interoperability:</strong> pgEdge Control Plane&#x27;s `pg_hba.conf` generation under the systemd orchestrator; downstream impact includes full PostgreSQL cluster takeover via local OS access.</p>
+<p><strong>Source:</strong> <a href="https://github.com/pgEdge/control-plane/blob/main/changes/v0.11.0.md,">https://github.com/pgEdge/control-plane/blob/main/changes/v0.11.0.md,</a> <a href="https://github.com/pgEdge/control-plane/commit/88659f7388fc6c86125e60475aa83810171145b7,">https://github.com/pgEdge/control-plane/commit/88659f7388fc6c86125e60475aa83810171145b7,</a> <a href="https://github.com/pgEdge/control-plane/pull/470">https://github.com/pgEdge/control-plane/pull/470</a></p>
+<p><strong>Actions:</strong></p>
+<ul>
+<li>Fix: Upgrade pgEdge Control Plane to 0.11.0 or later.</li>
+<li>Workaround: Manually edit generated `pg_hba.conf` to move `trust` entries below operator rules; restrict OS-level access to database hosts.</li>
+<li>Tradeoff: Manual edits are overwritten on regeneration; OS access restriction may hinder legitimate administration.</li>
+</ul>
+</div></div>
+<div class="vuln-card sev-medium"><div class="vuln-card-head"><span class="vuln-system">Docker</span><span class="badge badge-cve">CVE-2026-79914</span><span class="badge badge-cvss sev-medium">CVSS 4.3 · MEDIUM</span></div><div class="vuln-card-body">
+<p><strong>Summary:</strong> NocoBase 2.1.0 through 2.1.14 has an SSRF in the `customRequests:send` endpoint. A low-privileged authenticated user can override the stored request URL at runtime via `options.url`, causing the server to send requests to attacker-controlled or internal destinations (internal services, Docker host gateways, cloud metadata endpoints).</p>
+<p><strong>Affected Features / Interoperability:</strong> NocoBase&#x27;s custom request sending feature; downstream impact includes internal network reconnaissance and metadata service abuse.</p>
+<p><strong>Source:</strong> <a href="https://github.com/nocobase/nocobase/commit/037dade8592fbab4324107285463f92b45aaa2ff,">https://github.com/nocobase/nocobase/commit/037dade8592fbab4324107285463f92b45aaa2ff,</a> <a href="https://github.com/nocobase/nocobase/security/advisories/GHSA-wrr5-j383-f7h2">https://github.com/nocobase/nocobase/security/advisories/GHSA-wrr5-j383-f7h2</a></p>
+<p><strong>Actions:</strong></p>
+<ul>
+<li>Fix: Upgrade NocoBase to a version after 2.1.14 (specific version not provided; check releases after the advisory commit).</li>
+<li>Workaround: Disable the `customRequests:send` endpoint if not required; enforce egress network policies to block access to internal metadata endpoints (169.254.169.254, 100.64.0.0/10, etc.).</li>
+<li>Tradeoff: Disabling the endpoint removes a legitimate integration feature; egress policies may affect other services.</li>
+</ul>
+</div></div>
+<div class="vuln-card sev-unscored"><div class="vuln-card-head"><span class="vuln-system">Docker</span><span class="badge badge-cve">CVE-2026-123082</span><span class="badge badge-cvss sev-unscored">UNSCORED</span></div><div class="vuln-card-body">
+<p><strong>Summary:</strong> Docker Desktop before 4.94.0 writes the signed-in user&#x27;s Docker Hub access token (JWT) in cleartext to application logs and diagnostics bundles. IPC payloads that were bare JSON strings or arrays were not redacted before logging. An attacker with read access to these files could obtain the token and use it to read/modify the user&#x27;s Docker Hub data while the token remains valid.</p>
+<p><strong>Affected Features / Interoperability:</strong> Docker Desktop&#x27;s logging and diagnostics subsystem; downstream impact includes Docker Hub credential leakage and potential supply-chain compromise.</p>
+<p><strong>Source:</strong> <a href="https://docs.docker.com/desktop/release-notes/#4940">https://docs.docker.com/desktop/release-notes/#4940</a></p>
+<p><strong>Actions:</strong></p>
+<ul>
+<li>Fix: Upgrade Docker Desktop to 4.94.0 or later.</li>
+<li>Workaround: Rotate Docker Hub access tokens immediately; restrict access to log/diagnostic files; avoid generating diagnostics bundles until patched.</li>
+<li>Tradeoff: Token rotation invalidates existing CI/CD integrations; log restriction may hinder troubleshooting.</li>
+</ul>
+</div></div>
+<div class="vuln-card sev-unscored"><div class="vuln-card-head"><span class="vuln-system">Docker</span><span class="badge badge-cve">CVE-2026-123368</span><span class="badge badge-cvss sev-unscored">UNSCORED</span></div><div class="vuln-card-body">
+<p><strong>Summary:</strong> compose-lint 0.22.0 through 0.31.0 follows a sibling `.env` symbolic link outside the project without applying its normal containment check. From 0.28.0, the same gap affects an `include` project_directory link. A pull request can reference a variable from the linked file, causing substitution to place runner file or process-environment data into finding messages written to logs, JSON, SARIF artifacts, and Code Scanning alerts.</p>
+<p><strong>Affected Features / Interoperability:</strong> compose-lint&#x27;s environment variable resolution and project inclusion logic; downstream impact includes sensitive environment variable leakage into CI/CD logs and security scanning artifacts.</p>
+<p><strong>Source:</strong> <a href="https://github.com/tmatens/compose-lint/commit/c43204ad4dab11d54e20574a52bc4e5835246ca5,">https://github.com/tmatens/compose-lint/commit/c43204ad4dab11d54e20574a52bc4e5835246ca5,</a> <a href="https://github.com/tmatens/compose-lint/pull/917,">https://github.com/tmatens/compose-lint/pull/917,</a> <a href="https://github.com/tmatens/compose-lint/releases/tag/v0.31.0">https://github.com/tmatens/compose-lint/releases/tag/v0.31.0</a></p>
+<p><strong>Actions:</strong></p>
+<ul>
+<li>Fix: Upgrade compose-lint to 0.31.0 or later.</li>
+<li>Workaround: Avoid using symlinks for `.env` or `include` directories in scanned projects; sanitize CI/CD logs to redact sensitive patterns.</li>
+<li>Tradeoff: Symlink avoidance may break project structures; log sanitization is imperfect and adds pipeline complexity.</li>
+</ul>
+</div></div>
+<div class="vuln-card sev-unscored"><div class="vuln-card-head"><span class="vuln-system">Docker</span><span class="badge badge-cve">CVE-2026-123369</span><span class="badge badge-cvss sev-unscored">UNSCORED</span></div><div class="vuln-card-body">
+<p><strong>Summary:</strong> compose-lint before 0.31.0 prints attacker-controlled service names, environment keys, file lines, and other Compose text without neutralizing GitHub Actions and Azure Pipelines workflow-command openers (`##[` or line-leading `::`). When a workflow processes a pull request, these sequences can create false annotations, hide log regions, mask strings, or invoke other runner commands.</p>
+<p><strong>Affected Features / Interoperability:</strong> compose-lint&#x27;s text report output paths; downstream impact includes CI/CD log injection and potential workflow manipulation.</p>
+<p><strong>Source:</strong> <a href="https://github.com/tmatens/compose-lint/commit/672bd11145621f787c295fb11f3a859cdec1b38d,">https://github.com/tmatens/compose-lint/commit/672bd11145621f787c295fb11f3a859cdec1b38d,</a> <a href="https://github.com/tmatens/compose-lint/pull/918,">https://github.com/tmatens/compose-lint/pull/918,</a> <a href="https://github.com/tmatens/compose-lint/releases/tag/v0.31.0">https://github.com/tmatens/compose-lint/releases/tag/v0.31.0</a></p>
+<p><strong>Actions:</strong></p>
+<ul>
+<li>Fix: Upgrade compose-lint to 0.31.0 or later.</li>
+<li>Workaround: Disable compose-lint&#x27;s text report in favor of JSON/SARIF output; sanitize PR input for workflow command sequences.</li>
+<li>Tradeoff: Losing human-readable text reports reduces usability; input sanitization may be bypassed.</li>
+</ul>
+</div></div>
+<h3>News &amp; Community Mentions</h3>
+<p><em>Unverified chatter — not authoritative vulnerability intelligence.</em></p>
+<p><strong>AWS</strong></p>
+<ul>
+<li>Attackers exploiting AhsayCBS flaws to deploy sandbox-evading Python backdoor — The Hacker News — <a href="https://thehackernews.com/2026/11/attackers-exploit-ahsaycbs-flaws-to.html">https://thehackernews.com/2026/11/attackers-exploit-ahsaycbs-flaws-to.html</a></li>
+<li>Apple patches iMessage group chat privacy flaws and Bluetooth pairing vulnerabilities — The Hacker News — <a href="https://thehackernews.com/2026/11/apple-patches-imessage-group-chat.html">https://thehackernews.com/2026/11/apple-patches-imessage-group-chat.html</a></li>
+<li>SAP patches four CVSS 10.0 flaws, including two enabling remote code execution — The Hacker News — <a href="https://thehackernews.com/2026/11/sap-patches-four-cvss-100-flaws.html">https://thehackernews.com/2026/11/sap-patches-four-cvss-100-flaws.html</a></li>
+<li>CISA warns of active exploitation of OpenSSH, GPUStack, FreeSWITCH, and IBM flaws — The Hacker News — <a href="https://thehackernews.com/2026/11/cisa-warns-of-active-exploitation-of.html">https://thehackernews.com/2026/11/cisa-warns-of-active-exploitation-of.html</a></li>
+<li>Hackers exploit Qubole&#x27;s trusted AWS access to breach customer accounts and steal data — The Hacker News — <a href="https://thehackernews.com/2026/11/hackers-exploit-quboles-trusted-aws.html">https://thehackernews.com/2026/11/hackers-exploit-quboles-trusted-aws.html</a></li>
+</ul>
+<p><strong>Microsoft Azure</strong></p>
+<ul>
+<li>Microsoft&#x27;s Azure Linux gets 470-plus security fixes in one almighty patching session — The Register — <a href="https://www.theregister.com/security/2026/11/09/microsofts-azure-linux-gets-470-plus-security-fixes-in-one-almighty-patching-session/5308434">https://www.theregister.com/security/2026/11/09/microsofts-azure-linux-gets-470-plus-security-fixes-in-one-almighty-patching-session/5308434</a></li>
+<li>Microsoft Fixes More Than 470 Vulnerabilities in Azure Linux Update — Petri IT Knowledgebase — <a href="https://news.google.com/rss/articles/CBMicEFVX3lxTFBabi1FT1c4WFdhRkxIWUNCRDl6Q1JKUkpIWXJIa21SMHFLZ3AwaU9wMnRZcVkwcXBVUFZnaDg2VHR2X0p0RDBsZExKb1BZcS1nbWg1dVN0ckxVODBfM1Z6TW5KMUo2c2FHaFlycnV1V2w?oc=5">https://news.google.com/rss/articles/CBMicEFVX3lxTFBabi1FT1c4WFdhRkxIWUNCRDl6Q1JKUkpIWXJIa21SMHFLZ3AwaU9wMnRZcVkwcXBVUFZnaDg2VHR2X0p0RDBsZExKb1BZcS1nbWg1dVN0ckxVODBfM1Z6TW5KMUo2c2FHaFlycnV1V2w?oc=5</a></li>
+<li>Microsoft&#x27;s Azure Linux gets 470-plus security fixes in one almighty patching session — The Register (duplicate) — <a href="https://news.google.com/rss/articles/CBMi1wFBVV95cUxPbVBsUWJXLU1hQjcyUTdYaGFFUHU5M1hPN19ZeWpxTkN1VXN6UlhzWmhyZENNMTQtelQtMEhfZUdOMWM5eDlZMnBlX1BXQnVNNmp0clR1OXNKTnNHVk5ROXFseVRxUzRoUU5DLVVZUTBrNUJPUXdEUmZyOVhFUXZUM1Mwb0R5Z2dBV2lmRXpWaGctQ2g4WVltZlphbnpPQ1NjRE9Cd2dRaUlDWjdLT1NOX0NaVzdGZVZjano4RDRKTWNkc18xdW5FU0dVVFlscC00RnAtNDZmWQ?oc=5">https://news.google.com/rss/articles/CBMi1wFBVV95cUxPbVBsUWJXLU1hQjcyUTdYaGFFUHU5M1hPN19ZeWpxTkN1VXN6UlhzWmhyZENNMTQtelQtMEhfZUdOMWM5eDlZMnBlX1BXQnVNNmp0clR1OXNKTnNHVk5ROXFseVRxUzRoUU5DLVVZUTBrNUJPUXdEUmZyOVhFUXZUM1Mwb0R5Z2dBV2lmRXpWaGctQ2g4WVltZlphbnpPQ1NjRE9Cd2dRaUlDWjdLT1NOX0NaVzdGZVZjano4RDRKTWNkc18xdW5FU0dVVFlscC00RnAtNDZmWQ?oc=5</a></li>
+<li>Brotli CVE-2026-111497: Azure Image Rebuild Guide [2026] — shattered.io — <a href="https://news.google.com/rss/articles/CBMilgFBVV95cUxOYnpRTHdxN01vaHlEWHFMQl9uTXAtUmtQYkVVeWM3ZThmazFaYjh2a1M5TFQwOWFnbHR3a0trRTA2eEZWcU02TmhCRDVhNGFHZjBaYXlldTR2blQ0XzRYLUxhRXhJV3ZRRmRScmcwMW5fVUNtUXI2V3FvLUpibHFONEVRVXdXVGdmR25XQlVVZmE0YThNZVE?oc=5">https://news.google.com/rss/articles/CBMilgFBVV95cUxOYnpRTHdxN01vaHlEWHFMQl9uTXAtUmtQYkVVeWM3ZThmazFaYjh2a1M5TFQwOWFnbHR3a0trRTA2eEZWcU02TmhCRDVhNGFHZjBaYXlldTR2blQ0XzRYLUxhRXhJV3ZRRmRScmcwMW5fVUNtUXI2V3FvLUpibHFONEVRVXdXVGdmR25XQlVVZmE0YThNZVE?oc=5</a></li>
+<li>Microsoft patches 470-plus CVEs in single Azure Linux update — news.lavx.hu — <a href="https://news.google.com/rss/articles/CBMikwFBVV95cUxQQmNrTE85TEtkMDZ4OHE5Y3lfSHZEcHJfUGxZUTh6Sjh1c1BVU3BvSmJ4bE5tc3h1dWloWDZJcnc3YnpsRW95OXJzTzJZMlpULWYzZmp3WDJoVmlSdjRBN05mdEctclN4eTlURFp0c1lDN1FzVHZLS05VeV9WUkMzV0d1cmpfUlZhcnFMbm1qdk5rQWs?oc=5">https://news.google.com/rss/articles/CBMikwFBVV95cUxQQmNrTE85TEtkMDZ4OHE5Y3lfSHZEcHJfUGxZUTh6Sjh1c1BVU3BvSmJ4bE5tc3h1dWloWDZJcnc3YnpsRW95OXJzTzJZMlpULWYzZmp3WDJoVmlSdjRBN05mdEctclN4eTlURFp0c1lDN1FzVHZLS05VeV9WUkMzV0d1cmpfUlZhcnFMbm1qdk5rQWs?oc=5</a></li>
+</ul>
+<p><strong>Kubernetes</strong></p>
+<ul>
+<li>Microsoft releases major security update for Azure Linux — SC Media — <a href="https://news.google.com/rss/articles/CBMijwFBVV95cUxQYlFwX25nQ2xpSmpUVHN2blQ2alNBbWVybXZNdmp3Zk1sMkRvYlVnUjhfN192YkJmUHk5dmdkc0ZNcUtlMWh4MElnY2Q2aGFYN1NWUjdzMkN4bkJkazhGcmZwZTY2RFl3SHJtREl1QVBZY2Fxc2RQYlo5UWhncE93LVkxYWFZRmp4U0xaT0VzSQ?oc=5">https://news.google.com/rss/articles/CBMijwFBVV95cUxQYlFwX25nQ2xpSmpUVHN2blQ2alNBbWVybXZNdmp3Zk1sMkRvYlVnUjhfN192YkJmUHk5dmdkc0ZNcUtlMWh4MElnY2Q2aGFYN1NWUjdzMkN4bkJkazhGcmZwZTY2RFl3SHJtREl1QVBZY2Fxc2RQYlo5UWhncE93LVkxYWFZRmp4U0xaT0VzSQ?oc=5</a></li>
+<li>AWS Nitro Sandboxes: 1 VM per EKS Pod, $0 Extra [2026] — shattered.io — <a href="https://news.google.com/rss/articles/CBMiiAFBVV95cUxOVHE5TnhXc2Y0M1dQc3BWclE5MVg2MjQ5SXVyWGZKWjJQb0lkNlc2ZTRUX2gwOC16Y3RSeC1WdXlNMU1sUnIyU0poSGVFSHUxMXBvdHJTS3gwZWxKWnA2U0JVeHZ1eFlwc0RndzhxOVM4UEdrV0JZdXI5cjY4dVBFWVdsNWJGZV9K?oc=5">https://news.google.com/rss/articles/CBMiiAFBVV95cUxOVHE5TnhXc2Y0M1dQc3BWclE5MVg2MjQ5SXVyWGZKWjJQb0lkNlc2ZTRUX2gwOC16Y3RSeC1WdXlNMU1sUnIyU0poSGVFSHUxMXBvdHJTS3gwZWxKWnA2U0JVeHZ1eFlwc0RndzhxOVM4UEdrV0JZdXI5cjY4dVBFWVdsNWJGZV9K?oc=5</a></li>
+</ul>
+<p><strong>Docker</strong></p>
+<ul>
+<li>Docker Tutorial: Hardened Image in 12 Steps, 70 Min [2026] — shattered.io — <a href="https://news.google.com/rss/articles/CBMid0FVX3lxTFBZZ0xvdEVBQjJqd0tzcEdDaHZ0ZDZ1RnRSaTAtOFJMSGd5ODdJRjRfZE5wdHMyZ055bjUyNEZhZTR3akpxYnJUdkIwSHNDQ243RDRaekRKRE5oNGtDbGVMZjJ1QTQzU2RDNC02UElreml3RkxUa0NZ?oc=5">https://news.google.com/rss/articles/CBMid0FVX3lxTFBZZ0xvdEVBQjJqd0tzcEdDaHZ0ZDZ1RnRSaTAtOFJMSGd5ODdJRjRfZE5wdHMyZ055bjUyNEZhZTR3akpxYnJUdkIwSHNDQ243RDRaekRKRE5oNGtDbGVMZjJ1QTQzU2RDNC02UElreml3RkxUa0NZ?oc=5</a></li>
+<li>Bitcoin Lightning&#x27;s security update shuts one door. A critical Linux flaw remains — CryptoSlate — <a href="https://news.google.com/rss/articles/CBMipwFBVV95cUxQQVM1UkgtVk02V2huSDNYS2dnSk1HemRTcU9ZQVZBQU9CM0xia3lKSlZIMFVTQzhOdGFlVzRjci0xcUJjd3dONVdYc3VvNXRaSGhKLTdwRDZOQzB0TVZkSHVEdS1ROWlpU2R3X2JZb2prR21CZ3MxenNvUVU5M3VyWjdha0k3OU5YNFA1MW9tTkxwek5ZYndLM094RHdvUXFOU3RBNEFEZw?oc=5">https://news.google.com/rss/articles/CBMipwFBVV95cUxQQVM1UkgtVk02V2huSDNYS2dnSk1HemRTcU9ZQVZBQU9CM0xia3lKSlZIMFVTQzhOdGFlVzRjci0xcUJjd3dONVdYc3VvNXRaSGhKLTdwRDZOQzB0TVZkSHVEdS1ROWlpU2R3X2JZb2prR21CZ3MxenNvUVU5M3VyWjdha0k3OU5YNFA1MW9tTkxwek5ZYndLM094RHdvUXFOU3RBNEFEZw?oc=5</a></li>
+<li>Security Firms Found Over 31,000 Secrets, Including Passwords, in Public Claude Code Files on GitHub — www.techtimes.co.uk — <a href="https://news.google.com/rss/articles/CBMikgFBVV95cUxPRndqc0hSMk5qQ2dIZjBRMzVXTXRCWFJRUzhrb2poYVVrLWVuX2l3X0xPRDA2ZzBtYWcxbVRGNUJVNl9jOUdQd1hFVXctTUhkZmNDYnVJZFpOVTg4RGpWQTMwLWR6NjNwLU1BR1RydDNqMGFhNmFlcHF1OURNZWczci1wUmN6MHBfS3RQOTU4aEdmZw?oc=5">https://news.google.com/rss/articles/CBMikgFBVV95cUxPRndqc0hSMk5qQ2dIZjBRMzVXTXRCWFJRUzhrb2poYVVrLWVuX2l3X0xPRDA2ZzBtYWcxbVRGNUJVNl9jOUdQd1hFVXctTUhkZmNDYnVJZFpOVTg4RGpWQTMwLWR6NjNwLU1BR1RydDNqMGFhNmFlcHF1OURNZWczci1wUmN6MHBfS3RQOTU4aEdmZw?oc=5</a></li>
+<li>Harden LND Against the MPTCP Kernel Bug in 12 Steps — shattered.io — <a href="https://news.google.com/rss/articles/CBMihAFBVV95cUxPdExDMUwySTlHUWVZcWR6bGhYcDAwZ0xJZHBocElWYk8yT3BUMkNTTWVzWFk2eUxhRWpJSlZFcGJacXk0dHNSLXhyNmxFcGRYNWJKV1B6Qk0yMkZGbTdEWXc0bV96ODN3RU9uWnlSY0IxdUxiWWozNE5jTzFpblk4Mk5nd1M?oc=5">https://news.google.com/rss/articles/CBMihAFBVV95cUxPdExDMUwySTlHUWVZcWR6bGhYcDAwZ0xJZHBocElWYk8yT3BUMkNTTWVzWFk2eUxhRWpJSlZFcGJacXk0dHNSLXhyNmxFcGRYNWJKV1B6Qk0yMkZGbTdEWXc0bV96ODN3RU9uWnlSY0IxdUxiWWozNE5jTzFpblk4Mk5nd1M?oc=5</a></li>
+<li>OpenSSH Flaw Exploited Within Hours on Musl-Based Linux — NewzTodays — <a href="https://news.google.com/rss/articles/CBMihgFBVV95cUxNck9fajhhQnFrbjVPaVY1SUlEaHVaNFJuc2Rhd0ljZ0hVSkN3cFVpR1UtUklBdjBZRmVqaVhsb1RYQ3kxaVgtVDlKNHROMmhRQlp1YWt3N1VPc0czcVJxMkFFMi1hMFVmRGhSRWxPaFhROEtRZEQyU3dGaU8tem81SHhHWl9mZw?oc=5">https://news.google.com/rss/articles/CBMihgFBVV95cUxNck9fajhhQnFrbjVPaVY1SUlEaHVaNFJuc2Rhd0ljZ0hVSkN3cFVpR1UtUklBdjBZRmVqaVhsb1RYQ3kxaVgtVDlKNHROMmhRQlp1YWt3N1VPc0czcVJxMkFFMi1hMFVmRGhSRWxPaFhROEtRZEQyU3dGaU8tem81SHhHWl9mZw?oc=5</a></li>
+</ul></div></div><div class="media-slot"><div class="media-sticky"><aside class="media-panel"><h3>Live &amp; Latest</h3><div class="media-tabs"><button type="button" class="media-tab active" data-i="0">Simply Cyber</button></div><div class="media-frame active"><iframe src="https://www.youtube-nocookie.com/embed/videoseries?list=UUG-48Ki-b6W_siaUkukJOSw" title="Simply Cyber" loading="lazy" allow="encrypted-media; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe><a class="media-open" href="https://www.youtube.com/channel/UCG-48Ki-b6W_siaUkukJOSw/live" target="_blank" rel="noopener">Open on source &rarr;</a></div><h3 class="audio-heading">Daily Audio</h3><div class="audio-card"><div class="audio-label">SANS Stormcast</div><div class="audio-title"><a href="https://isc.sans.edu/podcastdetail/10172" target="_blank" rel="noopener">SANS Stormcast Tuesday, November 10th, 2026: SAP NetWeaver Webshells (CVE-2025-31324); N-able N-central Offline; Chrome XML 0-Day (CVE-2026-125350); Outlook DMARC Required</a></div><div class="item-date">Tue, 10 Nov 2026 02:00:02 GMT</div><audio controls preload="none" src="https://traffic.libsyn.com/securitypodcast/10172.mp3"></audio></div><div class="audio-card"><div class="audio-label">Risky Bulletin</div><div class="audio-title"><a href="https://risky.biz/RBNEWS631/" target="_blank" rel="noopener">Risky Bulletin: Pro-Kremlin hacktivists dox EU politicians, law enforcement</a></div><div class="item-date">Mon, 09 Nov 2026 14:25:54 +1100</div><audio controls preload="none" src="https://dts.podtrac.com/redirect.mp3/media3.risky.biz/RBNEWS631.mp3"></audio></div></aside></div></div></div>
+</body>
+</html>
